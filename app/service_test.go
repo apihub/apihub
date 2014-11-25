@@ -10,9 +10,7 @@ import (
 	"github.com/albertoleal/backstage/errors"
 )
 
-type S struct {
-	conn *db.Storage
-}
+type S struct{}
 
 var _ = Suite(&S{})
 
