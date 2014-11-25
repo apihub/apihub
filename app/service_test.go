@@ -1,4 +1,4 @@
-package service
+package app
 
 import (
 	"testing"
@@ -18,8 +18,8 @@ var _ = Suite(&S{})
 func Test(t *testing.T) { TestingT(t) }
 
 func (s *S) SetUpSuite(c *C) {
-	config.Set("database:url", "127.0.0.1:27017")
-	config.Set("database:name", "backstage_db_test")
+  config.Set("database:url", "127.0.0.1:27017")
+  config.Set("database:name", "backstage_db_test")
 }
 
 func (s *S) TearDownSuite(c *C) {
@@ -31,31 +31,31 @@ func (s *S) TearDownSuite(c *C) {
 	conn.Collection("services").Database.DropDatabase()
 }
 
-func (s *S) TestCreateNewService(c *C) {
+func (s *S) TestCreateServiceNewService(c *C) {
 	service := Service{Name: "Backstage",
 		Endpoint:  map[string]interface{}{"latest": "http://example.org/api"},
 		Subdomain: "BACKSTAGE",
 	}
-	err := Create(&service)
-	defer Delete(&service)
+	err := CreateService(&service)
+	defer DeleteService(&service)
 
 	c.Check(service.Subdomain, Equals, "backstage")
 	_, ok := err.(*errors.ValidationError)
 	c.Check(ok, Equals, false)
 }
 
-func (s *S) TestCannotCreateServiceWhenSubdomainAlreadyExists(c *C) {
+func (s *S) TestCannotCreateServiceServiceWhenSubdomainAlreadyExists(c *C) {
 	service := Service{Subdomain: "backstage",
 		Endpoint: map[string]interface{}{"latest": "http://example.org/api"},
 	}
-	err := Create(&service)
-	defer Delete(&service)
+	err := CreateService(&service)
+	defer DeleteService(&service)
 	c.Check(err, IsNil)
 
 	service2 := Service{Subdomain: "backstage",
 		Endpoint: map[string]interface{}{"latest": "http://example.org/api"},
 	}
-	err = Create(&service2)
+	err = CreateService(&service2)
 	c.Check(err, NotNil)
 
 	e, ok := err.(*errors.ValidationError)
@@ -64,25 +64,25 @@ func (s *S) TestCannotCreateServiceWhenSubdomainAlreadyExists(c *C) {
 	c.Assert(e.Message, Equals, msg)
 }
 
-func (s *S) TestCannotCreateAServiceWithoutRequiredFields(c *C) {
+func (s *S) TestCannotCreateServiceAServiceWithoutRequiredFields(c *C) {
 	service := Service{Subdomain: "backstage"}
-	err := Create(&service)
+	err := CreateService(&service)
 	e := err.(*errors.ValidationError)
 	msg := "Endpoint cannot be empty."
 	c.Assert(e.Message, Equals, msg)
 
 	service = Service{}
-	err = Create(&service)
+	err = CreateService(&service)
 	e = err.(*errors.ValidationError)
 	msg = "Subdomain cannot be empty."
 	c.Assert(e.Message, Equals, msg)
 }
 
-func (s *S) TestDeleteANonExistingService(c *C) {
+func (s *S) TestDeleteServiceANonExistingService(c *C) {
 	service := Service{Subdomain: "backstage",
 		Endpoint: map[string]interface{}{"latest": "http://example.org/api"},
 	}
-	err := Delete(&service)
+	err := DeleteService(&service)
 
 	e, ok := err.(*errors.ValidationError)
 	c.Assert(ok, Equals, true)
@@ -90,19 +90,19 @@ func (s *S) TestDeleteANonExistingService(c *C) {
 	c.Assert(e.Message, Equals, msg)
 }
 
-func (s *S) TestDeleteAnExistingService(c *C) {
+func (s *S) TestDeleteServiceAnExistingService(c *C) {
 	service := Service{Subdomain: "backstage",
 		Endpoint: map[string]interface{}{"latest": "http://example.org/api"},
 	}
 
-	count, _ := Count()
+	count, _ := CountService()
 	c.Assert(count, Equals, 0)
 
-	Create(&service)
-	count, _ = Count()
+	CreateService(&service)
+	count, _ = CountService()
 	c.Assert(count, Equals, 1)
 
-	Delete(&service)
-	count, _ = Count()
+	DeleteService(&service)
+	count, _ = CountService()
 	c.Assert(count, Equals, 0)
 }

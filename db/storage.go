@@ -46,3 +46,10 @@ func (storage *Storage) Services() *storage.Collection {
 	collection.EnsureIndex(subdomainIndex)
 	return collection
 }
+
+func (storage *Storage) Users() *storage.Collection {
+	usernameIndex := mgo.Index{Key: []string{"username"}, Unique: true}
+	collection := storage.Collection("users")
+	collection.EnsureIndex(usernameIndex)
+	return collection
+}

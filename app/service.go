@@ -1,4 +1,4 @@
-package service
+package app
 
 import (
 	"strings"
@@ -22,7 +22,7 @@ type Service struct {
 	Name            string
 }
 
-func Create(service *Service) error {
+func CreateService(service *Service) error {
 	conn, err := db.Conn()
 	if err != nil {
 		return err
@@ -48,7 +48,7 @@ func Create(service *Service) error {
 	return err
 }
 
-func Delete(service *Service) error {
+func DeleteService(service *Service) error {
 	conn, err := db.Conn()
 	if err != nil {
 		return err
@@ -63,7 +63,7 @@ func Delete(service *Service) error {
 	return err
 }
 
-func Count() (int, error) {
+func CountService() (int, error) {
 	conn, err := db.Conn()
 	if err != nil {
 		return 0, err
