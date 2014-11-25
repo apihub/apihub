@@ -17,13 +17,13 @@ type Storage struct {
 }
 
 func conn() (*storage.Storage, error) {
-	databaseHost, err := config.GetString("database:host")
-	if err != nil {
+	databaseHost, _ := config.GetString("database:host")
+	if databaseHost == "" {
 		databaseHost = DefaultDatabaseHost
 	}
 
-	databaseName, err := config.GetString("database:name")
-	if err != nil {
+	databaseName, _ := config.GetString("database:name")
+	if databaseName == "" {
 		databaseName = DefaultDatabaseName
 	}
 
