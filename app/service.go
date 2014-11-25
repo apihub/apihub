@@ -27,6 +27,7 @@ func CreateService(service *Service) error {
 	if err != nil {
 		return err
 	}
+	defer conn.Close()
 
 	if service.Subdomain == "" {
 		message := "Subdomain cannot be empty."
@@ -37,6 +38,7 @@ func CreateService(service *Service) error {
 		return &errors.ValidationError{Message: message}
 	}
 
+	// FIXME: improve this.
 	service.Subdomain = strings.ToLower(service.Subdomain)
 	service.CreatedAt = time.Now().In(time.UTC)
 	service.UpdatedAt = time.Now().In(time.UTC)
