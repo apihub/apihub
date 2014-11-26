@@ -1,11 +1,10 @@
 package app
 
 import (
-	"strings"
-
 	"code.google.com/p/go.crypto/bcrypt"
 	"github.com/albertoleal/backstage/db"
 	"github.com/albertoleal/backstage/errors"
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -30,7 +29,7 @@ func CreateUser(user *User) error {
 
 	user.HashPassword()
 	err = conn.Users().Insert(user)
-	if err != nil && strings.Contains(err.Error(), "duplicate key") {
+	if mgo.IsDup(err) {
 		message := "Someone already has that username. Could you try another?."
 		return &errors.ValidationError{Message: message}
 	}
@@ -45,7 +44,7 @@ func DeleteUser(user *User) error {
 	defer conn.Close()
 
 	err = conn.Users().Remove(user)
-	if err != nil && strings.Contains(err.Error(), "not found") {
+	if err == mgo.ErrNotFound {
 		message := "User not found."
 		return &errors.ValidationError{Message: message}
 	}
@@ -61,7 +60,7 @@ func FindUserByUsername(username string) (*User, error) {
 
 	var result User
 	err = conn.Users().Find(bson.M{"username": username}).One(&result)
-	if err != nil {
+	if err == mgo.ErrNotFound {
 		return nil, &errors.ValidationError{Message: "User not found"}
 	}
 

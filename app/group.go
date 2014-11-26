@@ -49,6 +49,23 @@ func DeleteGroupByName(name string) error {
 	return nil
 }
 
+func FindGroupByName(name string) (*Group, error) {
+	conn, err := db.Conn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	var group Group
+	err = conn.Groups().Find(bson.M{"name": name}).One(&group)
+	if err == mgo.ErrNotFound {
+		message := "Group not found."
+		return nil, &errors.ValidationError{Message: message}
+	}
+
+	return &group, nil
+}
+
 func getUsernames(users []User) []string {
 	usernames := make([]string, len(users))
 	for i, u := range users {

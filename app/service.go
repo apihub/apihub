@@ -6,6 +6,7 @@ import (
 
 	"github.com/albertoleal/backstage/db"
 	"github.com/albertoleal/backstage/errors"
+	"gopkg.in/mgo.v2"
 )
 
 type Service struct {
@@ -45,7 +46,7 @@ func CreateService(service *Service, user *User) error {
 	service.Owner = user.Username
 
 	err = conn.Services().Insert(service)
-	if err != nil && strings.Contains(err.Error(), "duplicate key") {
+	if mgo.IsDup(err) {
 		message := "There is another service with this subdomain."
 		return &errors.ValidationError{Message: message}
 	}
@@ -60,7 +61,7 @@ func DeleteService(service *Service) error {
 	defer conn.Close()
 
 	err = conn.Services().Remove(service)
-	if err != nil && strings.Contains(err.Error(), "not found") {
+	if err == mgo.ErrNotFound {
 		message := "Document not found."
 		return &errors.ValidationError{Message: message}
 	}
