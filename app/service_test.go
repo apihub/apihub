@@ -18,8 +18,8 @@ var _ = Suite(&S{})
 func Test(t *testing.T) { TestingT(t) }
 
 func (s *S) SetUpSuite(c *C) {
-  config.Set("database:url", "127.0.0.1:27017")
-  config.Set("database:name", "backstage_db_test")
+	config.Set("database:url", "127.0.0.1:27017")
+	config.Set("database:name", "backstage_db_test")
 }
 
 func (s *S) TearDownSuite(c *C) {
@@ -32,11 +32,12 @@ func (s *S) TearDownSuite(c *C) {
 }
 
 func (s *S) TestCreateServiceNewService(c *C) {
+	user := User{Username: "alice"}
 	service := Service{Name: "Backstage",
 		Endpoint:  map[string]interface{}{"latest": "http://example.org/api"},
 		Subdomain: "BACKSTAGE",
 	}
-	err := CreateService(&service)
+	err := CreateService(&service, &user)
 	defer DeleteService(&service)
 
 	c.Check(service.Subdomain, Equals, "backstage")
@@ -45,17 +46,18 @@ func (s *S) TestCreateServiceNewService(c *C) {
 }
 
 func (s *S) TestCannotCreateServiceServiceWhenSubdomainAlreadyExists(c *C) {
+	user := User{Username: "alice"}
 	service := Service{Subdomain: "backstage",
 		Endpoint: map[string]interface{}{"latest": "http://example.org/api"},
 	}
-	err := CreateService(&service)
+	err := CreateService(&service, &user)
 	defer DeleteService(&service)
 	c.Check(err, IsNil)
 
 	service2 := Service{Subdomain: "backstage",
 		Endpoint: map[string]interface{}{"latest": "http://example.org/api"},
 	}
-	err = CreateService(&service2)
+	err = CreateService(&service2, &user)
 	c.Check(err, NotNil)
 
 	e, ok := err.(*errors.ValidationError)
@@ -65,14 +67,15 @@ func (s *S) TestCannotCreateServiceServiceWhenSubdomainAlreadyExists(c *C) {
 }
 
 func (s *S) TestCannotCreateServiceAServiceWithoutRequiredFields(c *C) {
+	user := User{Username: "alice"}
 	service := Service{Subdomain: "backstage"}
-	err := CreateService(&service)
+	err := CreateService(&service, &user)
 	e := err.(*errors.ValidationError)
 	msg := "Endpoint cannot be empty."
 	c.Assert(e.Message, Equals, msg)
 
 	service = Service{}
-	err = CreateService(&service)
+	err = CreateService(&service, &user)
 	e = err.(*errors.ValidationError)
 	msg = "Subdomain cannot be empty."
 	c.Assert(e.Message, Equals, msg)
@@ -91,6 +94,7 @@ func (s *S) TestDeleteServiceANonExistingService(c *C) {
 }
 
 func (s *S) TestDeleteServiceAnExistingService(c *C) {
+	user := User{Username: "alice"}
 	service := Service{Subdomain: "backstage",
 		Endpoint: map[string]interface{}{"latest": "http://example.org/api"},
 	}
@@ -98,7 +102,7 @@ func (s *S) TestDeleteServiceAnExistingService(c *C) {
 	count, _ := CountService()
 	c.Assert(count, Equals, 0)
 
-	CreateService(&service)
+	CreateService(&service, &user)
 	count, _ = CountService()
 	c.Assert(count, Equals, 1)
 

@@ -9,7 +9,7 @@ import (
 )
 
 type Service struct {
-	Subdomain       string `bson:"_id" json:"subdomain"`
+	Subdomain       string `bson:"_id"`
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 	AllowKeylessUse bool
@@ -22,7 +22,7 @@ type Service struct {
 	Name            string
 }
 
-func CreateService(service *Service) error {
+func CreateService(service *Service, user *User) error {
 	conn, err := db.Conn()
 	if err != nil {
 		return err
@@ -42,6 +42,7 @@ func CreateService(service *Service) error {
 	service.Subdomain = strings.ToLower(service.Subdomain)
 	service.CreatedAt = time.Now().In(time.UTC)
 	service.UpdatedAt = time.Now().In(time.UTC)
+	service.Owner = user.Username
 	err = conn.Services().Insert(service)
 	if err != nil && strings.Contains(err.Error(), "duplicate key") {
 		message := "There is another service with this subdomain."
