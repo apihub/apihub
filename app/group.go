@@ -110,6 +110,23 @@ func FindGroupByName(name string) (*Group, error) {
 	return &group, nil
 }
 
+func (group *Group) GetGroupUsers() ([]*User, error) {
+	conn, err := db.Conn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	var users []*User
+	var user *User
+	for _, username := range group.Users {
+		user, _ = FindUserByUsername(username)
+		users = append(users, user)
+	}
+
+	return users, nil
+}
+
 func getUsernames(users []User) []string {
 	usernames := make([]string, len(users))
 	for i, u := range users {

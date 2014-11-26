@@ -113,3 +113,19 @@ func (s *S) TestFindGroupByNameWithInvalidName(c *C) {
 	message := "Group not found."
 	c.Assert(e.Message, Equals, message)
 }
+
+func (s *S) TestGetGroupUsers(c *C) {
+	alice := User{Name: "Alice", Email: "alice@bar.com", Username: "alice", Password: "123456"}
+	CreateUser(&alice)
+	defer DeleteUser(&alice)
+	bob := User{Name: "Bob", Email: "bob@bar.com", Username: "bob", Password: "123456"}
+	CreateUser(&bob)
+	defer DeleteUser(&bob)
+	CreateGroup("Group", []User{alice, bob})
+	defer DeleteGroupByName("Group")
+
+	group, _ := FindGroupByName("Group")
+	users, _ := group.GetGroupUsers()
+	c.Assert(users[0], DeepEquals, &alice)
+	c.Assert(users[1], DeepEquals, &bob)
+}
