@@ -4,16 +4,16 @@ import (
 	"strings"
 
 	"code.google.com/p/go.crypto/bcrypt"
-	"gopkg.in/mgo.v2/bson"
 	"github.com/albertoleal/backstage/db"
 	"github.com/albertoleal/backstage/errors"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type User struct {
 	Name     string
 	Email    string
 	Username string
-	Password string //[]byte
+	Password string
 }
 
 func CreateUser(user *User) error {
