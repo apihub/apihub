@@ -43,6 +43,7 @@ func CreateService(service *Service, user *User) error {
 	service.CreatedAt = time.Now().In(time.UTC)
 	service.UpdatedAt = time.Now().In(time.UTC)
 	service.Owner = user.Username
+
 	err = conn.Services().Insert(service)
 	if err != nil && strings.Contains(err.Error(), "duplicate key") {
 		message := "There is another service with this subdomain."
