@@ -35,3 +35,19 @@ func (s *S) TestServices(c *C) {
 	collection := storage.Collection("services")
 	c.Assert(services, DeepEquals, collection)
 }
+
+func (s *S) TestUsers(c *C) {
+	storage, err := Conn()
+	c.Assert(err, IsNil)
+	users := storage.Users()
+	collection := storage.Collection("users")
+	c.Assert(users, DeepEquals, collection)
+}
+
+func (s *S) TestGroups(c *C) {
+	storage, err := Conn()
+	c.Assert(err, IsNil)
+	groups := storage.Groups()
+	collection := storage.Collection("groups")
+	c.Assert(groups, DeepEquals, collection)
+}

@@ -53,3 +53,10 @@ func (storage *Storage) Users() *storage.Collection {
 	collection.EnsureIndex(usernameIndex)
 	return collection
 }
+
+func (storage *Storage) Groups() *storage.Collection {
+	nameIndex := mgo.Index{Key: []string{"name"}, Unique: true}
+	collection := storage.Collection("groups")
+	collection.EnsureIndex(nameIndex)
+	return collection
+}

@@ -62,8 +62,8 @@ func (s *S) TestCannotCreateServiceServiceWhenSubdomainAlreadyExists(c *C) {
 
 	e, ok := err.(*errors.ValidationError)
 	c.Assert(ok, Equals, true)
-	msg := "There is another service with this subdomain."
-	c.Assert(e.Message, Equals, msg)
+	message := "There is another service with this subdomain."
+	c.Assert(e.Message, Equals, message)
 }
 
 func (s *S) TestCannotCreateServiceAServiceWithoutRequiredFields(c *C) {
@@ -71,14 +71,14 @@ func (s *S) TestCannotCreateServiceAServiceWithoutRequiredFields(c *C) {
 	service := Service{Subdomain: "backstage"}
 	err := CreateService(&service, &user)
 	e := err.(*errors.ValidationError)
-	msg := "Endpoint cannot be empty."
-	c.Assert(e.Message, Equals, msg)
+	message := "Endpoint cannot be empty."
+	c.Assert(e.Message, Equals, message)
 
 	service = Service{}
 	err = CreateService(&service, &user)
 	e = err.(*errors.ValidationError)
-	msg = "Subdomain cannot be empty."
-	c.Assert(e.Message, Equals, msg)
+	message = "Subdomain cannot be empty."
+	c.Assert(e.Message, Equals, message)
 }
 
 func (s *S) TestDeleteServiceANonExistingService(c *C) {
@@ -89,8 +89,8 @@ func (s *S) TestDeleteServiceANonExistingService(c *C) {
 
 	e, ok := err.(*errors.ValidationError)
 	c.Assert(ok, Equals, true)
-	msg := "Document not found."
-	c.Assert(e.Message, Equals, msg)
+	message := "Document not found."
+	c.Assert(e.Message, Equals, message)
 }
 
 func (s *S) TestDeleteServiceAnExistingService(c *C) {
