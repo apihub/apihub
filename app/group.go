@@ -33,6 +33,26 @@ func CreateGroup(name string, users []User) error {
 	return nil
 }
 
+func (group *Group) AddUsers(users []User) error {
+	conn, err := db.Conn()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	var newUser bool
+	for _, user := range users {
+		if group.containsUser(&user) == false {
+			group.Users = append(group.Users, user.Username)
+			newUser = true
+		}
+	}
+	if newUser {
+		conn.Groups().Update(bson.M{"name": group.Name}, group)
+	}
+	return nil
+}
+
 func DeleteGroupByName(name string) error {
 	conn, err := db.Conn()
 	if err != nil {
@@ -72,4 +92,13 @@ func getUsernames(users []User) []string {
 		usernames[i] = u.Username
 	}
 	return usernames
+}
+
+func (group *Group) containsUser(user *User) bool {
+	for _, u := range group.Users {
+		if u == user.Username {
+			return true
+		}
+	}
+	return false
 }
