@@ -25,7 +25,7 @@ func (s *S) TearDownSuite(c *C) {
 	defer storage.Close()
 	config.Unset("database:url")
 	config.Unset("database:name")
-	storage.Collection("services").Database.DropDatabase()
+	// storage.Collection("services").Database.DropDatabase()
 }
 
 func (s *S) TestServices(c *C) {
