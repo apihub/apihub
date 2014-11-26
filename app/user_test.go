@@ -37,6 +37,7 @@ func (s *S) TestCreateUserWithoutRequiredFields(c *C) {
 func (s *S) TestCreateUserShouldMaskThePassword(c *C) {
 		user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
 		CreateUser(&user)
+		defer DeleteUser(&user)
 
 		foundUser, _ := FindUserByUsername("alice")
 		c.Assert(foundUser.Password, Not(Equals), "123456")
