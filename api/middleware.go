@@ -1,9 +1,9 @@
 package api
 
 import (
-	"github.com/albertoleal/backstage/auth"
-
 	"net/http"
+
+	"github.com/albertoleal/backstage/auth"
 )
 
 func authorizationMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
