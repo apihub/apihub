@@ -28,13 +28,9 @@ func (a *ApiServer) drawRoutes() {
 	a.mux = mux.NewRouter()
 	a.muxAuth = mux.NewRouter()
 
-	a.muxAuth.Handle("/services", &ServiceHandler{}).Methods("POST")
-
 	a.mux.HandleFunc("/debug/helloworld", HelloWorldHandler)
-
+	a.muxAuth.Handle("/services", &ServiceHandler{}).Methods("POST")
 	a.mux.PathPrefix("/").Handler(negroni.New(negroni.HandlerFunc(authorizationMiddleware), negroni.Wrap(a.muxAuth)))
-	//a.mux.PathPrefix("/services").Handler(negroni.New(negroni.HandlerFunc(authorizationMiddleware), negroni.Wrap(a.muxAuth)))
-
 	a.n.UseHandler(a.mux)
 }
 
