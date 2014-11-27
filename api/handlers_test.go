@@ -15,6 +15,5 @@ func (s *S) TestHelloWorldHandler(c *C) {
 	}
 
 	HelloWorldHandler(w, req)
-	c.Assert(w.Code, Equals, 200)
 	c.Assert(w.Body.String(), Equals, "Hello World!")
 }

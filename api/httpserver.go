@@ -13,20 +13,27 @@ import (
 type ApiServer struct {
 	n *negroni.Negroni
 	http.Handler
-	mux *mux.Router
+	mux     *mux.Router
+	muxAuth *mux.Router
 }
 
 func NewApiServer() (*ApiServer, error) {
 	a := &ApiServer{}
-	a.n = negroni.New(negroni.NewRecovery(), negroni.HandlerFunc(authorizationMiddleware))
+	a.n = negroni.New(negroni.NewRecovery())
 	a.drawRoutes()
 	return a, nil
 }
 
 func (a *ApiServer) drawRoutes() {
 	a.mux = mux.NewRouter()
-	a.mux.Handle("/services", &ServiceHandler{}).Methods("POST")
+	a.muxAuth = mux.NewRouter()
+
+	a.muxAuth.Handle("/services", &ServiceHandler{}).Methods("POST")
+
 	a.mux.HandleFunc("/debug/helloworld", HelloWorldHandler)
+
+	a.mux.PathPrefix("/").Handler(negroni.New(negroni.HandlerFunc(authorizationMiddleware), negroni.Wrap(a.muxAuth)))
+	//a.mux.PathPrefix("/services").Handler(negroni.New(negroni.HandlerFunc(authorizationMiddleware), negroni.Wrap(a.muxAuth)))
 
 	a.n.UseHandler(a.mux)
 }
