@@ -18,14 +18,16 @@ type ApiServer struct {
 
 func NewApiServer() (*ApiServer, error) {
 	a := &ApiServer{}
-	a.n = negroni.New(negroni.NewRecovery())
+	a.n = negroni.New(negroni.NewRecovery(), negroni.HandlerFunc(authorizationMiddleware))
 	a.drawRoutes()
 	return a, nil
 }
 
 func (a *ApiServer) drawRoutes() {
 	a.mux = mux.NewRouter()
+	a.mux.Handle("/services", &ServiceHandler{}).Methods("POST")
 	a.mux.HandleFunc("/debug/helloworld", HelloWorldHandler)
+
 	a.n.UseHandler(a.mux)
 }
 
