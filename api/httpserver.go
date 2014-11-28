@@ -1,41 +1,36 @@
-package api
+package main
 
 import (
-	"log"
-	"net/http"
-	"time"
+  "github.com/gorilla/context"
+  "github.com/zenazn/goji"
 
-	"github.com/codegangsta/negroni"
-	"github.com/gorilla/mux"
-	"github.com/stretchr/graceful"
+  "github.com/albertoleal/backstage/api/controllers"
+  "github.com/albertoleal/backstage/api/system"
+  "github.com/zenazn/goji/web/middleware"
+  "github.com/zenazn/goji/web"
 )
 
-type ApiServer struct {
-	n *negroni.Negroni
-	http.Handler
-	mux     *mux.Router
-	muxAuth *mux.Router
-}
+func main() {
+  var app = &system.Application{}
 
-func NewApiServer() (*ApiServer, error) {
-	a := &ApiServer{}
-	a.n = negroni.New(negroni.NewRecovery())
-	a.drawRoutes()
-	return a, nil
-}
+  goji.NotFound(system.NotFoundHandler)
+  goji.Use(context.ClearHandler)
 
-func (a *ApiServer) drawRoutes() {
-	a.mux = mux.NewRouter()
-	a.muxAuth = mux.NewRouter()
+  // Controllers
+  serviceController := &controllers.ServicesController{}
+  debugController := &controllers.DebugController{}
 
-	a.mux.HandleFunc("/debug/helloworld", HelloWorldHandler)
-	a.muxAuth.Handle("/services", &ServiceHandler{}).Methods("POST")
-	a.mux.PathPrefix("/").Handler(negroni.New(negroni.HandlerFunc(authorizationMiddleware), negroni.Wrap(a.muxAuth)))
-	a.n.UseHandler(a.mux)
-}
+  // Public Routes
+  goji.Get("/", app.Route(serviceController, "Index"))
 
-func (a *ApiServer) RunServer() error {
-	log.Print("Starting Backstage Api Server at :2010")
-	graceful.Run(":2010", 10*time.Second, a.n)
-	return nil
+  // Private Routes
+  api := web.New()
+  goji.Handle("/api/*", api)
+  api.Use(middleware.SubRouter)
+  api.NotFound(system.NotFoundHandler)
+  api.Use(system.AuthorizationMiddleware)
+  api.Use(system.ErrorHandlerMiddleware)
+  api.Get("/helloworld", app.Route(debugController, "HelloWorld"))
+
+  goji.Serve()
 }
