@@ -1,4 +1,4 @@
-package app
+package account
 
 import (
 	. "gopkg.in/check.v1"
