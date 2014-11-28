@@ -2,17 +2,38 @@ package system
 
 import (
 	"io"
-	"log"
 	"net/http"
 	"reflect"
 
+	"github.com/albertoleal/backstage/api/controllers"
+	"github.com/zenazn/goji"
 	"github.com/zenazn/goji/web"
+	"github.com/zenazn/goji/web/middleware"
 )
 
-type Application struct{}
+type Application struct {
+}
 
-func (app *Application) Init() {
-	log.Print("Starting the Api.")
+func (app *Application) DrawRoutes() {
+	goji.Use(middleware.RequestID)
+	goji.Use(middleware.Logger)
+	goji.NotFound(NotFoundHandler)
+
+	// Controllers
+	serviceController := &controllers.ServicesController{}
+	debugController := &controllers.DebugController{}
+
+	// Public Routes
+	goji.Get("/", app.Route(serviceController, "Index"))
+
+	// Private Routes
+	api := web.New()
+	goji.Handle("/api/*", api)
+	api.Use(middleware.SubRouter)
+	api.NotFound(NotFoundHandler)
+	api.Use(AuthorizationMiddleware)
+	api.Use(ErrorHandlerMiddleware)
+	api.Get("/helloworld", app.Route(debugController, "HelloWorld"))
 }
 
 func (app *Application) Route(controller interface{}, route string) interface{} {
