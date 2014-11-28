@@ -1,15 +1,15 @@
 package controllers
 
 import (
-  "net/http"
+	"net/http"
 
-  "github.com/zenazn/goji/web"
+	"github.com/zenazn/goji/web"
 )
 
 type ServicesController struct {
-  ApiController
+	ApiController
 }
 
 func (controller *ServicesController) Index(c web.C, w http.ResponseWriter, r *http.Request) (string, int) {
-  return "{\"name\": \"simple test\"}", http.StatusOK
+	return "{\"name\": \"simple test\"}", http.StatusOK
 }
