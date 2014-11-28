@@ -20,9 +20,14 @@ func (app *Application) Route(controller interface{}, route string) interface{} 
 		c.Env["Content-Type"] = "application/json"
 
 		methodValue := reflect.ValueOf(controller).MethodByName(route)
+		addHeaders := reflect.ValueOf(controller).MethodByName("AddHeaders")
 		methodInterface := methodValue.Interface()
+		addHeadersInterface := addHeaders.Interface()
+
 		method := methodInterface.(func(c web.C, w http.ResponseWriter, r *http.Request) (string, int))
 
+		addmethod := addHeadersInterface.(func(w http.ResponseWriter))
+		addmethod(w)
 		body, code := method(c, w, r)
 
 		switch code {
