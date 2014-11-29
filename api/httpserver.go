@@ -8,7 +8,6 @@ import (
 
 func main() {
 	var app = &system.Application{}
-
 	app.DrawRoutes()
 
 	goji.Serve()
