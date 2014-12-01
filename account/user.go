@@ -9,13 +9,13 @@ import (
 )
 
 type User struct {
-	Name     string
-	Email    string
-	Username string
-	Password string
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Username string `json:"username"`
+	Password string `json:"password,omitempty"`
 }
 
-func CreateUser(user *User) error {
+func (user *User) Save() error {
 	conn, err := db.Conn()
 	if err != nil {
 		return err

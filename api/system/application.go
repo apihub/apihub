@@ -18,11 +18,14 @@ func (app *Application) DrawRoutes() {
 	goji.NotFound(NotFoundHandler)
 
 	// Controllers
-	serviceController := &controllers.ServicesController{}
+	servicesController := &controllers.ServicesController{}
 	debugController := &controllers.DebugController{}
+	usersController := &controllers.UsersController{}
 
 	// Public Routes
-	goji.Get("/", app.Route(serviceController, "Index"))
+	goji.Get("/", app.Route(servicesController, "Index"))
+	goji.Post("/api/users", app.Route(usersController, "CreateUser"))
+	goji.Use(ErrorHandlerMiddleware)
 
 	// Private Routes
 	api := web.New()
@@ -43,21 +46,17 @@ func (app *Application) Route(controller interface{}, route string) interface{} 
 		methodInterface := methodValue.Interface()
 		addHeadersInterface := addHeaders.Interface()
 
-		method := methodInterface.(func(c web.C, w http.ResponseWriter, r *http.Request) (string, int))
+		method := methodInterface.(func(c *web.C, w http.ResponseWriter, r *http.Request) (string, int))
 
 		addmethod := addHeadersInterface.(func(w http.ResponseWriter))
 		addmethod(w)
-		body, code := method(c, w, r)
+		body, code := method(&c, w, r)
 
-		switch code {
-		case http.StatusOK:
-			if _, exists := c.Env["Content-Type"]; exists {
-				w.Header().Set("Content-Type", c.Env["Content-Type"].(string))
-			}
-			io.WriteString(w, body)
-		case http.StatusSeeOther, http.StatusFound:
-			http.Redirect(w, r, body, code)
+		w.WriteHeader(code)
+		if _, exists := c.Env["Content-Type"]; exists {
+			w.Header().Set("Content-Type", c.Env["Content-Type"].(string))
 		}
+		io.WriteString(w, body)
 	}
 	return fn
 }

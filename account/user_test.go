@@ -8,18 +8,18 @@ import (
 
 func (s *S) TestCreateUser(c *C) {
 	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
-	err := CreateUser(&user)
+	err := user.Save()
 	defer DeleteUser(&user)
 	c.Assert(err, IsNil)
 }
 
 func (s *S) TestCreateUserWithSameUsername(c *C) {
 	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
-	CreateUser(&user)
+	user.Save()
 	defer DeleteUser(&user)
 
 	user2 := User{Name: "Bob", Email: "bob@bar.com", Username: "alice", Password: "123456"}
-	err := CreateUser(&user2)
+	err := user2.Save()
 	e := err.(*errors.ValidationError)
 	msg := "Someone already has that username. Could you try another?."
 	c.Assert(e.Message, Equals, msg)
@@ -27,8 +27,7 @@ func (s *S) TestCreateUserWithSameUsername(c *C) {
 
 func (s *S) TestCreateUserWithoutRequiredFields(c *C) {
 	user := User{}
-	err := CreateUser(&user)
-
+	err := user.Save()
 	e := err.(*errors.ValidationError)
 	msg := "Name/Email/Username/Password cannot be empty."
 	c.Assert(e.Message, Equals, msg)
@@ -36,7 +35,7 @@ func (s *S) TestCreateUserWithoutRequiredFields(c *C) {
 
 func (s *S) TestCreateUserShouldMaskThePassword(c *C) {
 	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
-	CreateUser(&user)
+	user.Save()
 	defer DeleteUser(&user)
 
 	foundUser, _ := FindUserByUsername("alice")
@@ -45,7 +44,7 @@ func (s *S) TestCreateUserShouldMaskThePassword(c *C) {
 
 func (s *S) FindUserByUsername(c *C) {
 	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
-	CreateUser(&user)
+	user.Save()
 	defer DeleteUser(&user)
 
 	foundUser, err := FindUserByUsername("alice")
@@ -55,7 +54,7 @@ func (s *S) FindUserByUsername(c *C) {
 
 func (s *S) TestFindUserWithInvalidUsername(c *C) {
 	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
-	CreateUser(&user)
+	user.Save()
 	defer DeleteUser(&user)
 
 	_, err := FindUserByUsername("bob")
