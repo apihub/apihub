@@ -11,7 +11,3 @@ type Controller interface {
 type ApiController struct{}
 
 func (controller *ApiController) AddHeaders(w http.ResponseWriter) {}
-
-func (controller *ApiController) IsTrue() bool {
-	return true
-}
