@@ -11,6 +11,8 @@ import (
 )
 
 func (s *S) SetUpTest(c *C) {
+	s.recorder = httptest.NewRecorder()
+	s.env = map[string]interface{}{}
 }
 
 func (s *S) TestCreateUser(c *C) {
@@ -20,9 +22,7 @@ func (s *S) TestCreateUser(c *C) {
 	req, err := http.NewRequest("POST", "/api/users", b)
 	req.Header.Set("Content-Type", "application/json")
 	c.Assert(err, IsNil)
-	recorder := httptest.NewRecorder()
-	env := map[string]interface{}{}
-	response, ok := controller.CreateUser(&web.C{Env: env}, recorder, req)
+	response, ok := controller.CreateUser(&web.C{Env: s.env}, s.recorder, req)
 	expected := `{"name":"Alice","email":"alice@example.org","username":"alice"}`
 	c.Assert(ok, Equals, true)
 	c.Assert(response.StatusCode, Equals, 201)
