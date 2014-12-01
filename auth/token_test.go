@@ -33,4 +33,5 @@ func (s *S) TestGetTokenWithInvalidFormat(c *C) {
 func (s *S) TestGenerateToken(c *C) {
 	token := GenerateToken(&account.User{Username: "alice"})
 	c.Assert(len(token.Token), Equals, 44)
+	c.Assert(token.Type, Equals, "Token")
 }

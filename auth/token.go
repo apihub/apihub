@@ -25,6 +25,7 @@ type Token interface {
 type TokenInfo struct {
 	User      string    `bson:"username" json:"-"`
 	Token     string    `json:"token"`
+	Type      string    `json:"token_type"`
 	Expires   int       `json:"expires"`
 	CreatedAt time.Time `bson:"created_at" json:"created_at"`
 }
@@ -65,7 +66,7 @@ func GenerateToken(user *account.User) *TokenInfo {
 	}
 
 	token := &TokenInfo{User: user.Username, Token: base64.URLEncoding.EncodeToString(rb),
-		Expires: ExpiresInSeconds, CreatedAt: time.Now()}
+		Expires: ExpiresInSeconds, Type: "Token", CreatedAt: time.Now()}
 	conn, err := db.Conn()
 	if err != nil {
 		fmt.Println(err)
