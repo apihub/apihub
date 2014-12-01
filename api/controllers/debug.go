@@ -14,7 +14,3 @@ func (controller *DebugController) HelloWorld(c *web.C, w http.ResponseWriter, r
 	c.Env["Content-Type"] = "text/plain"
 	return "Hello World!", http.StatusOK
 }
-
-func (controller *DebugController) AddHeaders(w http.ResponseWriter) {
-	w.Header().Set("X-Backstage-Debug", "true")
-}
