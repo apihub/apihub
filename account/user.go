@@ -9,10 +9,10 @@ import (
 )
 
 type User struct {
-	Name     string `json:"name"`
 	Email    string `json:"email"`
-	Username string `json:"username"`
+	Name     string `json:"name"`
 	Password string `json:"password,omitempty"`
+	Username string `json:"username"`
 }
 
 func (user *User) Save() error {

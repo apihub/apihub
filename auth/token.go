@@ -6,6 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
+
+	"github.com/albertoleal/backstage/account"
+	"github.com/albertoleal/backstage/db"
 )
 
 const (
@@ -18,8 +22,10 @@ type Token interface {
 }
 
 type TokenInfo struct {
-	Token   string `json:"token"`
-	Expires int    `json:"expires"`
+	User      string    `bson:"username" json:"username"`
+	Token     string    `json:"token"`
+	Expires   int       `json:"expires"`
+	CreatedAt time.Time `bson:"created_at" json:"created_at"`
 }
 
 func GetToken(auth string) (tokenType string, token string, error error) {
@@ -36,13 +42,20 @@ func GetToken(auth string) (tokenType string, token string, error error) {
 	return tt, t, errors.New("Invalid token format.")
 }
 
-func GenerateToken() *TokenInfo {
+func GenerateToken(user *account.User) *TokenInfo {
 	rb := make([]byte, 32)
 	_, err := rand.Read(rb)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	token := &TokenInfo{Token: base64.URLEncoding.EncodeToString(rb), Expires: ExpiresInSeconds}
+	token := &TokenInfo{User: user.Username, Token: base64.URLEncoding.EncodeToString(rb),
+		Expires: ExpiresInSeconds, CreatedAt: time.Now()}
+	conn, err := db.Conn()
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer conn.Close()
+	conn.Tokens(map[string]string{token.Token: token.User}, token.Expires)
 	return token
 }

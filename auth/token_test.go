@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"github.com/albertoleal/backstage/account"
 	. "gopkg.in/check.v1"
 )
 
@@ -19,6 +20,6 @@ func (s *S) TestGetTokenWithInvalidFormat(c *C) {
 }
 
 func (s *S) TestGenerateToken(c *C) {
-	token := GenerateToken()
+	token := GenerateToken(&account.User{Username: "alice"})
 	c.Assert(len(token.Token), Equals, 44)
 }
