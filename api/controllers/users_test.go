@@ -52,3 +52,18 @@ func (s *S) TestCreateUserWithInvalidPayloadFormat(c *C) {
 	body, _ := json.Marshal(key)
 	c.Assert(string(body), Equals, expected)
 }
+
+func (s *S) TestCreateUserWithMissingRequiredFields(c *C) {
+	payload := `{}`
+	b := strings.NewReader(payload)
+	req, err := http.NewRequest("POST", "/api/users", b)
+	req.Header.Set("Content-Type", "application/json")
+	c.Assert(err, IsNil)
+	webC := web.C{Env: s.env}
+	_, ok := s.controller.CreateUser(&webC, s.recorder, req)
+	expected := `{"status_code":400,"message":"Name/Email/Username/Password cannot be empty.","url":""}`
+	c.Assert(ok, Equals, false)
+	key, _ := context.GetRequestError(&webC)
+	body, _ := json.Marshal(key)
+	c.Assert(string(body), Equals, expected)
+}
