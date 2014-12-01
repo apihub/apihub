@@ -22,10 +22,11 @@ func (s *S) TestCreateUser(c *C) {
 	c.Assert(err, IsNil)
 	recorder := httptest.NewRecorder()
 	env := map[string]interface{}{}
-	body, statusCode := controller.CreateUser(&web.C{Env: env}, recorder, req)
+	response, ok := controller.CreateUser(&web.C{Env: env}, recorder, req)
 	expected := `{"name":"Alice","email":"alice@example.org","username":"alice"}`
-	c.Assert(statusCode, Equals, 201)
-	c.Assert(body, Equals, expected)
+	c.Assert(ok, Equals, true)
+	c.Assert(response.StatusCode, Equals, 201)
+	c.Assert(response.Payload, Equals, expected)
 
 	defer func() {
 		user, err := account.FindUserByUsername("alice")

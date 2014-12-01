@@ -3,6 +3,7 @@ package system
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/albertoleal/backstage/api/context"
@@ -26,12 +27,12 @@ func AuthorizationMiddleware(c *web.C, h http.Handler) http.Handler {
 
 func ErrorHandlerMiddleware(c *web.C, h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
+		h.ServeHTTP(w, r)
 		key, ok := context.GetRequestError(c)
 		if ok {
 			body, _ := json.Marshal(key)
-			http.Error(w, string(body), key.StatusCode)
-		} else {
-			h.ServeHTTP(w, r)
+			w.WriteHeader(key.StatusCode)
+			io.WriteString(w, string(body))
 		}
 	}
 
