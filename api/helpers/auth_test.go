@@ -14,7 +14,7 @@ type S struct{}
 var _ = Suite(&S{})
 
 func (s *S) TestSignIn(c *C) {
-	user := &User{Name: "Alicea", Email: "alice@example.org", Username: "alice", Password: "123456"}
+	user := &User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	user.Save()
 	defer DeleteUser(user)
 	foundUser, ok := SignIn(user.Username, "123456")
