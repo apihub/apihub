@@ -8,15 +8,15 @@ import (
 
 func (s *S) TestCreateUser(c *C) {
 	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
-	err := user.Save()
 	defer DeleteUser(&user)
+	err := user.Save()
 	c.Assert(err, IsNil)
 }
 
 func (s *S) TestCreateUserWithSameUsername(c *C) {
 	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
-	user.Save()
 	defer DeleteUser(&user)
+	user.Save()
 
 	user2 := User{Name: "Bob", Email: "bob@bar.com", Username: "alice", Password: "123456"}
 	err := user2.Save()
@@ -35,8 +35,8 @@ func (s *S) TestCreateUserWithoutRequiredFields(c *C) {
 
 func (s *S) TestCreateUserShouldMaskThePassword(c *C) {
 	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
-	user.Save()
 	defer DeleteUser(&user)
+	user.Save()
 
 	foundUser, _ := FindUserByUsername("alice")
 	c.Assert(foundUser.Password, Not(Equals), "123456")
@@ -44,8 +44,8 @@ func (s *S) TestCreateUserShouldMaskThePassword(c *C) {
 
 func (s *S) FindUserByUsername(c *C) {
 	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
-	user.Save()
 	defer DeleteUser(&user)
+	user.Save()
 
 	foundUser, err := FindUserByUsername("alice")
 	c.Assert(err, IsNil)
@@ -54,8 +54,8 @@ func (s *S) FindUserByUsername(c *C) {
 
 func (s *S) TestFindUserWithInvalidUsername(c *C) {
 	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
-	user.Save()
 	defer DeleteUser(&user)
+	user.Save()
 
 	_, err := FindUserByUsername("bob")
 	e := err.(*errors.ValidationError)

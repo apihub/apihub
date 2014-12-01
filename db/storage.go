@@ -113,3 +113,14 @@ func (storage *Storage) Tokens(keys map[string]string, expires int) {
 		fmt.Println("ERROR: ", err)
 	}
 }
+
+func (storage *Storage) GetTokenValue(token string) (string, error) {
+	conn := GetRedis()
+	defer conn.Close()
+	tokenValue, err := redis.String(conn.Do("GET", token))
+	if err != nil {
+		fmt.Println("ERROR:", err)
+		return "", err
+	}
+	return tokenValue, nil
+}

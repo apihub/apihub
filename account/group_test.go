@@ -116,11 +116,12 @@ func (s *S) TestFindGroupByNameWithInvalidName(c *C) {
 
 func (s *S) TestGetGroupUsers(c *C) {
 	alice := User{Name: "Alice", Email: "alice@bar.com", Username: "alice", Password: "123456"}
-	alice.Save()
 	defer DeleteUser(&alice)
+	alice.Save()
 	bob := User{Name: "Bob", Email: "bob@bar.com", Username: "bob", Password: "123456"}
-	bob.Save()
 	defer DeleteUser(&bob)
+	bob.Save()
+
 	CreateGroup("Group", []User{alice, bob})
 	defer DeleteGroupByName("Group")
 

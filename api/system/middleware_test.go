@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 
+	. "github.com/albertoleal/backstage/account"
 	"github.com/albertoleal/backstage/api/context"
+	"github.com/albertoleal/backstage/auth"
 	"github.com/albertoleal/backstage/errors"
 	"github.com/zenazn/goji/web"
 	. "gopkg.in/check.v1"
@@ -33,10 +35,12 @@ func (s *S) TestNotFoundHandler(c *C) {
 }
 
 func (s *S) TestAuthorizationMiddlewareWithValidToken(c *C) {
+	user := &User{Username: "alice"}
+	tokenInfo := auth.GenerateToken(user)
 	s.router.Get("/", s.handler)
 
 	req, _ := http.NewRequest("GET", "/", nil)
-	req.Header.Set("Authorization", "Bearer xyz")
+	req.Header.Set("Authorization", "Token "+tokenInfo.Token)
 	cc := web.C{Env: map[string]interface{}{}}
 	s.router.ServeHTTPC(cc, s.recorder, req)
 	_, ok := context.GetRequestError(&cc)

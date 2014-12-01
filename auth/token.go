@@ -14,6 +14,7 @@ import (
 
 const (
 	ExpiresInSeconds = 24 * 3600
+	TokenType        = "Token"
 )
 
 type Token interface {
@@ -36,10 +37,24 @@ func GetToken(auth string) (tokenType string, token string, error error) {
 	a := strings.Split(auth, " ")
 	if len(a) == 2 {
 		tt, t = a[0], a[1]
-		return tt, t, nil
+		if tt == TokenType {
+			_, err := getToken(t)
+			if err == nil {
+				return tt, t, nil
+			}
+		}
 	}
 
-	return tt, t, errors.New("Invalid token format.")
+	return "", "", errors.New("Invalid token format.")
+}
+
+func getToken(token string) (string, error) {
+	conn, err := db.Conn()
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer conn.Close()
+	return conn.GetTokenValue(token)
 }
 
 func GenerateToken(user *account.User) *TokenInfo {
