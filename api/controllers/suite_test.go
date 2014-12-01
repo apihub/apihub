@@ -10,8 +10,9 @@ import (
 func Test(t *testing.T) { TestingT(t) }
 
 type S struct {
-	recorder *httptest.ResponseRecorder
-	env      map[string]interface{}
+	recorder   *httptest.ResponseRecorder
+	env        map[string]interface{}
+	controller *UsersController
 }
 
 var _ = Suite(&S{})
