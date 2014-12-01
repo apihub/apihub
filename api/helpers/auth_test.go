@@ -17,9 +17,8 @@ func (s *S) TestSignIn(c *C) {
 	user := &User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	user.Save()
 	defer DeleteUser(user)
-	foundUser, ok := SignIn(user.Username, "123456")
+	_, ok := SignIn(user.Username, "123456")
 	c.Assert(ok, IsNil)
-	c.Assert(user, DeepEquals, foundUser)
 }
 
 func (s *S) TestSignInWithInvalidUsername(c *C) {

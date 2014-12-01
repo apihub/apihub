@@ -34,7 +34,6 @@ func (app *Application) DrawRoutes() {
 	api.Use(middleware.SubRouter)
 	api.NotFound(NotFoundHandler)
 	api.Use(AuthorizationMiddleware)
-	api.Use(ErrorHandlerMiddleware)
 	api.Get("/helloworld", app.Route(debugController, "HelloWorld"))
 }
 

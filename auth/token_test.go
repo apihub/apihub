@@ -17,3 +17,8 @@ func (s *S) TestGetTokenWithInvalidFormat(c *C) {
 	c.Assert(token, Equals, "")
 	c.Assert(err.Error(), Equals, "Invalid token format.")
 }
+
+func (s *S) TestGenerateToken(c *C) {
+	token := GenerateToken()
+	c.Assert(len(token.Token), Equals, 44)
+}

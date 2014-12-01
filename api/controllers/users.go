@@ -49,7 +49,7 @@ func (controller *UsersController) CreateUser(c *web.C, w http.ResponseWriter, r
 func (controller *UsersController) SignIn(c *web.C, w http.ResponseWriter, r *http.Request) (*HTTPResponse, error) {
 	username, password := r.FormValue("username"), r.FormValue("password")
 
-	user, err := helpers.SignIn(username, password)
+	token, err := helpers.SignIn(username, password)
 	if err != nil {
 		var erro *errors.HTTPError
 		erro = &errors.HTTPError{StatusCode: http.StatusBadRequest, Message: "Invalid Username or Password."}
@@ -57,7 +57,7 @@ func (controller *UsersController) SignIn(c *web.C, w http.ResponseWriter, r *ht
 		return nil, erro
 	}
 
-	payload, _ := json.Marshal(user)
+	payload, _ := json.Marshal(token)
 	response := &HTTPResponse{StatusCode: http.StatusOK, Payload: string(payload)}
 	return response, nil
 }

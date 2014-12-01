@@ -3,9 +3,10 @@ package helpers
 import (
 	"code.google.com/p/go.crypto/bcrypt"
 	"github.com/albertoleal/backstage/account"
+	"github.com/albertoleal/backstage/auth"
 )
 
-func SignIn(username string, password string) (*account.User, error) {
+func SignIn(username string, password string) (*auth.TokenInfo, error) {
 	var user *account.User
 	user, err := account.FindUserByUsername(username)
 	if err != nil {
@@ -16,5 +17,6 @@ func SignIn(username string, password string) (*account.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	return user, err
+	token := auth.GenerateToken()
+	return token, err
 }

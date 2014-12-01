@@ -10,6 +10,7 @@ type ServicesController struct {
 	ApiController
 }
 
-func (controller *ServicesController) Index(c *web.C, w http.ResponseWriter, r *http.Request) (string, int) {
-	return "{\"name\": \"simple test\"}", http.StatusOK
+func (controller *ServicesController) Index(c *web.C, w http.ResponseWriter, r *http.Request) (*HTTPResponse, error) {
+	response := &HTTPResponse{StatusCode: http.StatusOK, Payload: "Hello World"}
+	return response, nil
 }
