@@ -106,8 +106,7 @@ func (storage *Storage) Tokens(keys map[string]string, expires int) {
 	defer conn.Close()
 	conn.Send("MULTI")
 	for key, value := range keys {
-		conn.Send("SET", key, value)
-		conn.Send("EXPIRE", key, expires)
+		conn.Send("SETEX", key, expires, value)
 	}
 	_, err := redis.Values(conn.Do("EXEC"))
 	if err != nil {

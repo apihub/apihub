@@ -22,7 +22,7 @@ type Token interface {
 }
 
 type TokenInfo struct {
-	User      string    `bson:"username" json:"username"`
+	User      string    `bson:"username" json:"-"`
 	Token     string    `json:"token"`
 	Expires   int       `json:"expires"`
 	CreatedAt time.Time `bson:"created_at" json:"created_at"`
