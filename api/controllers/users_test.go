@@ -8,6 +8,7 @@ import (
 
 	"github.com/albertoleal/backstage/account"
 	"github.com/albertoleal/backstage/api/context"
+	"github.com/albertoleal/backstage/errors"
 	"github.com/zenazn/goji/web"
 	. "gopkg.in/check.v1"
 )
@@ -66,4 +67,30 @@ func (s *S) TestCreateUserWithMissingRequiredFields(c *C) {
 	key, _ := context.GetRequestError(&webC)
 	body, _ := json.Marshal(key)
 	c.Assert(string(body), Equals, expected)
+}
+
+func (s *S) TestDeleteUser(c *C) {
+	user := &account.User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
+	user.Save()
+	defer user.Delete()
+
+	req, err := http.NewRequest("DELETE", "/api/users", nil)
+	c.Assert(err, IsNil)
+	s.env[context.CurrentUser] = user
+	response, erro := s.controller.DeleteUser(&web.C{Env: s.env}, s.recorder, req)
+	expected := `{"name":"Alice","email":"alice@example.org","username":"alice"}`
+	c.Assert(erro, IsNil)
+	c.Assert(response.StatusCode, Equals, 200)
+	c.Assert(response.Payload, Equals, expected)
+}
+
+func (s *S) TestDeleteUserWithNotSignedUser(c *C) {
+	req, err := http.NewRequest("DELETE", "/api/users", nil)
+	c.Assert(err, IsNil)
+	s.env[context.CurrentUser] = "s"
+	_, erro := s.controller.DeleteUser(&web.C{Env: s.env}, s.recorder, req)
+	er := erro.(*errors.HTTPError)
+	c.Assert(erro, NotNil)
+	c.Assert(er.StatusCode, Equals, 400)
+	c.Assert(er.Message, Equals, "User is not signed in.")
 }

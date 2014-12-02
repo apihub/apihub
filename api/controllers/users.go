@@ -47,7 +47,12 @@ func (controller *UsersController) CreateUser(c *web.C, w http.ResponseWriter, r
 }
 
 func (controller *UsersController) DeleteUser(c *web.C, w http.ResponseWriter, r *http.Request) (*HTTPResponse, error) {
-	user, _ := context.GetCurrentUser(c)
+	user, err := context.GetCurrentUser(c)
+	if err != nil {
+		erro := &errors.HTTPError{StatusCode: http.StatusBadRequest, Message: err.Error()}
+		context.AddRequestError(c, erro)
+		return nil, erro
+	}
 	user.Delete()
 	user.Password = ""
 	payload, _ := json.Marshal(user)
