@@ -12,7 +12,7 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-func (s *S) TestCreateGroup(c *C) {
+func (s *S) TestCreateTeam(c *C) {
 	user := &account.User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	user.Save()
 	defer user.Delete()
@@ -24,20 +24,20 @@ func (s *S) TestCreateGroup(c *C) {
 	req.Header.Set("Content-Type", "application/json")
 	c.Assert(err, IsNil)
 	s.env[context.CurrentUser] = user
-	response, erro := groupsController.CreateGroup(&web.C{Env: s.env}, s.recorder, req)
+	response, erro := groupsController.CreateTeam(&web.C{Env: s.env}, s.recorder, req)
 	expected := `{"name":"Group","users":["alice"],"owner":"alice"}`
 	c.Assert(erro, IsNil)
 	c.Assert(response.StatusCode, Equals, 201)
 	c.Assert(response.Payload, Equals, expected)
 }
 
-func (s *S) TestCreateGroupWhenUserIsNotSignedIn(c *C) {
+func (s *S) TestCreateTeamWhenUserIsNotSignedIn(c *C) {
 	payload := `{"name": "Group"}`
 	b := strings.NewReader(payload)
 	req, err := http.NewRequest("POST", "/api/teams", b)
 	req.Header.Set("Content-Type", "application/json")
 	c.Assert(err, IsNil)
-	response, erro := groupsController.CreateGroup(&web.C{Env: s.env}, s.recorder, req)
+	response, erro := groupsController.CreateTeam(&web.C{Env: s.env}, s.recorder, req)
 	c.Assert(response, IsNil)
 	er := erro.(*errors.HTTPError)
 	c.Assert(er, Not(IsNil))
@@ -45,7 +45,7 @@ func (s *S) TestCreateGroupWhenUserIsNotSignedIn(c *C) {
 	c.Assert(er.Message, Equals, "User is not signed in.")
 }
 
-func (s *S) TestCreateGroupWithInvalidPayloadFormat(c *C) {
+func (s *S) TestCreateTeamWithInvalidPayloadFormat(c *C) {
 	user := &account.User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	user.Save()
 	defer user.Delete()
@@ -57,7 +57,7 @@ func (s *S) TestCreateGroupWithInvalidPayloadFormat(c *C) {
 	s.env[context.CurrentUser] = user
 	c.Assert(err, IsNil)
 	webC := web.C{Env: s.env}
-	_, err = groupsController.CreateGroup(&webC, s.recorder, req)
+	_, err = groupsController.CreateTeam(&webC, s.recorder, req)
 	expected := `{"status_code":400,"message":"The request was bad-formed.","url":""}`
 	c.Assert(err, NotNil)
 	key, _ := context.GetRequestError(&webC)

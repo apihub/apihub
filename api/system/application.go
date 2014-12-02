@@ -39,7 +39,7 @@ func (app *Application) DrawRoutes() {
 	api.Get("/helloworld", app.Route(debugController, "HelloWorld"))
 	api.Delete("/users", app.Route(usersController, "DeleteUser"))
 
-	api.Post("/teams", app.Route(groupsController, "CreateGroup"))
+	api.Post("/teams", app.Route(groupsController, "CreateTeam"))
 }
 
 func (app *Application) Route(controller interface{}, route string) interface{} {

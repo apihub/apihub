@@ -15,7 +15,7 @@ type GroupsController struct {
 	ApiController
 }
 
-func (controller *GroupsController) CreateGroup(c *web.C, w http.ResponseWriter, r *http.Request) (*HTTPResponse, error) {
+func (controller *GroupsController) CreateTeam(c *web.C, w http.ResponseWriter, r *http.Request) (*HTTPResponse, error) {
 	owner, err := context.GetCurrentUser(c)
 	if err != nil {
 		erro := &errors.HTTPError{StatusCode: http.StatusBadRequest, Message: err.Error()}
