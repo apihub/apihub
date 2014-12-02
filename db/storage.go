@@ -2,7 +2,6 @@ package db
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/tsuru/config"
@@ -54,9 +53,10 @@ func GetRedisPool() *redis.Pool {
 	netloc := "localhost:6379"
 	password := ""
 	pool := &redis.Pool{
-		MaxActive:   24,
-		MaxIdle:     12,
-		IdleTimeout: 60 * time.Second,
+		MaxActive:   2,
+		MaxIdle:     2,
+		IdleTimeout: 0,
+		Wait:        true,
 		Dial: func() (redis.Conn, error) {
 			conn, err := redis.Dial("tcp", netloc)
 			if err != nil {
