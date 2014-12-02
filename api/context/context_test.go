@@ -37,3 +37,21 @@ func (s *S) TestAddGetRequestError(c *C) {
 	c.Assert(recorder.Code, Equals, 401)
 	c.Assert(recorder.Body.String(), Equals, "{\"status_code\":401,\"message\":\"You do not have access to this resource.\",\"url\":\"\"}\n")
 }
+
+func (s *S) TestSetAndGetCurrentUser(c *C) {
+	m := web.New()
+
+	m.Get("/helloworld", func(c web.C, w http.ResponseWriter, r *http.Request) {
+		SetCurrentUser(&c, "alice")
+		user, _ := GetCurrentUser(&c)
+		body, _ := json.Marshal(user)
+		http.Error(w, string(body), http.StatusOK)
+	})
+
+	req, _ := http.NewRequest("GET", "/helloworld", nil)
+	recorder := httptest.NewRecorder()
+	env := map[string]interface{}{}
+	m.ServeHTTPC(web.C{Env: env}, recorder, req)
+
+	c.Assert(recorder.Body.String(), Equals, "{\"username\":\"alice\"}\n")
+}

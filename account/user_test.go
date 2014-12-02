@@ -8,14 +8,14 @@ import (
 
 func (s *S) TestCreateUser(c *C) {
 	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
-	defer DeleteUser(&user)
+	defer user.Delete()
 	err := user.Save()
 	c.Assert(err, IsNil)
 }
 
 func (s *S) TestCreateUserWithSameUsername(c *C) {
 	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
-	defer DeleteUser(&user)
+	defer user.Delete()
 	user.Save()
 
 	user2 := User{Name: "Bob", Email: "bob@bar.com", Username: "alice", Password: "123456"}
@@ -35,7 +35,7 @@ func (s *S) TestCreateUserWithoutRequiredFields(c *C) {
 
 func (s *S) TestCreateUserShouldMaskThePassword(c *C) {
 	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
-	defer DeleteUser(&user)
+	defer user.Delete()
 	user.Save()
 
 	foundUser, _ := FindUserByUsername("alice")
@@ -44,7 +44,7 @@ func (s *S) TestCreateUserShouldMaskThePassword(c *C) {
 
 func (s *S) FindUserByUsername(c *C) {
 	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
-	defer DeleteUser(&user)
+	defer user.Delete()
 	user.Save()
 
 	foundUser, err := FindUserByUsername("alice")
@@ -54,7 +54,7 @@ func (s *S) FindUserByUsername(c *C) {
 
 func (s *S) TestFindUserWithInvalidUsername(c *C) {
 	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
-	defer DeleteUser(&user)
+	defer user.Delete()
 	user.Save()
 
 	_, err := FindUserByUsername("bob")
