@@ -22,6 +22,7 @@ func (app *Application) DrawRoutes() {
 	servicesController := &controllers.ServicesController{}
 	debugController := &controllers.DebugController{}
 	usersController := &controllers.UsersController{}
+	groupsController := &controllers.GroupsController{}
 
 	// Public Routes
 	goji.Get("/", app.Route(servicesController, "Index"))
@@ -37,6 +38,8 @@ func (app *Application) DrawRoutes() {
 	api.Use(AuthorizationMiddleware)
 	api.Get("/helloworld", app.Route(debugController, "HelloWorld"))
 	api.Delete("/users", app.Route(usersController, "DeleteUser"))
+
+	api.Post("/teams", app.Route(groupsController, "CreateGroup"))
 }
 
 func (app *Application) Route(controller interface{}, route string) interface{} {

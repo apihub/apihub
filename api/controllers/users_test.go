@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 
 	"github.com/albertoleal/backstage/account"
@@ -12,12 +11,6 @@ import (
 	"github.com/zenazn/goji/web"
 	. "gopkg.in/check.v1"
 )
-
-func (s *S) SetUpTest(c *C) {
-	s.controller = &UsersController{}
-	s.recorder = httptest.NewRecorder()
-	s.env = map[string]interface{}{}
-}
 
 func (s *S) TestCreateUser(c *C) {
 	defer func() {

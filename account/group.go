@@ -8,22 +8,20 @@ import (
 )
 
 type Group struct {
-	Name  string
-	Users []string
+	Name  string   `json:"name"`
+	Users []string `json:"users"`
+	Owner string   `json:"owner"`
 }
 
-func CreateGroup(name string, users []User) error {
+func (group *Group) Save(owner *User) error {
 	conn, err := db.Conn()
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
-	group := Group{
-		Name:  name,
-		Users: make([]string, len(users)),
-	}
-	group.Users = getUsernames(users)
+	group.Users = []string{owner.Username}
+	group.Owner = owner.Username
 	err = conn.Groups().Insert(group)
 	if mgo.IsDup(err) {
 		message := "Someone already has that group name. Could you try another?"
@@ -127,7 +125,7 @@ func (group *Group) GetGroupUsers() ([]*User, error) {
 	return users, nil
 }
 
-func getUsernames(users []User) []string {
+func getUsernames(users []*User) []string {
 	usernames := make([]string, len(users))
 	for i, u := range users {
 		usernames[i] = u.Username
