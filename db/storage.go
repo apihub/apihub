@@ -101,17 +101,15 @@ func (storage *Storage) Groups() *storage.Collection {
 	return collection
 }
 
-func (storage *Storage) Tokens(token string, expires int, data map[string]interface{}) {
-	conn := GetRedis()
-	defer conn.Close()
-
-	if _, err := conn.Do("HMSET", redis.Args{token}.AddFlat(data)...); err != nil {
-		fmt.Print(err)
-	}
-	conn.Do("EXPIRE", token, expires)
+func (storage *Storage) Tokens(key string, expires int, data map[string]interface{}) {
+	addHCache(key, expires, data)
 }
 
 func (storage *Storage) GetTokenValue(key string) ([]interface{}, error) {
+	return getHCache(key)
+}
+
+func getHCache(key string) ([]interface{}, error) {
 	conn := GetRedis()
 	defer conn.Close()
 	keyValue, err := conn.Do("HGETALL", key)
@@ -120,4 +118,14 @@ func (storage *Storage) GetTokenValue(key string) ([]interface{}, error) {
 		return nil, err
 	}
 	return keyValue.([]interface{}), nil
+}
+
+func addHCache(key string, expires int, data map[string]interface{}) {
+	conn := GetRedis()
+	defer conn.Close()
+
+	if _, err := conn.Do("HMSET", redis.Args{key}.AddFlat(data)...); err != nil {
+		fmt.Print(err)
+	}
+	conn.Do("EXPIRE", key, expires)
 }
