@@ -16,7 +16,7 @@ import (
 type Application struct {
 }
 
-func (app *Application) Init()  {
+func (app *Application) Init() {
 	err := config.ReadConfigFile("config.yaml")
 
 	if err != nil {

@@ -34,8 +34,6 @@ func conn() (*storage.Storage, error) {
 		databaseName = DefaultDatabaseName
 	}
 
-	fmt.Println(databaseHost, databaseName)
-
 	return storage.Open(databaseHost, databaseName)
 }
 
