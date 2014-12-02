@@ -35,7 +35,7 @@ func (s *S) TestNotFoundHandler(c *C) {
 }
 
 func (s *S) TestAuthorizationMiddlewareWithValidTokenButDeletedUser(c *C) {
-	user := &User{Username: "alice", Name: "Alice", Email: "alice@example.org", Password: "123456"}
+	user := &User{Username: "bob", Name: "Bob", Email: "bob@example.org", Password: "123456"}
 
 	tokenInfo := auth.GenerateToken(user)
 	s.router.Get("/", s.handler)
@@ -50,7 +50,7 @@ func (s *S) TestAuthorizationMiddlewareWithValidTokenButDeletedUser(c *C) {
 }
 
 func (s *S) TestAuthorizationMiddlewareWithValidToken(c *C) {
-	user := &User{Username: "alice", Name: "Alice", Email: "alice@example.org", Password: "123456"}
+	user := &User{Username: "bob", Name: "Bob", Email: "bob@example.org", Password: "123456"}
 	err := user.Save()
 	defer user.Delete()
 	if err != nil {
