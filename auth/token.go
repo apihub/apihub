@@ -70,7 +70,7 @@ func GenerateToken(user *account.User) *TokenInfo {
 		fmt.Println(err)
 	}
 	defer conn.Close()
-	conn.Tokens(token.Token, token.Expires, structs.Map(token.User))
+	go conn.Tokens(token.Token, token.Expires, structs.Map(token.User))
 	return token
 }
 
