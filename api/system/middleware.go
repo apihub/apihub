@@ -60,5 +60,6 @@ func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(notFound.StatusCode)
 	body, _ := json.Marshal(notFound)
 	fmt.Fprint(w, string(body))
+
 	return
 }
