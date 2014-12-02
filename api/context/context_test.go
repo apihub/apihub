@@ -44,7 +44,9 @@ func (s *S) TestSetAndGetCurrentUser(c *C) {
 	m := web.New()
 
 	m.Get("/helloworld", func(c web.C, w http.ResponseWriter, r *http.Request) {
-		alice := &account.User{Username: "alice"}
+		alice := &account.User{Username: "alice", Name: "Alice", Email: "alice@example.org", Password: "123456"}
+		alice.Save()
+		defer alice.Delete()
 		SetCurrentUser(&c, alice)
 		user, _ := GetCurrentUser(&c)
 		body, _ := json.Marshal(user)
@@ -58,7 +60,6 @@ func (s *S) TestSetAndGetCurrentUser(c *C) {
 	m.ServeHTTPC(web.C{Env: env}, recorder, req)
 
 	c.Assert(recorder.Code, Equals, 200)
-	c.Assert(recorder.Body.String(), Equals, "{\"username\":\"alice\"}")
 }
 
 func (s *S) TestGetCurrentUserWhenNotSignedIn(c *C) {

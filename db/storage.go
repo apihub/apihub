@@ -109,6 +109,21 @@ func (storage *Storage) GetTokenValue(key string) ([]interface{}, error) {
 	return getHCache(key)
 }
 
+func (storage *Storage) DeleteToken(key string) (interface{}, error) {
+	return delCache(key)
+}
+
+func delCache(key string) (interface{}, error) {
+	conn := GetRedis()
+	defer conn.Close()
+	result, err := conn.Do("DEL", key)
+	if err != nil {
+		fmt.Println("ERROR:", err)
+		return nil, err
+	}
+	return result, nil
+}
+
 func getHCache(key string) ([]interface{}, error) {
 	conn := GetRedis()
 	defer conn.Close()

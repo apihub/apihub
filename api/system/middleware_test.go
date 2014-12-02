@@ -34,21 +34,6 @@ func (s *S) TestNotFoundHandler(c *C) {
 	c.Assert(body.Message, Equals, "The resource you are looking for was not found.")
 }
 
-func (s *S) TestAuthorizationMiddlewareWithValidTokenButDeletedUser(c *C) {
-	user := &User{Username: "bob", Name: "Bob", Email: "bob@example.org", Password: "123456"}
-
-	tokenInfo := auth.GenerateToken(user)
-	s.router.Get("/", s.handler)
-
-	req, _ := http.NewRequest("GET", "/", nil)
-	req.Header.Set("Authorization", "Token "+tokenInfo.Token)
-	cc := web.C{Env: map[string]interface{}{}}
-	s.router.ServeHTTPC(cc, s.recorder, req)
-	_, ok := context.GetRequestError(&cc)
-	c.Assert(ok, Equals, true)
-	c.Assert(user.Valid(), Equals, false)
-}
-
 func (s *S) TestAuthorizationMiddlewareWithValidToken(c *C) {
 	user := &User{Username: "bob", Name: "Bob", Email: "bob@example.org", Password: "123456"}
 	err := user.Save()

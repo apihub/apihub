@@ -33,9 +33,9 @@ func SetCurrentUser(c *web.C, user interface{}) {
 }
 
 func GetCurrentUser(c *web.C) (*account.User, error) {
-	val, ok := c.Env[CurrentUser].(*account.User)
-	if !ok {
+	user, ok := c.Env[CurrentUser].(*account.User)
+	if !ok || !user.Valid() {
 		return nil, ErrUserNotSigned
 	}
-	return val, nil
+	return user, nil
 }
