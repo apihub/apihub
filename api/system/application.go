@@ -1,17 +1,27 @@
 package system
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"reflect"
 
 	"github.com/albertoleal/backstage/api/controllers"
+	"github.com/tsuru/config"
 	"github.com/zenazn/goji"
 	"github.com/zenazn/goji/web"
 	"github.com/zenazn/goji/web/middleware"
 )
 
 type Application struct {
+}
+
+func (app *Application) Init()  {
+	err := config.ReadConfigFile("config.yaml")
+
+	if err != nil {
+		fmt.Printf("Error reading config file: %s\n", err.Error())
+	}
 }
 
 func (app *Application) DrawRoutes() {

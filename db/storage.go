@@ -10,6 +10,7 @@ import (
 )
 
 const (
+	DefaultRedisHost = "127.0.0.1:6379"
 	DefaultDatabaseHost = "127.0.0.1:27017"
 	DefaultDatabaseName = "backstage"
 )
@@ -33,6 +34,8 @@ func conn() (*storage.Storage, error) {
 		databaseName = DefaultDatabaseName
 	}
 
+	fmt.Println(databaseHost, databaseName)
+
 	return storage.Open(databaseHost, databaseName)
 }
 
@@ -50,8 +53,15 @@ func GetRedisPool() *redis.Pool {
 	if redisPool != nil {
 		return redisPool
 	}
-	netloc := "localhost:6379"
-	password := ""
+	netloc, _ := config.GetString("redis:host")
+
+	if netloc == "" {
+		netloc = DefaultRedisHost
+	}
+
+	password, _ := config.GetString("redis:password")
+	redisNumber, _ := config.GetInt("redis:number")
+
 	pool := &redis.Pool{
 		MaxActive:   2,
 		MaxIdle:     2,
@@ -68,6 +78,14 @@ func GetRedisPool() *redis.Pool {
 					return nil, err
 				}
 			}
+
+			if redisNumber > 0 {
+				if _, err := conn.Do("SELECT", redisNumber); err != nil {
+					conn.Close()
+					return nil, err
+				}
+			}
+
 			return conn, nil
 		},
 	}
