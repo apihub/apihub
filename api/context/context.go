@@ -23,9 +23,8 @@ func GetRequestError(c *web.C) (*errors.HTTPError, bool) {
 	return val, true
 }
 
-func SetCurrentUser(c *web.C, username string) {
-	user := &account.User{Username: username}
-	//TODO: call db under the hood to retrieve all info.
+func SetCurrentUser(c *web.C, user interface{}) {
+	user = user.(*account.User)
 	c.Env[CurrentUser] = user
 }
 

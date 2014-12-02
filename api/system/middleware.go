@@ -16,11 +16,12 @@ func AuthorizationMiddleware(c *web.C, h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		authorization := r.Header.Get("Authorization")
-		_, _, err := auth.GetToken(authorization)
+		user, err := auth.GetUserFromToken(authorization)
 		if err != nil {
 			context.AddRequestError(c, &errors.HTTPError{StatusCode: http.StatusUnauthorized, Message: "You do not have access to this resource."})
 			return
 		}
+		context.SetCurrentUser(c, user)
 		h.ServeHTTP(w, r)
 	}
 

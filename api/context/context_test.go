@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/albertoleal/backstage/account"
 	"github.com/albertoleal/backstage/errors"
 	"github.com/zenazn/goji/web"
 	. "gopkg.in/check.v1"
@@ -42,7 +43,8 @@ func (s *S) TestSetAndGetCurrentUser(c *C) {
 	m := web.New()
 
 	m.Get("/helloworld", func(c web.C, w http.ResponseWriter, r *http.Request) {
-		SetCurrentUser(&c, "alice")
+		alice := &account.User{Username: "alice"}
+		SetCurrentUser(&c, alice)
 		user, _ := GetCurrentUser(&c)
 		body, _ := json.Marshal(user)
 		http.Error(w, string(body), http.StatusOK)

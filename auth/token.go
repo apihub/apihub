@@ -10,6 +10,8 @@ import (
 
 	"github.com/albertoleal/backstage/account"
 	"github.com/albertoleal/backstage/db"
+	"github.com/fatih/structs"
+	"github.com/garyburd/redigo/redis"
 )
 
 const (
@@ -23,14 +25,14 @@ type Token interface {
 }
 
 type TokenInfo struct {
-	User      string    `bson:"username" json:"-"`
-	Token     string    `json:"token"`
-	Type      string    `json:"token_type"`
-	Expires   int       `json:"expires"`
-	CreatedAt time.Time `bson:"created_at" json:"created_at"`
+	User      *account.User `bson:"user" json:"-"`
+	Token     string        `json:"token"`
+	Type      string        `json:"token_type"`
+	Expires   int           `json:"expires"`
+	CreatedAt time.Time     `bson:"created_at" json:"created_at"`
 }
 
-func GetToken(auth string) (tokenType string, token string, error error) {
+func GetUserFromToken(auth string) (user *account.User, error error) {
 	var (
 		tt string
 		t  string
@@ -39,23 +41,19 @@ func GetToken(auth string) (tokenType string, token string, error error) {
 	if len(a) == 2 {
 		tt, t = a[0], a[1]
 		if tt == TokenType {
-			_, err := getToken(t)
-			if err == nil {
-				return tt, t, nil
+			u, err := getToken(t)
+			if err != nil {
+				return nil, err
 			}
+			var user account.User
+			if err := redis.ScanStruct(u, &user); err != nil {
+				fmt.Print(err)
+			}
+			return &user, nil
 		}
 	}
 
-	return "", "", errors.New("Invalid token format.")
-}
-
-func getToken(token string) (string, error) {
-	conn, err := db.Conn()
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer conn.Close()
-	return conn.GetTokenValue(token)
+	return nil, errors.New("Invalid token format.")
 }
 
 func GenerateToken(user *account.User) *TokenInfo {
@@ -65,13 +63,22 @@ func GenerateToken(user *account.User) *TokenInfo {
 		fmt.Println(err)
 	}
 
-	token := &TokenInfo{User: user.Username, Token: base64.URLEncoding.EncodeToString(rb),
+	token := &TokenInfo{User: user, Token: base64.URLEncoding.EncodeToString(rb),
 		Expires: ExpiresInSeconds, Type: "Token", CreatedAt: time.Now()}
 	conn, err := db.Conn()
 	if err != nil {
 		fmt.Println(err)
 	}
 	defer conn.Close()
-	conn.Tokens(map[string]string{token.Token: token.User}, token.Expires)
+	conn.Tokens(token.Token, token.Expires, structs.Map(token.User))
 	return token
+}
+
+func getToken(token string) ([]interface{}, error) {
+	conn, err := db.Conn()
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer conn.Close()
+	return conn.GetTokenValue(token)
 }

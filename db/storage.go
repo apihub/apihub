@@ -101,26 +101,23 @@ func (storage *Storage) Groups() *storage.Collection {
 	return collection
 }
 
-func (storage *Storage) Tokens(keys map[string]string, expires int) {
+func (storage *Storage) Tokens(token string, expires int, data map[string]interface{}) {
 	conn := GetRedis()
 	defer conn.Close()
-	conn.Send("MULTI")
-	for key, value := range keys {
-		conn.Send("SETEX", key, expires, value)
+
+	if _, err := conn.Do("HMSET", redis.Args{token}.AddFlat(data)...); err != nil {
+		fmt.Print(err)
 	}
-	_, err := redis.Values(conn.Do("EXEC"))
-	if err != nil {
-		fmt.Println("ERROR: ", err)
-	}
+	conn.Do("EXPIRE", token, expires)
 }
 
-func (storage *Storage) GetTokenValue(token string) (string, error) {
+func (storage *Storage) GetTokenValue(key string) ([]interface{}, error) {
 	conn := GetRedis()
 	defer conn.Close()
-	tokenValue, err := redis.String(conn.Do("GET", token))
+	keyValue, err := conn.Do("HGETALL", key)
 	if err != nil {
 		fmt.Println("ERROR:", err)
-		return "", err
+		return nil, err
 	}
-	return tokenValue, nil
+	return keyValue.([]interface{}), nil
 }

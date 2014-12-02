@@ -5,33 +5,30 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-func (s *S) TestGenerateAndGetToken(c *C) {
+func (s *S) TestGenerateAndGetUserFromToken(c *C) {
 	user := &account.User{Username: "alice"}
 	tokenInfo := GenerateToken(user)
-	tokenType, token, err := GetToken("Token " + tokenInfo.Token)
-	c.Assert(tokenType, Equals, "Token")
-	c.Assert(token, Equals, tokenInfo.Token)
+	u, err := GetUserFromToken("Token " + tokenInfo.Token)
 	c.Assert(err, IsNil)
+	c.Assert(u.Username, Equals, "alice")
 }
 
-func (s *S) TestGenerateAndGetTokenWithInvalidTokenType(c *C) {
+func (s *S) TestGenerateAndGetUsernameFromTokenWithInvalidTokenType(c *C) {
 	user := &account.User{Username: "alice"}
 	tokenInfo := GenerateToken(user)
-	tokenType, token, err := GetToken("InvalidType " + tokenInfo.Token)
-	c.Assert(tokenType, Equals, "")
-	c.Assert(token, Equals, "")
+	user, err := GetUserFromToken("InvalidType " + tokenInfo.Token)
 	c.Assert(err.Error(), Equals, "Invalid token format.")
+	c.Assert(user, IsNil)
 }
 
-func (s *S) TestGetTokenWithInvalidFormat(c *C) {
-	tokenType, token, err := GetToken("Invalid-Format")
-	c.Assert(tokenType, Equals, "")
-	c.Assert(token, Equals, "")
+func (s *S) TestGetUsernameFromTokenWithInvalidFormat(c *C) {
+	user, err := GetUserFromToken("Invalid-Format")
 	c.Assert(err.Error(), Equals, "Invalid token format.")
+	c.Assert(user, IsNil)
 }
 
 func (s *S) TestGenerateToken(c *C) {
 	token := GenerateToken(&account.User{Username: "alice"})
-	c.Assert(len(token.Token), Equals, 44)
 	c.Assert(token.Type, Equals, "Token")
+	c.Assert(len(token.Token), Equals, 44)
 }

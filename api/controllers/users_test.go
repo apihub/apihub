@@ -22,7 +22,7 @@ func (s *S) TestCreateUser(c *C) {
 	defer func() {
 		user, err := account.FindUserByUsername("alice")
 		c.Assert(err, IsNil)
-		err = account.DeleteUser(user)
+		err = user.Delete()
 		c.Assert(err, IsNil)
 	}()
 	payload := `{"name": "Alice", "email": "alice@example.org", "username": "alice", "password": "123456"}`
