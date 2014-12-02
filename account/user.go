@@ -51,22 +51,6 @@ func (user *User) Delete() error {
 	return err
 }
 
-func FindUserByUsername(username string) (*User, error) {
-	conn, err := db.Conn()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close()
-
-	var result User
-	err = conn.Users().Find(bson.M{"username": username}).One(&result)
-	if err == mgo.ErrNotFound {
-		return nil, &errors.ValidationError{Message: "User not found"}
-	}
-
-	return &result, nil
-}
-
 func (user *User) HashPassword() {
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -74,4 +58,28 @@ func (user *User) HashPassword() {
 	}
 
 	user.Password = string(hash[:])
+}
+
+func (user *User) Valid() bool {
+	_, err := FindUserByUsername(user.Username)
+	if err == nil {
+		return true
+	}
+	return false
+}
+
+func FindUserByUsername(username string) (*User, error) {
+	conn, err := db.Conn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	var user User
+	err = conn.Users().Find(bson.M{"username": username}).One(&user)
+	if err == mgo.ErrNotFound {
+		return nil, &errors.ValidationError{Message: "User not found"}
+	}
+
+	return &user, nil
 }

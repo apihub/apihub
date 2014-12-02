@@ -48,9 +48,10 @@ func (controller *UsersController) CreateUser(c *web.C, w http.ResponseWriter, r
 
 func (controller *UsersController) DeleteUser(c *web.C, w http.ResponseWriter, r *http.Request) (*HTTPResponse, error) {
 	user, _ := context.GetCurrentUser(c)
+	user.Delete()
 	user.Password = ""
 	payload, _ := json.Marshal(user)
-	response := &HTTPResponse{StatusCode: http.StatusCreated, Payload: string(payload)}
+	response := &HTTPResponse{StatusCode: http.StatusOK, Payload: string(payload)}
 	return response, nil
 }
 

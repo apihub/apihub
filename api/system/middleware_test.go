@@ -35,7 +35,13 @@ func (s *S) TestNotFoundHandler(c *C) {
 }
 
 func (s *S) TestAuthorizationMiddlewareWithValidToken(c *C) {
-	user := &User{Username: "alice"}
+	user := &User{Username: "alic", Name: "Alice", Email: "alice@example.org", Password: "123456"}
+	err := user.Save()
+	defer user.Delete()
+	if err != nil {
+		c.Error(err)
+	}
+
 	tokenInfo := auth.GenerateToken(user)
 	s.router.Get("/", s.handler)
 
@@ -47,9 +53,22 @@ func (s *S) TestAuthorizationMiddlewareWithValidToken(c *C) {
 	c.Assert(ok, Equals, false)
 }
 
-func (s *S) TestAuthorizationMiddlewareWithInvalidToken(c *C) {
+func (s *S) TestAuthorizationMiddlewareWithValidTokenButDeletedUser(c *C) {
+	user := &User{Username: "alic", Name: "Alice", Email: "alice@example.org", Password: "123456"}
+
+	tokenInfo := auth.GenerateToken(user)
 	s.router.Get("/", s.handler)
 
+	req, _ := http.NewRequest("GET", "/", nil)
+	req.Header.Set("Authorization", "Token "+tokenInfo.Token)
+	cc := web.C{Env: map[string]interface{}{}}
+	s.router.ServeHTTPC(cc, s.recorder, req)
+	_, ok := context.GetRequestError(&cc)
+	c.Assert(ok, Equals, true)
+}
+
+func (s *S) TestAuthorizationMiddlewareWithInvalidToken(c *C) {
+	s.router.Get("/", s.handler)
 	req, _ := http.NewRequest("GET", "/", nil)
 	req.Header.Set("Authorization", "Invalid-Token")
 	cc := web.C{Env: map[string]interface{}{}}
@@ -61,7 +80,6 @@ func (s *S) TestAuthorizationMiddlewareWithInvalidToken(c *C) {
 
 func (s *S) TestAuthorizationMiddlewareWithMissingToken(c *C) {
 	s.router.Get("/", s.handler)
-
 	req, _ := http.NewRequest("GET", "/", nil)
 	cc := web.C{Env: map[string]interface{}{}}
 	s.router.ServeHTTPC(cc, s.recorder, req)

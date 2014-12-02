@@ -35,6 +35,7 @@ func (app *Application) DrawRoutes() {
 	api.NotFound(NotFoundHandler)
 	api.Use(AuthorizationMiddleware)
 	api.Get("/helloworld", app.Route(debugController, "HelloWorld"))
+	api.Delete("/users", app.Route(usersController, "DeleteUser"))
 }
 
 func (app *Application) Route(controller interface{}, route string) interface{} {
