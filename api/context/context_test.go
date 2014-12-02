@@ -2,6 +2,7 @@ package context
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -47,7 +48,8 @@ func (s *S) TestSetAndGetCurrentUser(c *C) {
 		SetCurrentUser(&c, alice)
 		user, _ := GetCurrentUser(&c)
 		body, _ := json.Marshal(user)
-		http.Error(w, string(body), http.StatusOK)
+		fmt.Fprint(w, string(body))
+		w.WriteHeader(http.StatusOK)
 	})
 
 	req, _ := http.NewRequest("GET", "/helloworld", nil)
@@ -55,5 +57,20 @@ func (s *S) TestSetAndGetCurrentUser(c *C) {
 	env := map[string]interface{}{}
 	m.ServeHTTPC(web.C{Env: env}, recorder, req)
 
-	c.Assert(recorder.Body.String(), Equals, "{\"username\":\"alice\"}\n")
+	c.Assert(recorder.Code, Equals, 200)
+	c.Assert(recorder.Body.String(), Equals, "{\"username\":\"alice\"}")
+}
+
+func (s *S) TestGetCurrentUserWhenNotSignedIn(c *C) {
+	m := web.New()
+
+	m.Get("/helloworld", func(co web.C, w http.ResponseWriter, r *http.Request) {
+		_, err := GetCurrentUser(&co)
+		c.Assert(err.Error(), Equals, "User is not signed in.")
+	})
+
+	req, _ := http.NewRequest("GET", "/helloworld", nil)
+	recorder := httptest.NewRecorder()
+	env := map[string]interface{}{}
+	m.ServeHTTPC(web.C{Env: env}, recorder, req)
 }

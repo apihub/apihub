@@ -1,8 +1,10 @@
 package context
 
 import (
+	"errors"
+
 	"github.com/albertoleal/backstage/account"
-	"github.com/albertoleal/backstage/errors"
+	httpErr "github.com/albertoleal/backstage/errors"
 	"github.com/zenazn/goji/web"
 )
 
@@ -11,12 +13,14 @@ const (
 	CurrentUser   string = "CurrentUser"
 )
 
-func AddRequestError(c *web.C, error *errors.HTTPError) {
+var ErrUserNotSigned = errors.New("User is not signed in.")
+
+func AddRequestError(c *web.C, error *httpErr.HTTPError) {
 	c.Env[ErrRequestKey] = error
 }
 
-func GetRequestError(c *web.C) (*errors.HTTPError, bool) {
-	val, ok := c.Env[ErrRequestKey].(*errors.HTTPError)
+func GetRequestError(c *web.C) (*httpErr.HTTPError, bool) {
+	val, ok := c.Env[ErrRequestKey].(*httpErr.HTTPError)
 	if !ok {
 		return nil, false
 	}
@@ -28,10 +32,10 @@ func SetCurrentUser(c *web.C, user interface{}) {
 	c.Env[CurrentUser] = user
 }
 
-func GetCurrentUser(c *web.C) (*account.User, bool) {
+func GetCurrentUser(c *web.C) (*account.User, error) {
 	val, ok := c.Env[CurrentUser].(*account.User)
 	if !ok {
-		return nil, false
+		return nil, ErrUserNotSigned
 	}
-	return val, true
+	return val, nil
 }

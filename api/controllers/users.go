@@ -8,7 +8,6 @@ import (
 	. "github.com/albertoleal/backstage/account"
 	"github.com/albertoleal/backstage/api/context"
 	"github.com/albertoleal/backstage/api/helpers"
-	//"github.com/albertoleal/backstage/auth"
 	"github.com/albertoleal/backstage/errors"
 	"github.com/zenazn/goji/web"
 )
@@ -41,6 +40,14 @@ func (controller *UsersController) CreateUser(c *web.C, w http.ResponseWriter, r
 		context.AddRequestError(c, erro)
 		return nil, erro
 	}
+	user.Password = ""
+	payload, _ := json.Marshal(user)
+	response := &HTTPResponse{StatusCode: http.StatusCreated, Payload: string(payload)}
+	return response, nil
+}
+
+func (controller *UsersController) DeleteUser(c *web.C, w http.ResponseWriter, r *http.Request) (*HTTPResponse, error) {
+	user, _ := context.GetCurrentUser(c)
 	user.Password = ""
 	payload, _ := json.Marshal(user)
 	response := &HTTPResponse{StatusCode: http.StatusCreated, Payload: string(payload)}
