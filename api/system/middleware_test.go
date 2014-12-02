@@ -18,20 +18,7 @@ func (s *S) SetUpTest(c *C) {
 	s.recorder = httptest.NewRecorder()
 	s.router = web.New()
 	s.router.Use(AuthorizationMiddleware)
-}
-
-func (s *S) TestNotFoundHandler(c *C) {
-	w := httptest.NewRecorder()
-	req, err := http.NewRequest("GET", "/invalid-endpoint", nil)
-	if err != nil {
-		c.Error(err)
-	}
-
-	NotFoundHandler(w, req)
-	c.Assert(w.Code, Equals, http.StatusNotFound)
-	body := &errors.HTTPError{}
-	json.Unmarshal(w.Body.Bytes(), body)
-	c.Assert(body.Message, Equals, "The resource you are looking for was not found.")
+	s.router.Use(RequestIdMiddleware)
 }
 
 func (s *S) TestAuthorizationMiddlewareWithValidToken(c *C) {
@@ -72,4 +59,29 @@ func (s *S) TestAuthorizationMiddlewareWithMissingToken(c *C) {
 	erro, _ := context.GetRequestError(&cc)
 	c.Assert(erro.StatusCode, Equals, http.StatusUnauthorized)
 	c.Assert(erro.Message, Equals, "You do not have access to this resource.")
+}
+
+func (s *S) TestRequestIdMiddleware(c *C) {
+	s.router.Abandon(AuthorizationMiddleware)
+	s.router.Get("/", s.handler)
+
+	req, _ := http.NewRequest("GET", "/", nil)
+	cc := web.C{Env: map[string]interface{}{}}
+	s.router.ServeHTTPC(cc, s.recorder, req)
+	c.Assert(s.recorder.Code, Equals, 200)
+	c.Assert(s.recorder.HeaderMap["Request-Id"], NotNil)
+}
+
+func (s *S) TestNotFoundHandler(c *C) {
+	w := httptest.NewRecorder()
+	req, err := http.NewRequest("GET", "/invalid-endpoint", nil)
+	if err != nil {
+		c.Error(err)
+	}
+
+	NotFoundHandler(w, req)
+	c.Assert(w.Code, Equals, http.StatusNotFound)
+	body := &errors.HTTPError{}
+	json.Unmarshal(w.Body.Bytes(), body)
+	c.Assert(body.Message, Equals, "The resource you are looking for was not found.")
 }

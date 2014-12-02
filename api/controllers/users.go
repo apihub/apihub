@@ -53,6 +53,7 @@ func (controller *UsersController) DeleteUser(c *web.C, w http.ResponseWriter, r
 		context.AddRequestError(c, erro)
 		return nil, erro
 	}
+
 	user.Delete()
 	user.Password = ""
 	payload, _ := json.Marshal(user)

@@ -10,6 +10,7 @@ import (
 	"github.com/albertoleal/backstage/auth"
 	"github.com/albertoleal/backstage/errors"
 	"github.com/zenazn/goji/web"
+	. "github.com/zenazn/goji/web/middleware"
 )
 
 func AuthorizationMiddleware(c *web.C, h http.Handler) http.Handler {
@@ -38,6 +39,16 @@ func ErrorHandlerMiddleware(c *web.C, h http.Handler) http.Handler {
 			w.WriteHeader(key.StatusCode)
 			io.WriteString(w, string(body))
 		}
+	}
+
+	return http.HandlerFunc(fn)
+}
+
+func RequestIdMiddleware(c *web.C, h http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		reqId := GetReqID(*c)
+		w.Header().Set("Request-Id", reqId)
+		h.ServeHTTP(w, r)
 	}
 
 	return http.HandlerFunc(fn)

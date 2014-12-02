@@ -15,6 +15,7 @@ type Application struct {
 }
 
 func (app *Application) DrawRoutes() {
+	goji.Use(RequestIdMiddleware)
 	goji.NotFound(NotFoundHandler)
 
 	// Controllers
