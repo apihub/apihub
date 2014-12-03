@@ -8,9 +8,10 @@ import (
 )
 
 type Group struct {
-	Name  string   `json:"name"`
-	Users []string `json:"users"`
-	Owner string   `json:"owner"`
+	Id    bson.ObjectId `bson:"_id,omitempty" json:"id""`
+	Name  string        `json:"name"`
+	Users []string      `json:"users"`
+	Owner string        `json:"owner"`
 }
 
 func (group *Group) Save(owner *User) error {
@@ -31,7 +32,7 @@ func (group *Group) Save(owner *User) error {
 	return nil
 }
 
-func (group *Group) AddUsers(users []*User) error {
+func (group *Group) AddUsers(usernames []string) error {
 	conn, err := db.Conn()
 	if err != nil {
 		return err
@@ -39,7 +40,9 @@ func (group *Group) AddUsers(users []*User) error {
 	defer conn.Close()
 
 	var newUser bool
-	for _, user := range users {
+	var user *User
+	for _, username := range usernames {
+		user = &User{Username: username}
 		if _, contains := group.containsUser(user); contains == false {
 			group.Users = append(group.Users, user.Username)
 			newUser = true

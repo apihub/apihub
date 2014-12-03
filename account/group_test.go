@@ -39,9 +39,7 @@ func (s *S) TestAddUsers(c *C) {
 	defer DeleteGroupByName("Group")
 	g, _ := FindGroupByName("Group")
 
-	alice := &User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
-	bob := &User{Name: "Bob", Email: "bob@bar.com", Username: "bob", Password: "123456"}
-	err = g.AddUsers([]*User{alice, bob})
+	err = g.AddUsers([]string{"alice", "bob"})
 	c.Assert(err, IsNil)
 
 	g, _ = FindGroupByName("Group")
@@ -54,9 +52,7 @@ func (s *S) TestAddUsersWithSameUsername(c *C) {
 	g, _ := FindGroupByName("Group")
 	c.Assert(len(g.Users), Equals, 1)
 
-	alice := &User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
-	bob := &User{Name: "Bob", Email: "bob@bar.com", Username: "alice", Password: "123456"}
-	err = g.AddUsers([]*User{alice, bob})
+	err = g.AddUsers([]string{"alice", "bob"})
 	c.Assert(err, IsNil)
 
 	g, _ = FindGroupByName("Group")
@@ -67,14 +63,10 @@ func (s *S) TestRemoveUsers(c *C) {
 	err := group.Save(owner)
 	defer DeleteGroupByName("Group")
 	g, _ := FindGroupByName("Group")
-
-	alice := &User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
+	err = g.AddUsers([]string{"alice", "bob"})
 	bob := &User{Name: "Bob", Email: "bob@bar.com", Username: "bob", Password: "123456"}
-	g.AddUsers([]*User{alice, bob})
-
 	err = g.RemoveUsers([]*User{bob})
 	c.Assert(err, IsNil)
-
 	g, _ = FindGroupByName("Group")
 	c.Assert(len(g.Users), Equals, 1)
 	c.Assert(g.Users[0], Equals, "alice")
@@ -84,7 +76,6 @@ func (s *S) TestRemoveUsersWithNonExistingUser(c *C) {
 	err := group.Save(owner)
 	defer DeleteGroupByName("Group")
 	g, _ := FindGroupByName("Group")
-
 	bob := &User{Name: "Bob", Email: "bob@bar.com", Username: "bob", Password: "123456"}
 	err = g.RemoveUsers([]*User{bob})
 	c.Assert(err, IsNil)
@@ -93,10 +84,9 @@ func (s *S) TestRemoveUsersWithNonExistingUser(c *C) {
 func (s *S) TestRemoveUsersWhenTheUserIsOwner(c *C) {
 	err := group.Save(owner)
 	defer DeleteGroupByName("Group")
-	mary := &User{Name: "Mary", Email: "foo@bar.com", Username: "mary", Password: "123456"}
-	bob := &User{Name: "Bob", Email: "bob@bar.com", Username: "bob", Password: "123456"}
-	group.AddUsers([]*User{mary, bob})
+	group.AddUsers([]string{"alice", "bob"})
 
+	bob := &User{Name: "Bob", Email: "bob@bar.com", Username: "bob", Password: "123456"}
 	err = group.RemoveUsers([]*User{owner, bob})
 	c.Assert(err, Not(IsNil))
 	e := err.(*errors.ValidationError)
@@ -150,7 +140,7 @@ func (s *S) TestGetGroupUsers(c *C) {
 	bob.Save()
 
 	group.Save(alice)
-	group.AddUsers([]*User{bob})
+	group.AddUsers([]string{"bob"})
 	defer DeleteGroupByName("Group")
 
 	g, _ := FindGroupByName("Group")
