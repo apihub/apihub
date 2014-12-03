@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"fmt"
 	"net/http"
 
 	. "github.com/albertoleal/backstage/account"
@@ -17,20 +17,15 @@ type UsersController struct {
 }
 
 func (controller *UsersController) CreateUser(c *web.C, w http.ResponseWriter, r *http.Request) (*HTTPResponse, error) {
-	var erro *errors.HTTPError
-
-	user := &User{}
-	defer r.Body.Close()
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := controller.getPayload(c, r)
 	if err != nil {
-		erro = &errors.HTTPError{StatusCode: http.StatusBadRequest, Message: "It was not possible to handle your request. Please, try again!"}
-		context.AddRequestError(c, erro)
-		return nil, erro
+		return nil, err
 	}
-	if err = json.Unmarshal(body, user); err != nil {
-		erro = &errors.HTTPError{StatusCode: http.StatusBadRequest, Message: "The request was bad-formed."}
-		context.AddRequestError(c, erro)
-		return nil, erro
+	var erro *errors.HTTPError
+	user := &User{}
+	if err := json.Unmarshal(body, user); err != nil {
+		fmt.Print("It was not possible to create a new user.")
+		return nil, err
 	}
 
 	err = user.Save()
