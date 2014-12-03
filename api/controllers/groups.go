@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"fmt"
 	"net/http"
 
 	. "github.com/albertoleal/backstage/account"
@@ -16,32 +16,25 @@ type GroupsController struct {
 }
 
 func (controller *GroupsController) CreateTeam(c *web.C, w http.ResponseWriter, r *http.Request) (*HTTPResponse, error) {
-	owner, err := context.GetCurrentUser(c)
+	owner, err := controller.getCurrentUser(c)
 	if err != nil {
-		erro := &errors.HTTPError{StatusCode: http.StatusBadRequest, Message: err.Error()}
-		context.AddRequestError(c, erro)
-		return nil, erro
+		return nil, err
 	}
 
-	var erro *errors.HTTPError
-	group := &Group{}
-	defer r.Body.Close()
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := controller.getPayload(c, r)
 	if err != nil {
-		erro = &errors.HTTPError{StatusCode: http.StatusBadRequest, Message: "It was not possible to handle your request. Please, try again!"}
-		context.AddRequestError(c, erro)
-		return nil, erro
+		return nil, err
 	}
-	if err = json.Unmarshal(body, group); err != nil {
-		erro = &errors.HTTPError{StatusCode: http.StatusBadRequest, Message: "The request was bad-formed."}
-		context.AddRequestError(c, erro)
-		return nil, erro
+	group := &Group{}
+	if err := json.Unmarshal(body, group); err != nil {
+		fmt.Print("It was not possible to create a new team.")
+		return nil, err
 	}
 
 	err = group.Save(owner)
 	if err != nil {
 		e := err.(*errors.ValidationError)
-		erro = &errors.HTTPError{StatusCode: http.StatusBadRequest, Message: e.Message}
+		erro := &errors.HTTPError{StatusCode: http.StatusBadRequest, Message: e.Message}
 		context.AddRequestError(c, erro)
 		return nil, erro
 	}
