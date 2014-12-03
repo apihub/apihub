@@ -1,17 +1,9 @@
 package helpers
 
 import (
-	"testing"
-
 	. "github.com/albertoleal/backstage/account"
 	. "gopkg.in/check.v1"
 )
-
-func Test(t *testing.T) { TestingT(t) }
-
-type S struct{}
-
-var _ = Suite(&S{})
 
 func (s *S) TestSignIn(c *C) {
 	user := &User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
