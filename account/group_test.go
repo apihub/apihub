@@ -52,7 +52,7 @@ func (s *S) TestAddUsersWithSameUsername(c *C) {
 	g, _ := FindGroupByName("Group")
 	c.Assert(len(g.Users), Equals, 1)
 
-	err = g.AddUsers([]string{"alice", "bob"})
+	err = g.AddUsers([]string{"alice", "alice"})
 	c.Assert(err, IsNil)
 
 	g, _ = FindGroupByName("Group")
@@ -84,7 +84,7 @@ func (s *S) TestRemoveUsersWithNonExistingUser(c *C) {
 func (s *S) TestRemoveUsersWhenTheUserIsOwner(c *C) {
 	err := group.Save(owner)
 	defer DeleteGroupByName("Group")
-	group.AddUsers([]string{"alice", "bob"})
+	group.AddUsers([]string{"mary", "bob"})
 
 	bob := &User{Name: "Bob", Email: "bob@bar.com", Username: "bob", Password: "123456"}
 	err = group.RemoveUsers([]*User{owner, bob})
@@ -113,8 +113,8 @@ func (s *S) TestDeleteGroupByNameWithInvalidName(c *C) {
 }
 
 func (s *S) TestFindGroupByName(c *C) {
-	alice := &User{Name: "Alice", Email: "alice@bar.com", Username: "alice", Password: "123456"}
-	err := group.Save(alice)
+	owner := &User{Name: "Alice", Email: "alice@bar.com", Username: "alice", Password: "123456"}
+	err := group.Save(owner)
 
 	defer DeleteGroupByName("Group")
 	c.Assert(err, IsNil)
@@ -125,6 +125,24 @@ func (s *S) TestFindGroupByName(c *C) {
 
 func (s *S) TestFindGroupByNameWithInvalidName(c *C) {
 	_, err := FindGroupByName("Non Existing Group")
+	c.Assert(err, NotNil)
+	e := err.(*errors.ValidationError)
+	message := "Group not found."
+	c.Assert(e.Message, Equals, message)
+}
+
+func (s *S) TestFindGroupById(c *C) {
+	owner := &User{Name: "Alice", Email: "alice@bar.com", Username: "alice", Password: "123456"}
+	err := group.Save(owner)
+	defer DeleteGroupByName("Group")
+	c.Assert(err, IsNil)
+	group, _ := FindGroupByName("Group")
+	g, _ := FindGroupById(group.Id.Hex())
+	c.Assert(g.Name, Equals, "Group")
+}
+
+func (s *S) TestFindGroupByIdWithInvalidId(c *C) {
+	_, err := FindGroupById("123")
 	c.Assert(err, NotNil)
 	e := err.(*errors.ValidationError)
 	message := "Group not found."

@@ -123,6 +123,27 @@ func FindGroupByName(name string) (*Group, error) {
 	return &group, nil
 }
 
+func FindGroupById(id string) (*Group, error) {
+	conn, err := db.Conn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	var errNotFound = &errors.ValidationError{Message: "Group not found."}
+	if !bson.IsObjectIdHex(id) {
+		return nil, errNotFound
+	}
+
+	var group Group
+	err = conn.Groups().FindId(bson.ObjectIdHex(id)).One(&group)
+	if err != nil {
+		return nil, errNotFound
+	}
+
+	return &group, nil
+}
+
 func (group *Group) GetGroupUsers() ([]*User, error) {
 	conn, err := db.Conn()
 	if err != nil {
