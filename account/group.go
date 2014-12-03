@@ -31,7 +31,7 @@ func (group *Group) Save(owner *User) error {
 	return nil
 }
 
-func (group *Group) AddUsers(users []User) error {
+func (group *Group) AddUsers(users []*User) error {
 	conn, err := db.Conn()
 	if err != nil {
 		return err
@@ -40,7 +40,7 @@ func (group *Group) AddUsers(users []User) error {
 
 	var newUser bool
 	for _, user := range users {
-		if _, contains := group.containsUser(&user); contains == false {
+		if _, contains := group.containsUser(user); contains == false {
 			group.Users = append(group.Users, user.Username)
 			newUser = true
 		}
@@ -51,7 +51,7 @@ func (group *Group) AddUsers(users []User) error {
 	return nil
 }
 
-func (group *Group) RemoveUsers(users []User) error {
+func (group *Group) RemoveUsers(users []*User) error {
 	conn, err := db.Conn()
 	if err != nil {
 		return err
@@ -60,7 +60,12 @@ func (group *Group) RemoveUsers(users []User) error {
 
 	var removedUsers bool
 	for _, user := range users {
-		if i, ok := group.containsUser(&user); ok {
+		if group.Owner == user.Username {
+			message := "It is not possible to remove the owner from the team."
+			return &errors.ValidationError{Message: message}
+		}
+
+		if i, ok := group.containsUser(user); ok {
 			hi := len(group.Users) - 1
 			if hi > i {
 				group.Users[i] = group.Users[hi]
