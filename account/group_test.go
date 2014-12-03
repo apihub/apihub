@@ -93,13 +93,17 @@ func (s *S) TestRemoveUsersWithNonExistingUser(c *C) {
 func (s *S) TestRemoveUsersWhenTheUserIsOwner(c *C) {
 	err := group.Save(owner)
 	defer DeleteGroupByName("Group")
-	err = group.RemoveUsers([]*User{owner})
+	mary := &User{Name: "Mary", Email: "foo@bar.com", Username: "mary", Password: "123456"}
+	bob := &User{Name: "Bob", Email: "bob@bar.com", Username: "bob", Password: "123456"}
+	group.AddUsers([]*User{mary, bob})
+
+	err = group.RemoveUsers([]*User{owner, bob})
 	c.Assert(err, Not(IsNil))
 	e := err.(*errors.ValidationError)
 	c.Assert(e.Message, Equals, "It is not possible to remove the owner from the team.")
 
 	g, _ := FindGroupByName("Group")
-	c.Assert(len(g.Users), Equals, 1)
+	c.Assert(len(g.Users), Equals, 2)
 	c.Assert(g.Users[0], Equals, owner.Username)
 }
 

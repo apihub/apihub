@@ -58,11 +58,15 @@ func (group *Group) RemoveUsers(users []*User) error {
 	}
 	defer conn.Close()
 
-	var removedUsers bool
+	var (
+		removedUsers       bool
+		errOwnerNotRemoved *errors.ValidationError
+	)
 	for _, user := range users {
 		if group.Owner == user.Username {
 			message := "It is not possible to remove the owner from the team."
-			return &errors.ValidationError{Message: message}
+			errOwnerNotRemoved = &errors.ValidationError{Message: message}
+			continue
 		}
 
 		if i, ok := group.containsUser(user); ok {
@@ -76,6 +80,9 @@ func (group *Group) RemoveUsers(users []*User) error {
 	}
 	if removedUsers {
 		conn.Groups().Update(bson.M{"name": group.Name}, group)
+	}
+	if errOwnerNotRemoved != nil {
+		return errOwnerNotRemoved
 	}
 	return nil
 }
