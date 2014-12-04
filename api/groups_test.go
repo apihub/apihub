@@ -24,10 +24,9 @@ func (s *S) TestCreateTeam(c *C) {
 	c.Assert(err, IsNil)
 	s.env[CurrentUser] = user
 	response, erro := groupsController.CreateTeam(&web.C{Env: s.env}, s.recorder, req)
-	expected := `{"name":"Group","users":["alice"],"owner":"alice"}`
 	c.Assert(erro, IsNil)
 	c.Assert(response.StatusCode, Equals, 201)
-	c.Assert(response.Payload, Equals, expected)
+	c.Assert(response.Payload, Matches, "^{\"id\":\".*?\",\"name\":\"Group\",\"users\":\\[\"alice\"\\],\"owner\":\"alice\"}$")
 }
 
 func (s *S) TestCreateTeamWhenUserIsNotSignedIn(c *C) {
