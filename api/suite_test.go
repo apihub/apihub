@@ -1,13 +1,13 @@
 package api
 
 import (
-	"net/http/httptest"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/albertoleal/backstage/db"
-	"github.com/zenazn/goji/web"
 	"github.com/tsuru/config"
+	"github.com/zenazn/goji/web"
 	. "gopkg.in/check.v1"
 )
 
@@ -19,8 +19,8 @@ type S struct {
 	recorder   *httptest.ResponseRecorder
 	env        map[string]interface{}
 	controller *UsersController //Should remove this.
-	router   *web.Mux
-	handler  http.HandlerFunc
+	router     *web.Mux
+	handler    http.HandlerFunc
 }
 
 func (s *S) SetUpSuite(c *C) {
@@ -43,6 +43,10 @@ func (s *S) TearDownSuite(c *C) {
 	defer storage.Close()
 	config.Unset("database:url")
 	config.Unset("database:name")
+}
+
+func (s *S) signIn() {
+
 }
 
 var _ = Suite(&S{})

@@ -7,7 +7,6 @@ import (
 	"net/http/httptest"
 
 	"github.com/albertoleal/backstage/account"
-	"github.com/albertoleal/backstage/errors"
 	"github.com/zenazn/goji/web"
 	. "gopkg.in/check.v1"
 )
@@ -16,8 +15,8 @@ func (s *S) TestAddGetRequestError(c *C) {
 	m := web.New()
 
 	m.Get("/helloworld", func(c web.C, w http.ResponseWriter, r *http.Request) {
-		AddRequestError(&c, &errors.HTTPError{StatusCode: http.StatusUnauthorized,
-			Message: "You do not have access to this resource."})
+		AddRequestError(&c, &HTTPResponse{StatusCode: http.StatusUnauthorized,
+			Payload: "You do not have access to this resource."})
 
 		key, _ := GetRequestError(&c)
 		body, _ := json.Marshal(key)
@@ -30,7 +29,7 @@ func (s *S) TestAddGetRequestError(c *C) {
 	m.ServeHTTPC(web.C{Env: env}, recorder, req)
 
 	c.Assert(recorder.Code, Equals, 401)
-	c.Assert(recorder.Body.String(), Equals, "{\"status_code\":401,\"message\":\"You do not have access to this resource.\",\"url\":\"\"}\n")
+	c.Assert(recorder.Body.String(), Equals, "{\"status_code\":401,\"payload\":\"You do not have access to this resource.\"}\n")
 }
 
 func (s *S) TestSetAndGetCurrentUser(c *C) {

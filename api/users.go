@@ -19,7 +19,6 @@ func (controller *UsersController) CreateUser(c *web.C, w http.ResponseWriter, r
 	if err != nil {
 		return nil, err
 	}
-	var erro *errors.HTTPError
 	user := &User{}
 	if err := json.Unmarshal(body, user); err != nil {
 		fmt.Print("It was not possible to create a new user.")
@@ -29,9 +28,9 @@ func (controller *UsersController) CreateUser(c *web.C, w http.ResponseWriter, r
 	err = user.Save()
 	if err != nil {
 		e := err.(*errors.ValidationError)
-		erro = &errors.HTTPError{StatusCode: http.StatusBadRequest, Message: e.Message}
+		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: e.Message}
 		AddRequestError(c, erro)
-		return nil, erro
+		return nil, err
 	}
 	user.Password = ""
 	payload, _ := json.Marshal(user)
@@ -39,33 +38,32 @@ func (controller *UsersController) CreateUser(c *web.C, w http.ResponseWriter, r
 	return response, nil
 }
 
-func (controller *UsersController) DeleteUser(c *web.C, w http.ResponseWriter, r *http.Request) (*HTTPResponse, error) {
+func (controller *UsersController) DeleteUser(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	user, err := GetCurrentUser(c)
 	if err != nil {
-		erro := &errors.HTTPError{StatusCode: http.StatusBadRequest, Message: err.Error()}
+		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
 		AddRequestError(c, erro)
-		return nil, erro
+		return erro
 	}
 
 	user.Delete()
 	user.Password = ""
 	payload, _ := json.Marshal(user)
 	response := &HTTPResponse{StatusCode: http.StatusOK, Payload: string(payload)}
-	return response, nil
+	return response
 }
 
-func (controller *UsersController) SignIn(c *web.C, w http.ResponseWriter, r *http.Request) (*HTTPResponse, error) {
+func (controller *UsersController) SignIn(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	username, password := r.FormValue("username"), r.FormValue("password")
 
 	token, err := SignIn(username, password)
 	if err != nil {
-		var erro *errors.HTTPError
-		erro = &errors.HTTPError{StatusCode: http.StatusBadRequest, Message: "Invalid Username or Password."}
+		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "Invalid Username or Password."}
 		AddRequestError(c, erro)
-		return nil, erro
+		return erro
 	}
 
 	payload, _ := json.Marshal(token)
 	response := &HTTPResponse{StatusCode: http.StatusOK, Payload: string(payload)}
-	return response, nil
+	return response
 }

@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/albertoleal/backstage/account"
-	"github.com/albertoleal/backstage/errors"
 	"github.com/zenazn/goji/web"
 	. "gopkg.in/check.v1"
 )
@@ -39,7 +38,7 @@ func (s *S) TestCreateUserWithInvalidPayloadFormat(c *C) {
 	c.Assert(err, IsNil)
 	webC := web.C{Env: s.env}
 	_, err = s.controller.CreateUser(&webC, s.recorder, req)
-	expected := `{"status_code":400,"message":"The request was bad-formed.","url":""}`
+	expected := `{"status_code":400,"payload":"The request was bad-formed."}`
 	c.Assert(err, NotNil)
 	key, _ := GetRequestError(&webC)
 	body, _ := json.Marshal(key)
@@ -54,7 +53,7 @@ func (s *S) TestCreateUserWithMissingRequiredFields(c *C) {
 	c.Assert(err, IsNil)
 	webC := web.C{Env: s.env}
 	_, err = s.controller.CreateUser(&webC, s.recorder, req)
-	expected := `{"status_code":400,"message":"Name/Email/Username/Password cannot be empty.","url":""}`
+	expected := `{"status_code":400,"payload":"Name/Email/Username/Password cannot be empty."}`
 	c.Assert(err, NotNil)
 	key, _ := GetRequestError(&webC)
 	body, _ := json.Marshal(key)
@@ -69,9 +68,8 @@ func (s *S) TestDeleteUser(c *C) {
 	req, err := http.NewRequest("DELETE", "/api/users", nil)
 	c.Assert(err, IsNil)
 	s.env[CurrentUser] = user
-	response, erro := s.controller.DeleteUser(&web.C{Env: s.env}, s.recorder, req)
+	response := s.controller.DeleteUser(&web.C{Env: s.env}, s.recorder, req)
 	expected := `{"name":"Alice","email":"alice@example.org","username":"alice"}`
-	c.Assert(erro, IsNil)
 	c.Assert(response.StatusCode, Equals, 200)
 	c.Assert(response.Payload, Equals, expected)
 }
@@ -80,9 +78,7 @@ func (s *S) TestDeleteUserWithNotSignedUser(c *C) {
 	req, err := http.NewRequest("DELETE", "/api/users", nil)
 	c.Assert(err, IsNil)
 	s.env[CurrentUser] = "s"
-	_, erro := s.controller.DeleteUser(&web.C{Env: s.env}, s.recorder, req)
-	er := erro.(*errors.HTTPError)
-	c.Assert(erro, NotNil)
-	c.Assert(er.StatusCode, Equals, 400)
-	c.Assert(er.Message, Equals, "User is not signed in.")
+	response := s.controller.DeleteUser(&web.C{Env: s.env}, s.recorder, req)
+	c.Assert(response.StatusCode, Equals, 400)
+	c.Assert(response.Payload, Equals, "User is not signed in.")
 }

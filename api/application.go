@@ -49,6 +49,7 @@ func (app *Application) DrawRoutes() {
 	api.Delete("/users", app.Route(usersController, "DeleteUser"))
 
 	api.Post("/teams", app.Route(groupsController, "CreateTeam"))
+	api.Delete("/teams/:id", app.Route(groupsController, "DeleteTeam"))
 }
 
 func (app *Application) Route(controller interface{}, route string) interface{} {
@@ -57,15 +58,13 @@ func (app *Application) Route(controller interface{}, route string) interface{} 
 
 		methodValue := reflect.ValueOf(controller).MethodByName(route)
 		methodInterface := methodValue.Interface()
-		method := methodInterface.(func(c *web.C, w http.ResponseWriter, r *http.Request) (*HTTPResponse, error))
-		response, err := method(&c, w, r)
-		if err == nil {
-			w.WriteHeader(response.StatusCode)
-			if _, exists := c.Env["Content-Type"]; exists {
-				w.Header().Set("Content-Type", c.Env["Content-Type"].(string))
-			}
-			io.WriteString(w, response.Payload)
+		method := methodInterface.(func(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse)
+		response := method(&c, w, r)
+		w.WriteHeader(response.StatusCode)
+		if _, exists := c.Env["Content-Type"]; exists {
+			w.Header().Set("Content-Type", c.Env["Content-Type"].(string))
 		}
+		io.WriteString(w, response.Payload)
 	}
 	return fn
 }

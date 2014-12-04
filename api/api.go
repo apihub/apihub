@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	. "github.com/albertoleal/backstage/account"
-	"github.com/albertoleal/backstage/errors"
 	"github.com/zenazn/goji/web"
 )
 
@@ -17,28 +16,28 @@ type ApiController struct{}
 func (api *ApiController) getCurrentUser(c *web.C) (user *User, erro error) {
 	user, err := GetCurrentUser(c)
 	if err != nil {
-		erro := &errors.HTTPError{StatusCode: http.StatusBadRequest, Message: err.Error()}
+		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
 		AddRequestError(c, erro)
-		return nil, erro
+		return nil, err
 	}
 	return user, nil
 }
 
 func (api *ApiController) getPayload(c *web.C, r *http.Request) ([]byte, error) {
-	var erro *errors.HTTPError
+	var erro *HTTPResponse
 	var data interface{}
 
 	defer r.Body.Close()
 	payload, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		erro := &errors.HTTPError{StatusCode: http.StatusBadRequest, Message: "It was not possible to handle your request. Please, try again!"}
+		erro = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "It was not possible to handle your request. Please, try again!"}
 		AddRequestError(c, erro)
-		return nil, erro
+		return nil, err
 	}
 	if err = json.Unmarshal(payload, &data); err != nil {
-		erro = &errors.HTTPError{StatusCode: http.StatusBadRequest, Message: "The request was bad-formed."}
+		erro = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "The request was bad-formed."}
 		AddRequestError(c, erro)
-		return nil, erro
+		return nil, err
 	}
 	return payload, nil
 }

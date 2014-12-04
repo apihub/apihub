@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/albertoleal/backstage/account"
-	httpErr "github.com/albertoleal/backstage/errors"
 	"github.com/zenazn/goji/web"
 )
 
@@ -15,12 +14,12 @@ const (
 
 var ErrUserNotSigned = errors.New("User is not signed in.")
 
-func AddRequestError(c *web.C, error *httpErr.HTTPError) {
+func AddRequestError(c *web.C, error *HTTPResponse) {
 	c.Env[ErrRequestKey] = error
 }
 
-func GetRequestError(c *web.C) (*httpErr.HTTPError, bool) {
-	val, ok := c.Env[ErrRequestKey].(*httpErr.HTTPError)
+func GetRequestError(c *web.C) (*HTTPResponse, bool) {
+	val, ok := c.Env[ErrRequestKey].(*HTTPResponse)
 	if !ok {
 		return nil, false
 	}

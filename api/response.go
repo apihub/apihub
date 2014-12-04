@@ -1,6 +1,6 @@
 package api
 
 type HTTPResponse struct {
-	StatusCode int
-	Payload    string
+	StatusCode int    `json:"status_code"`
+	Payload    string `json:"payload"`
 }

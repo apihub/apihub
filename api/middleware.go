@@ -18,7 +18,7 @@ func AuthorizationMiddleware(c *web.C, h http.Handler) http.Handler {
 		authorization := r.Header.Get("Authorization")
 		user, err := auth.GetUserFromToken(authorization)
 		if err != nil {
-			AddRequestError(c, &errors.HTTPError{StatusCode: http.StatusUnauthorized, Message: "You do not have access to this resource."})
+			AddRequestError(c, &HTTPResponse{StatusCode: http.StatusUnauthorized, Payload: "You do not have access to this resource."})
 			return
 		}
 		SetCurrentUser(c, user)
