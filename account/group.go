@@ -43,6 +43,9 @@ func (group *Group) AddUsers(usernames []string) error {
 	var user *User
 	for _, username := range usernames {
 		user = &User{Username: username}
+		if !user.Valid() {
+			continue
+		}
 		if _, contains := group.containsUser(user); contains == false {
 			group.Users = append(group.Users, user.Username)
 			newUser = true
