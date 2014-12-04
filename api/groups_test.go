@@ -65,9 +65,9 @@ func (s *S) TestDeleteTeam(c *C) {
 	defer owner.Delete()
 	defer group.Delete()
 
-	app := &Application{}
+	api := &Api{}
 	gg := &GroupsController{}
-	s.router.Delete("/api/teams/:id", app.Route(gg, "DeleteTeam"))
+	s.router.Delete("/api/teams/:id", api.Route(gg, "DeleteTeam"))
 
 	g, _ := account.FindGroupByName(group.Name)
 	req, err := http.NewRequest("DELETE", "/api/teams/"+g.Id.Hex(), nil)
@@ -91,9 +91,9 @@ func (s *S) TestDeleteTeamWhenUserIsNotOwner(c *C) {
 	defer group.Delete()
 	defer bob.Delete()
 
-	app := &Application{}
+	api := &Api{}
 	gg := &GroupsController{}
-	s.router.Delete("/api/teams/:id", app.Route(gg, "DeleteTeam"))
+	s.router.Delete("/api/teams/:id", api.Route(gg, "DeleteTeam"))
 
 	g, _ := account.FindGroupByName(group.Name)
 	req, err := http.NewRequest("DELETE", "/api/teams/"+g.Id.Hex(), nil)

@@ -5,9 +5,9 @@ import (
 )
 
 func main() {
-	var app = &Application{}
-	app.Init()
-	app.DrawRoutes()
+	var api = &Api{}
+	api.Init()
+	api.DrawRoutes()
 
 	goji.Serve()
 }

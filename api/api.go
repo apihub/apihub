@@ -1,43 +1,70 @@
 package api
 
 import (
-	"encoding/json"
-	"io/ioutil"
+	"fmt"
+	"io"
 	"net/http"
+	"reflect"
 
-	. "github.com/albertoleal/backstage/account"
+	"github.com/tsuru/config"
+	"github.com/zenazn/goji"
 	"github.com/zenazn/goji/web"
+	"github.com/zenazn/goji/web/middleware"
 )
 
-type Controller interface{}
-
-type ApiController struct{}
-
-func (api *ApiController) getCurrentUser(c *web.C) (user *User, erro error) {
-	user, err := GetCurrentUser(c)
-	if err != nil {
-		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
-		AddRequestError(c, erro)
-		return nil, err
-	}
-	return user, nil
+type Api struct {
 }
 
-func (api *ApiController) getPayload(c *web.C, r *http.Request) ([]byte, error) {
-	var erro *HTTPResponse
-	var data interface{}
+func (api *Api) Init() {
+	err := config.ReadConfigFile("config.yaml")
 
-	defer r.Body.Close()
-	payload, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		erro = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "It was not possible to handle your request. Please, try again!"}
-		AddRequestError(c, erro)
-		return nil, err
+		fmt.Printf("Error reading config file: %s\n", err.Error())
 	}
-	if err = json.Unmarshal(payload, &data); err != nil {
-		erro = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "The request was bad-formed."}
-		AddRequestError(c, erro)
-		return nil, err
+}
+
+func (api *Api) DrawRoutes() {
+	goji.Use(RequestIdMiddleware)
+	goji.NotFound(NotFoundHandler)
+
+	// Controllers
+	servicesController := &ServicesController{}
+	debugController := &DebugController{}
+	usersController := &UsersController{}
+	groupsController := &GroupsController{}
+
+	// Public Routes
+	goji.Get("/", api.Route(servicesController, "Index"))
+	goji.Post("/api/users", api.Route(usersController, "CreateUser"))
+	goji.Post("/api/signin", api.Route(usersController, "SignIn"))
+	goji.Use(ErrorHandlerMiddleware)
+
+	// Private Routes
+	privateRoutes := web.New()
+	goji.Handle("/api/*", api)
+	privateRoutes.Use(middleware.SubRouter)
+	privateRoutes.NotFound(NotFoundHandler)
+	privateRoutes.Use(AuthorizationMiddleware)
+	privateRoutes.Get("/helloworld", api.Route(debugController, "HelloWorld"))
+	privateRoutes.Delete("/users", api.Route(usersController, "DeleteUser"))
+
+	privateRoutes.Post("/teams", api.Route(groupsController, "CreateTeam"))
+	privateRoutes.Delete("/teams/:id", api.Route(groupsController, "DeleteTeam"))
+}
+
+func (api *Api) Route(controller interface{}, route string) interface{} {
+	fn := func(c web.C, w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "apilication/json")
+
+		methodValue := reflect.ValueOf(controller).MethodByName(route)
+		methodInterface := methodValue.Interface()
+		method := methodInterface.(func(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse)
+		response := method(&c, w, r)
+		w.WriteHeader(response.StatusCode)
+		if _, exists := c.Env["Content-Type"]; exists {
+			w.Header().Set("Content-Type", c.Env["Content-Type"].(string))
+		}
+		io.WriteString(w, response.Payload)
 	}
-	return payload, nil
+	return fn
 }
