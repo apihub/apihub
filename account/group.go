@@ -32,6 +32,21 @@ func (group *Group) Save(owner *User) error {
 	return nil
 }
 
+func (group *Group) Delete() error {
+	conn, err := db.Conn()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	err = conn.Groups().Remove(group)
+	if err == mgo.ErrNotFound {
+		message := "Group not found."
+		return &errors.ValidationError{Message: message}
+	}
+	return err
+}
+
 func (group *Group) AddUsers(usernames []string) error {
 	conn, err := db.Conn()
 	if err != nil {
@@ -57,7 +72,7 @@ func (group *Group) AddUsers(usernames []string) error {
 	return nil
 }
 
-func (group *Group) RemoveUsers(users []*User) error {
+func (group *Group) RemoveUsers(usernames []string) error {
 	conn, err := db.Conn()
 	if err != nil {
 		return err
@@ -67,14 +82,19 @@ func (group *Group) RemoveUsers(users []*User) error {
 	var (
 		removedUsers       bool
 		errOwnerNotRemoved *errors.ValidationError
+		user               *User
 	)
-	for _, user := range users {
-		if group.Owner == user.Username {
+	for _, username := range usernames {
+		if group.Owner == username {
 			message := "It is not possible to remove the owner from the team."
 			errOwnerNotRemoved = &errors.ValidationError{Message: message}
 			continue
 		}
 
+		user = &User{Username: username}
+		if !user.Valid() {
+			continue
+		}
 		if i, ok := group.containsUser(user); ok {
 			hi := len(group.Users) - 1
 			if hi > i {

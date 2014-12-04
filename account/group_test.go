@@ -34,6 +34,16 @@ func (s *S) TestCreateGroupWhenNameAlreadyExists(c *C) {
 	c.Assert(e.Message, Equals, message)
 }
 
+func (s *S) TestDeleteGroup(c *C) {
+	groupName := group.Name
+	group.Save(owner)
+	g, _ := FindGroupByName(group.Name)
+	c.Assert(len(g.Users), Equals, 1)
+	group.Delete()
+	_, err := FindGroupByName(groupName)
+	c.Assert(err, Not(IsNil))
+}
+
 func (s *S) TestAddUsersWithInvalidUser(c *C) {
 	err := group.Save(owner)
 	defer DeleteGroupByName("Group")
@@ -79,8 +89,7 @@ func (s *S) TestRemoveUsers(c *C) {
 	defer DeleteGroupByName("Group")
 	g, _ := FindGroupByName("Group")
 	err = g.AddUsers([]string{"alice", "bob"})
-	bob := &User{Name: "Bob", Email: "bob@bar.com", Username: "bob", Password: "123456"}
-	err = g.RemoveUsers([]*User{bob})
+	err = g.RemoveUsers([]string{"bob"})
 	c.Assert(err, IsNil)
 	g, _ = FindGroupByName("Group")
 	c.Assert(len(g.Users), Equals, 1)
@@ -91,8 +100,7 @@ func (s *S) TestRemoveUsersWithNonExistingUser(c *C) {
 	err := group.Save(owner)
 	defer DeleteGroupByName("Group")
 	g, _ := FindGroupByName("Group")
-	bob := &User{Name: "Bob", Email: "bob@bar.com", Username: "bob", Password: "123456"}
-	err = g.RemoveUsers([]*User{bob})
+	err = g.RemoveUsers([]string{"bob"})
 	c.Assert(err, IsNil)
 }
 
@@ -104,8 +112,7 @@ func (s *S) TestRemoveUsersWhenTheUserIsOwner(c *C) {
 	defer mary.Delete()
 	group.AddUsers([]string{"mary", "bob"})
 
-	bob := &User{Name: "Bob", Email: "bob@bar.com", Username: "bob", Password: "123456"}
-	err = group.RemoveUsers([]*User{owner, bob})
+	err = group.RemoveUsers([]string{owner.Username, "bob"})
 	c.Assert(err, Not(IsNil))
 	e := err.(*errors.ValidationError)
 	c.Assert(e.Message, Equals, "It is not possible to remove the owner from the team.")
