@@ -1,4 +1,4 @@
-package controllers
+package api
 
 import (
 	"encoding/json"
@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/albertoleal/backstage/account"
-	"github.com/albertoleal/backstage/api/context"
 	"github.com/albertoleal/backstage/errors"
 	"github.com/zenazn/goji/web"
 	. "gopkg.in/check.v1"
@@ -23,7 +22,7 @@ func (s *S) TestCreateTeam(c *C) {
 	req, err := http.NewRequest("POST", "/api/teams", b)
 	req.Header.Set("Content-Type", "application/json")
 	c.Assert(err, IsNil)
-	s.env[context.CurrentUser] = user
+	s.env[CurrentUser] = user
 	response, erro := groupsController.CreateTeam(&web.C{Env: s.env}, s.recorder, req)
 	expected := `{"name":"Group","users":["alice"],"owner":"alice"}`
 	c.Assert(erro, IsNil)
@@ -54,13 +53,13 @@ func (s *S) TestCreateTeamWithInvalidPayloadFormat(c *C) {
 	b := strings.NewReader(payload)
 	req, err := http.NewRequest("POST", "/api/teams", b)
 	req.Header.Set("Content-Type", "application/json")
-	s.env[context.CurrentUser] = user
+	s.env[CurrentUser] = user
 	c.Assert(err, IsNil)
 	webC := web.C{Env: s.env}
 	_, err = groupsController.CreateTeam(&webC, s.recorder, req)
 	expected := `{"status_code":400,"message":"The request was bad-formed.","url":""}`
 	c.Assert(err, NotNil)
-	key, _ := context.GetRequestError(&webC)
+	key, _ := GetRequestError(&webC)
 	body, _ := json.Marshal(key)
 	c.Assert(string(body), Equals, expected)
 }

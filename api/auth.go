@@ -1,4 +1,4 @@
-package helpers
+package api
 
 import (
 	"code.google.com/p/go.crypto/bcrypt"

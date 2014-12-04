@@ -1,4 +1,4 @@
-package controllers
+package api
 
 import (
 	"encoding/json"
@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	. "github.com/albertoleal/backstage/account"
-	"github.com/albertoleal/backstage/api/context"
 	"github.com/albertoleal/backstage/errors"
 	"github.com/zenazn/goji/web"
 )
@@ -35,7 +34,7 @@ func (controller *GroupsController) CreateTeam(c *web.C, w http.ResponseWriter, 
 	if err != nil {
 		e := err.(*errors.ValidationError)
 		erro := &errors.HTTPError{StatusCode: http.StatusBadRequest, Message: e.Message}
-		context.AddRequestError(c, erro)
+		AddRequestError(c, erro)
 		return nil, erro
 	}
 	payload, _ := json.Marshal(group)

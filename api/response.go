@@ -1,4 +1,4 @@
-package controllers
+package api
 
 type HTTPResponse struct {
 	StatusCode int

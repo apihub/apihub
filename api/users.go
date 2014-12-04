@@ -1,4 +1,4 @@
-package controllers
+package api
 
 import (
 	"encoding/json"
@@ -6,8 +6,6 @@ import (
 	"net/http"
 
 	. "github.com/albertoleal/backstage/account"
-	"github.com/albertoleal/backstage/api/context"
-	"github.com/albertoleal/backstage/api/helpers"
 	"github.com/albertoleal/backstage/errors"
 	"github.com/zenazn/goji/web"
 )
@@ -32,7 +30,7 @@ func (controller *UsersController) CreateUser(c *web.C, w http.ResponseWriter, r
 	if err != nil {
 		e := err.(*errors.ValidationError)
 		erro = &errors.HTTPError{StatusCode: http.StatusBadRequest, Message: e.Message}
-		context.AddRequestError(c, erro)
+		AddRequestError(c, erro)
 		return nil, erro
 	}
 	user.Password = ""
@@ -42,10 +40,10 @@ func (controller *UsersController) CreateUser(c *web.C, w http.ResponseWriter, r
 }
 
 func (controller *UsersController) DeleteUser(c *web.C, w http.ResponseWriter, r *http.Request) (*HTTPResponse, error) {
-	user, err := context.GetCurrentUser(c)
+	user, err := GetCurrentUser(c)
 	if err != nil {
 		erro := &errors.HTTPError{StatusCode: http.StatusBadRequest, Message: err.Error()}
-		context.AddRequestError(c, erro)
+		AddRequestError(c, erro)
 		return nil, erro
 	}
 
@@ -59,11 +57,11 @@ func (controller *UsersController) DeleteUser(c *web.C, w http.ResponseWriter, r
 func (controller *UsersController) SignIn(c *web.C, w http.ResponseWriter, r *http.Request) (*HTTPResponse, error) {
 	username, password := r.FormValue("username"), r.FormValue("password")
 
-	token, err := helpers.SignIn(username, password)
+	token, err := SignIn(username, password)
 	if err != nil {
 		var erro *errors.HTTPError
 		erro = &errors.HTTPError{StatusCode: http.StatusBadRequest, Message: "Invalid Username or Password."}
-		context.AddRequestError(c, erro)
+		AddRequestError(c, erro)
 		return nil, erro
 	}
 

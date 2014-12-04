@@ -1,4 +1,4 @@
-package system
+package api
 
 import (
 	"encoding/json"
@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/albertoleal/backstage/api/context"
 	"github.com/albertoleal/backstage/auth"
 	"github.com/albertoleal/backstage/errors"
 	"github.com/zenazn/goji/web"
@@ -19,10 +18,10 @@ func AuthorizationMiddleware(c *web.C, h http.Handler) http.Handler {
 		authorization := r.Header.Get("Authorization")
 		user, err := auth.GetUserFromToken(authorization)
 		if err != nil {
-			context.AddRequestError(c, &errors.HTTPError{StatusCode: http.StatusUnauthorized, Message: "You do not have access to this resource."})
+			AddRequestError(c, &errors.HTTPError{StatusCode: http.StatusUnauthorized, Message: "You do not have access to this resource."})
 			return
 		}
-		context.SetCurrentUser(c, user)
+		SetCurrentUser(c, user)
 		h.ServeHTTP(w, r)
 	}
 
@@ -33,7 +32,7 @@ func ErrorHandlerMiddleware(c *web.C, h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		h.ServeHTTP(w, r)
-		key, ok := context.GetRequestError(c)
+		key, ok := GetRequestError(c)
 		if ok {
 			body, _ := json.Marshal(key)
 			w.WriteHeader(key.StatusCode)

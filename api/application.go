@@ -1,4 +1,4 @@
-package system
+package api
 
 import (
 	"fmt"
@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/albertoleal/backstage/api/controllers"
 	"github.com/tsuru/config"
 	"github.com/zenazn/goji"
 	"github.com/zenazn/goji/web"
@@ -29,10 +28,10 @@ func (app *Application) DrawRoutes() {
 	goji.NotFound(NotFoundHandler)
 
 	// Controllers
-	servicesController := &controllers.ServicesController{}
-	debugController := &controllers.DebugController{}
-	usersController := &controllers.UsersController{}
-	groupsController := &controllers.GroupsController{}
+	servicesController := &ServicesController{}
+	debugController := &DebugController{}
+	usersController := &UsersController{}
+	groupsController := &GroupsController{}
 
 	// Public Routes
 	goji.Get("/", app.Route(servicesController, "Index"))
@@ -58,7 +57,7 @@ func (app *Application) Route(controller interface{}, route string) interface{} 
 
 		methodValue := reflect.ValueOf(controller).MethodByName(route)
 		methodInterface := methodValue.Interface()
-		method := methodInterface.(func(c *web.C, w http.ResponseWriter, r *http.Request) (*controllers.HTTPResponse, error))
+		method := methodInterface.(func(c *web.C, w http.ResponseWriter, r *http.Request) (*HTTPResponse, error))
 		response, err := method(&c, w, r)
 		if err == nil {
 			w.WriteHeader(response.StatusCode)

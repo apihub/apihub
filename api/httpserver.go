@@ -1,12 +1,11 @@
-package main
+package api
 
 import (
-	"github.com/albertoleal/backstage/api/system"
 	"github.com/zenazn/goji"
 )
 
 func main() {
-	var app = &system.Application{}
+	var app = &Application{}
 	app.Init()
 	app.DrawRoutes()
 

@@ -1,4 +1,4 @@
-package controllers
+package api
 
 import (
 	"encoding/json"
@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/albertoleal/backstage/account"
-	"github.com/albertoleal/backstage/api/context"
 	"github.com/albertoleal/backstage/errors"
 	"github.com/zenazn/goji/web"
 	. "gopkg.in/check.v1"
@@ -42,7 +41,7 @@ func (s *S) TestCreateUserWithInvalidPayloadFormat(c *C) {
 	_, err = s.controller.CreateUser(&webC, s.recorder, req)
 	expected := `{"status_code":400,"message":"The request was bad-formed.","url":""}`
 	c.Assert(err, NotNil)
-	key, _ := context.GetRequestError(&webC)
+	key, _ := GetRequestError(&webC)
 	body, _ := json.Marshal(key)
 	c.Assert(string(body), Equals, expected)
 }
@@ -57,7 +56,7 @@ func (s *S) TestCreateUserWithMissingRequiredFields(c *C) {
 	_, err = s.controller.CreateUser(&webC, s.recorder, req)
 	expected := `{"status_code":400,"message":"Name/Email/Username/Password cannot be empty.","url":""}`
 	c.Assert(err, NotNil)
-	key, _ := context.GetRequestError(&webC)
+	key, _ := GetRequestError(&webC)
 	body, _ := json.Marshal(key)
 	c.Assert(string(body), Equals, expected)
 }
@@ -69,7 +68,7 @@ func (s *S) TestDeleteUser(c *C) {
 
 	req, err := http.NewRequest("DELETE", "/api/users", nil)
 	c.Assert(err, IsNil)
-	s.env[context.CurrentUser] = user
+	s.env[CurrentUser] = user
 	response, erro := s.controller.DeleteUser(&web.C{Env: s.env}, s.recorder, req)
 	expected := `{"name":"Alice","email":"alice@example.org","username":"alice"}`
 	c.Assert(erro, IsNil)
@@ -80,7 +79,7 @@ func (s *S) TestDeleteUser(c *C) {
 func (s *S) TestDeleteUserWithNotSignedUser(c *C) {
 	req, err := http.NewRequest("DELETE", "/api/users", nil)
 	c.Assert(err, IsNil)
-	s.env[context.CurrentUser] = "s"
+	s.env[CurrentUser] = "s"
 	_, erro := s.controller.DeleteUser(&web.C{Env: s.env}, s.recorder, req)
 	er := erro.(*errors.HTTPError)
 	c.Assert(erro, NotNil)

@@ -1,4 +1,4 @@
-package system
+package api
 
 import (
 	"encoding/json"
@@ -6,22 +6,14 @@ import (
 	"net/http/httptest"
 
 	. "github.com/albertoleal/backstage/account"
-	"github.com/albertoleal/backstage/api/context"
 	"github.com/albertoleal/backstage/auth"
 	"github.com/albertoleal/backstage/errors"
 	"github.com/zenazn/goji/web"
 	. "gopkg.in/check.v1"
 )
 
-func (s *S) SetUpTest(c *C) {
-	s.handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
-	s.recorder = httptest.NewRecorder()
-	s.router = web.New()
-	s.router.Use(AuthorizationMiddleware)
-	s.router.Use(RequestIdMiddleware)
-}
-
 func (s *S) TestAuthorizationMiddlewareWithValidToken(c *C) {
+	s.router.Use(AuthorizationMiddleware)
 	user := &User{Username: "bob", Name: "Bob", Email: "bob@example.org", Password: "123456"}
 	err := user.Save()
 	defer user.Delete()
@@ -36,33 +28,35 @@ func (s *S) TestAuthorizationMiddlewareWithValidToken(c *C) {
 	req.Header.Set("Authorization", "Token "+tokenInfo.Token)
 	cc := web.C{Env: map[string]interface{}{}}
 	s.router.ServeHTTPC(cc, s.recorder, req)
-	_, ok := context.GetRequestError(&cc)
+	_, ok := GetRequestError(&cc)
 	c.Assert(ok, Equals, false)
 }
 
 func (s *S) TestAuthorizationMiddlewareWithInvalidToken(c *C) {
+	s.router.Use(AuthorizationMiddleware)
 	s.router.Get("/", s.handler)
 	req, _ := http.NewRequest("GET", "/", nil)
 	req.Header.Set("Authorization", "Invalid-Token")
 	cc := web.C{Env: map[string]interface{}{}}
 	s.router.ServeHTTPC(cc, s.recorder, req)
-	erro, _ := context.GetRequestError(&cc)
+	erro, _ := GetRequestError(&cc)
 	c.Assert(erro.StatusCode, Equals, http.StatusUnauthorized)
 	c.Assert(erro.Message, Equals, "You do not have access to this resource.")
 }
 
 func (s *S) TestAuthorizationMiddlewareWithMissingToken(c *C) {
+	s.router.Use(AuthorizationMiddleware)
 	s.router.Get("/", s.handler)
 	req, _ := http.NewRequest("GET", "/", nil)
 	cc := web.C{Env: map[string]interface{}{}}
 	s.router.ServeHTTPC(cc, s.recorder, req)
-	erro, _ := context.GetRequestError(&cc)
+	erro, _ := GetRequestError(&cc)
 	c.Assert(erro.StatusCode, Equals, http.StatusUnauthorized)
 	c.Assert(erro.Message, Equals, "You do not have access to this resource.")
 }
 
 func (s *S) TestRequestIdMiddleware(c *C) {
-	s.router.Abandon(AuthorizationMiddleware)
+	s.router.Use(RequestIdMiddleware)
 	s.router.Get("/", s.handler)
 
 	req, _ := http.NewRequest("GET", "/", nil)

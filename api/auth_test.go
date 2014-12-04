@@ -1,4 +1,4 @@
-package helpers
+package api
 
 import (
 	. "github.com/albertoleal/backstage/account"
