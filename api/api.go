@@ -41,7 +41,7 @@ func (api *Api) DrawRoutes() {
 
 	// Private Routes
 	privateRoutes := web.New()
-	goji.Handle("/api/*", api)
+	goji.Handle("/api/*", privateRoutes)
 	privateRoutes.Use(middleware.SubRouter)
 	privateRoutes.NotFound(NotFoundHandler)
 	privateRoutes.Use(AuthorizationMiddleware)

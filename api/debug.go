@@ -10,8 +10,8 @@ type DebugController struct {
 	ApiController
 }
 
-func (controller *DebugController) HelloWorld(c *web.C, w http.ResponseWriter, r *http.Request) (*HTTPResponse, error) {
+func (controller *DebugController) HelloWorld(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	c.Env["Content-Type"] = "text/plain"
 	response := &HTTPResponse{StatusCode: http.StatusOK, Payload: "Hello World"}
-	return response, nil
+	return response
 }
