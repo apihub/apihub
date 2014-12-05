@@ -9,8 +9,6 @@ import (
 	"github.com/zenazn/goji/web"
 )
 
-type Handler interface{}
-
 type ApiHandler struct{}
 
 func (api *ApiHandler) getCurrentUser(c *web.C) (user *User, erro error) {
