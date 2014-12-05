@@ -81,3 +81,145 @@ func (controller *GroupsController) DeleteTeam(c *web.C, w http.ResponseWriter, 
 	response = &HTTPResponse{StatusCode: http.StatusOK, Payload: string(payload)}
 	return response
 }
+
+func (controller *GroupsController) GetUserTeams(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+	var response *HTTPResponse
+	currentUser, err := controller.getCurrentUser(c)
+	if err != nil {
+		response = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
+		AddRequestError(c, response)
+		return response
+	}
+	teams, _ := currentUser.GetTeams()
+	payload, _ := json.Marshal(teams)
+	response = &HTTPResponse{StatusCode: http.StatusOK, Payload: string(payload)}
+	return response
+}
+
+func (controller *GroupsController) GetTeamInfo(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+	var response *HTTPResponse
+	currentUser, err := controller.getCurrentUser(c)
+	if err != nil {
+		response = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
+		AddRequestError(c, response)
+		return response
+	}
+	team, err := FindGroupById(c.URLParams["id"])
+	if err != nil {
+		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "Team not found."}
+		AddRequestError(c, erro)
+		return erro
+	}
+	_, ok := team.ContainsUser(currentUser)
+	if !ok {
+		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "You do not belong to this team!"}
+		AddRequestError(c, erro)
+		return erro
+	}
+	result, _ := json.Marshal(team)
+	response = &HTTPResponse{StatusCode: http.StatusOK, Payload: string(result)}
+	return response
+}
+
+func (controller *GroupsController) AddUsersToTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+	var response *HTTPResponse
+	currentUser, err := controller.getCurrentUser(c)
+	if err != nil {
+		response = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
+		AddRequestError(c, response)
+		return response
+	}
+	team, err := FindGroupById(c.URLParams["id"])
+	if err != nil {
+		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "Team not found."}
+		AddRequestError(c, erro)
+		return erro
+	}
+
+	_, ok := team.ContainsUser(currentUser)
+	if !ok {
+		erro := &HTTPResponse{StatusCode: http.StatusForbidden, Payload: "You do not belong to this team!"}
+		AddRequestError(c, erro)
+		return erro
+	}
+
+	body, err := controller.getPayload(c, r)
+	if err != nil {
+		response = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
+		AddRequestError(c, response)
+		return response
+	}
+
+	var payload map[string]interface{}
+	if err := json.Unmarshal(body, &payload); err != nil || payload["users"] == nil {
+		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "The request was bad-formed."}
+		AddRequestError(c, erro)
+		return erro
+	}
+	var users []string
+	for _, v := range payload["users"].([]interface{}) {
+		switch v.(type) {
+		case string:
+			user := v.(string)
+			users = append(users, user)
+		}
+	}
+	team.AddUsers(users)
+	result, _ := json.Marshal(team)
+	response = &HTTPResponse{StatusCode: http.StatusCreated, Payload: string(result)}
+	return response
+}
+
+func (controller *GroupsController) RemoveUsersFromTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+	var response *HTTPResponse
+	currentUser, err := controller.getCurrentUser(c)
+	if err != nil {
+		response = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
+		AddRequestError(c, response)
+		return response
+	}
+	team, err := FindGroupById(c.URLParams["id"])
+	if err != nil {
+		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "Team not found."}
+		AddRequestError(c, erro)
+		return erro
+	}
+
+	_, ok := team.ContainsUser(currentUser)
+	if !ok {
+		erro := &HTTPResponse{StatusCode: http.StatusForbidden, Payload: "You do not belong to this team!"}
+		AddRequestError(c, erro)
+		return erro
+	}
+
+	body, err := controller.getPayload(c, r)
+	if err != nil {
+		response = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
+		AddRequestError(c, response)
+		return response
+	}
+
+	var payload map[string]interface{}
+	if err := json.Unmarshal(body, &payload); err != nil || payload["users"] == nil {
+		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "The request was bad-formed."}
+		AddRequestError(c, erro)
+		return erro
+	}
+	var users []string
+	for _, v := range payload["users"].([]interface{}) {
+		switch v.(type) {
+		case string:
+			user := v.(string)
+			users = append(users, user)
+		}
+	}
+	err = team.RemoveUsers(users)
+	if err != nil {
+		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
+		AddRequestError(c, erro)
+		return erro
+	}
+	result, _ := json.Marshal(team)
+	response = &HTTPResponse{StatusCode: http.StatusOK, Payload: string(result)}
+	return response
+}

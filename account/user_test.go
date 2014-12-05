@@ -77,3 +77,15 @@ func (s *S) TestFindUserWithInvalidUsername(c *C) {
 	msg := "User not found"
 	c.Assert(e.Message, Equals, msg)
 }
+
+func (s *S) TestGetTeams(c *C) {
+	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
+	defer user.Delete()
+	user.Save()
+	group := &Group{Name: "Group"}
+	group.Save(&user)
+	defer group.Delete()
+	g, err := user.GetTeams()
+	c.Assert(err, IsNil)
+	c.Assert(g[0].Name, Equals, "Group")
+}

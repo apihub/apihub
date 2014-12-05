@@ -50,6 +50,10 @@ func (api *Api) DrawRoutes() {
 
 	privateRoutes.Post("/teams", api.Route(groupsController, "CreateTeam"))
 	privateRoutes.Delete("/teams/:id", api.Route(groupsController, "DeleteTeam"))
+	privateRoutes.Get("/teams/:id", api.Route(groupsController, "GetTeamInfo"))
+	privateRoutes.Get("/teams", api.Route(groupsController, "GetUserTeams"))
+	privateRoutes.Post("/teams/:id/users", api.Route(groupsController, "AddUsersToTeam"))
+	privateRoutes.Delete("/teams/:id/users", api.Route(groupsController, "RemoveUsersFromTeam"))
 }
 
 func (api *Api) Route(controller interface{}, route string) interface{} {
