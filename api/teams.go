@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	. "github.com/albertoleal/backstage/account"
@@ -23,16 +22,10 @@ func (handler *TeamsHandler) CreateTeam(c *web.C, w http.ResponseWriter, r *http
 		return response
 	}
 
-	body, err := handler.getPayload(c, r)
+	team := &Team{}
+	err = handler.parseBody(r.Body, team)
 	if err != nil {
 		response = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "The request was bad-formed."}
-		AddRequestError(c, response)
-		return response
-	}
-	team := &Team{}
-	if err := json.Unmarshal(body, team); err != nil {
-		fmt.Print("It was not possible to create a new team.")
-		response = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
 		AddRequestError(c, response)
 		return response
 	}
@@ -143,21 +136,21 @@ func (handler *TeamsHandler) AddUsersToTeam(c *web.C, w http.ResponseWriter, r *
 		return erro
 	}
 
-	body, err := handler.getPayload(c, r)
+	var keys map[string]interface{}
+	err = handler.parseBody(r.Body, &keys)
 	if err != nil {
 		response = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
 		AddRequestError(c, response)
 		return response
 	}
-
-	var payload map[string]interface{}
-	if err := json.Unmarshal(body, &payload); err != nil || payload["users"] == nil {
+	if keys["users"] == nil {
 		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "The request was bad-formed."}
 		AddRequestError(c, erro)
 		return erro
 	}
+
 	var users []string
-	for _, v := range payload["users"].([]interface{}) {
+	for _, v := range keys["users"].([]interface{}) {
 		switch v.(type) {
 		case string:
 			user := v.(string)
@@ -192,21 +185,21 @@ func (handler *TeamsHandler) RemoveUsersFromTeam(c *web.C, w http.ResponseWriter
 		return erro
 	}
 
-	body, err := handler.getPayload(c, r)
+	var keys map[string]interface{}
+	err = handler.parseBody(r.Body, &keys)
 	if err != nil {
 		response = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
 		AddRequestError(c, response)
 		return response
 	}
-
-	var payload map[string]interface{}
-	if err := json.Unmarshal(body, &payload); err != nil || payload["users"] == nil {
+	if keys["users"] == nil {
 		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "The request was bad-formed."}
 		AddRequestError(c, erro)
 		return erro
 	}
+
 	var users []string
-	for _, v := range payload["users"].([]interface{}) {
+	for _, v := range keys["users"].([]interface{}) {
 		switch v.(type) {
 		case string:
 			user := v.(string)

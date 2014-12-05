@@ -2,6 +2,8 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
+	"io"
 	"io/ioutil"
 	"net/http"
 
@@ -21,21 +23,14 @@ func (api *ApiHandler) getCurrentUser(c *web.C) (user *User, erro error) {
 	return user, nil
 }
 
-func (api *ApiHandler) getPayload(c *web.C, r *http.Request) ([]byte, error) {
-	var erro *HTTPResponse
-	var data interface{}
-
-	defer r.Body.Close()
-	payload, err := ioutil.ReadAll(r.Body)
+func (api *ApiHandler) parseBody(body io.ReadCloser, r interface{}) error {
+	defer body.Close()
+	b, err := ioutil.ReadAll(body)
 	if err != nil {
-		erro = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "It was not possible to handle your request. Please, try again!"}
-		AddRequestError(c, erro)
-		return nil, err
+		return err
 	}
-	if err = json.Unmarshal(payload, &data); err != nil {
-		erro = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "The request was bad-formed."}
-		AddRequestError(c, erro)
-		return nil, err
+	if err = json.Unmarshal(b, &r); err != nil {
+		return errors.New("The request was bad-formed.")
 	}
-	return payload, nil
+	return nil
 }

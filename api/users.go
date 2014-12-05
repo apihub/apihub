@@ -14,15 +14,10 @@ type UsersHandler struct {
 }
 
 func (handler *UsersHandler) CreateUser(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
-	body, err := handler.getPayload(c, r)
+	user := &User{}
+	err := handler.parseBody(r.Body, &user)
 	if err != nil {
 		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "The request was bad-formed."}
-		AddRequestError(c, erro)
-		return erro
-	}
-	user := &User{}
-	if err := json.Unmarshal(body, user); err != nil {
-		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
 		AddRequestError(c, erro)
 		return erro
 	}
