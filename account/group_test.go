@@ -191,3 +191,17 @@ func (s *S) TestGetGroupUsers(c *C) {
 	c.Assert(users[0].Username, Equals, alice.Username)
 	c.Assert(users[1].Username, Equals, bob.Username)
 }
+
+func (s *S) TestContainsUser(c *C) {
+	bob := &User{Name: "Bob", Email: "bob@bar.com", Username: "bob", Password: "123456"}
+	defer bob.Delete()
+	bob.Save()
+
+	group.Save(owner)
+	defer DeleteGroupByName("Group")
+	g, _ := FindGroupByName("Group")
+	_, ok := g.ContainsUser(owner)
+	c.Assert(ok, Equals, true)
+	_, ok = g.ContainsUser(bob)
+	c.Assert(ok, Equals, false)
+}

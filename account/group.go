@@ -61,7 +61,7 @@ func (group *Group) AddUsers(usernames []string) error {
 		if !user.Valid() {
 			continue
 		}
-		if _, contains := group.containsUser(user); contains == false {
+		if _, contains := group.ContainsUser(user); contains == false {
 			group.Users = append(group.Users, user.Username)
 			newUser = true
 		}
@@ -95,7 +95,7 @@ func (group *Group) RemoveUsers(usernames []string) error {
 		if !user.Valid() {
 			continue
 		}
-		if i, ok := group.containsUser(user); ok {
+		if i, ok := group.ContainsUser(user); ok {
 			hi := len(group.Users) - 1
 			if hi > i {
 				group.Users[i] = group.Users[hi]
@@ -192,7 +192,7 @@ func getUsernames(users []*User) []string {
 	return usernames
 }
 
-func (group *Group) containsUser(user *User) (int, bool) {
+func (group *Group) ContainsUser(user *User) (int, bool) {
 	for i, u := range group.Users {
 		if u == user.Username {
 			return i, true
