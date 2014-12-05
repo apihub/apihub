@@ -12,8 +12,8 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-var teamsController *TeamsController
-var usersController *UsersController
+var teamsHandler *TeamsHandler
+var usersHandler *UsersHandler
 
 var alice *account.User
 var bob *account.User
@@ -38,8 +38,8 @@ func (s *S) SetUpSuite(c *C) {
 
 func (s *S) SetUpTest(c *C) {
 	s.Api = &Api{}
-	teamsController = &TeamsController{}
-	usersController = &UsersController{}
+	teamsHandler = &TeamsHandler{}
+	usersHandler = &UsersHandler{}
 
 	s.recorder = httptest.NewRecorder()
 	s.env = map[string]interface{}{}

@@ -9,12 +9,12 @@ import (
 	"github.com/zenazn/goji/web"
 )
 
-type UsersController struct {
-	ApiController
+type UsersHandler struct {
+	ApiHandler
 }
 
-func (controller *UsersController) CreateUser(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
-	body, err := controller.getPayload(c, r)
+func (handler *UsersHandler) CreateUser(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+	body, err := handler.getPayload(c, r)
 	if err != nil {
 		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "The request was bad-formed."}
 		AddRequestError(c, erro)
@@ -40,7 +40,7 @@ func (controller *UsersController) CreateUser(c *web.C, w http.ResponseWriter, r
 	return response
 }
 
-func (controller *UsersController) DeleteUser(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+func (handler *UsersHandler) DeleteUser(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	user, err := GetCurrentUser(c)
 	if err != nil {
 		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
@@ -55,7 +55,7 @@ func (controller *UsersController) DeleteUser(c *web.C, w http.ResponseWriter, r
 	return response
 }
 
-func (controller *UsersController) SignIn(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+func (handler *UsersHandler) SignIn(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	username, password := r.FormValue("username"), r.FormValue("password")
 
 	token, err := SignIn(username, password)

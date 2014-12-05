@@ -10,20 +10,20 @@ import (
 	"github.com/zenazn/goji/web"
 )
 
-type TeamsController struct {
-	ApiController
+type TeamsHandler struct {
+	ApiHandler
 }
 
-func (controller *TeamsController) CreateTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+func (handler *TeamsHandler) CreateTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	var response *HTTPResponse
-	owner, err := controller.getCurrentUser(c)
+	owner, err := handler.getCurrentUser(c)
 	if err != nil {
 		response = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
 		AddRequestError(c, response)
 		return response
 	}
 
-	body, err := controller.getPayload(c, r)
+	body, err := handler.getPayload(c, r)
 	if err != nil {
 		response = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "The request was bad-formed."}
 		AddRequestError(c, response)
@@ -56,9 +56,9 @@ func (controller *TeamsController) CreateTeam(c *web.C, w http.ResponseWriter, r
 	return response
 }
 
-func (controller *TeamsController) DeleteTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+func (handler *TeamsHandler) DeleteTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	var response *HTTPResponse
-	currentUser, err := controller.getCurrentUser(c)
+	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
 		response = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
 		AddRequestError(c, response)
@@ -82,9 +82,9 @@ func (controller *TeamsController) DeleteTeam(c *web.C, w http.ResponseWriter, r
 	return response
 }
 
-func (controller *TeamsController) GetUserTeams(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+func (handler *TeamsHandler) GetUserTeams(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	var response *HTTPResponse
-	currentUser, err := controller.getCurrentUser(c)
+	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
 		response = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
 		AddRequestError(c, response)
@@ -96,9 +96,9 @@ func (controller *TeamsController) GetUserTeams(c *web.C, w http.ResponseWriter,
 	return response
 }
 
-func (controller *TeamsController) GetTeamInfo(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+func (handler *TeamsHandler) GetTeamInfo(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	var response *HTTPResponse
-	currentUser, err := controller.getCurrentUser(c)
+	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
 		response = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
 		AddRequestError(c, response)
@@ -121,9 +121,9 @@ func (controller *TeamsController) GetTeamInfo(c *web.C, w http.ResponseWriter, 
 	return response
 }
 
-func (controller *TeamsController) AddUsersToTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+func (handler *TeamsHandler) AddUsersToTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	var response *HTTPResponse
-	currentUser, err := controller.getCurrentUser(c)
+	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
 		response = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
 		AddRequestError(c, response)
@@ -143,7 +143,7 @@ func (controller *TeamsController) AddUsersToTeam(c *web.C, w http.ResponseWrite
 		return erro
 	}
 
-	body, err := controller.getPayload(c, r)
+	body, err := handler.getPayload(c, r)
 	if err != nil {
 		response = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
 		AddRequestError(c, response)
@@ -170,9 +170,9 @@ func (controller *TeamsController) AddUsersToTeam(c *web.C, w http.ResponseWrite
 	return response
 }
 
-func (controller *TeamsController) RemoveUsersFromTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+func (handler *TeamsHandler) RemoveUsersFromTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	var response *HTTPResponse
-	currentUser, err := controller.getCurrentUser(c)
+	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
 		response = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
 		AddRequestError(c, response)
@@ -192,7 +192,7 @@ func (controller *TeamsController) RemoveUsersFromTeam(c *web.C, w http.Response
 		return erro
 	}
 
-	body, err := controller.getPayload(c, r)
+	body, err := handler.getPayload(c, r)
 	if err != nil {
 		response = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
 		AddRequestError(c, response)

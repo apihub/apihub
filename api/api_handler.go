@@ -9,11 +9,11 @@ import (
 	"github.com/zenazn/goji/web"
 )
 
-type Controller interface{}
+type Handler interface{}
 
-type ApiController struct{}
+type ApiHandler struct{}
 
-func (api *ApiController) getCurrentUser(c *web.C) (user *User, erro error) {
+func (api *ApiHandler) getCurrentUser(c *web.C) (user *User, erro error) {
 	user, err := GetCurrentUser(c)
 	if err != nil {
 		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
@@ -23,7 +23,7 @@ func (api *ApiController) getCurrentUser(c *web.C) (user *User, erro error) {
 	return user, nil
 }
 
-func (api *ApiController) getPayload(c *web.C, r *http.Request) ([]byte, error) {
+func (api *ApiHandler) getPayload(c *web.C, r *http.Request) ([]byte, error) {
 	var erro *HTTPResponse
 	var data interface{}
 

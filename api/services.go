@@ -6,11 +6,11 @@ import (
 	"github.com/zenazn/goji/web"
 )
 
-type ServicesController struct {
-	ApiController
+type ServicesHandler struct {
+	ApiHandler
 }
 
-func (controller *ServicesController) Index(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+func (handler *ServicesHandler) Index(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	response := &HTTPResponse{StatusCode: http.StatusOK, Payload: "Hello World"}
 	return response
 }
