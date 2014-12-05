@@ -28,7 +28,7 @@ func AuthorizationMiddleware(c *web.C, h http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
-func ErrorHandlerMiddleware(c *web.C, h http.Handler) http.Handler {
+func ErrorMiddleware(c *web.C, h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		h.ServeHTTP(w, r)
@@ -37,6 +37,7 @@ func ErrorHandlerMiddleware(c *web.C, h http.Handler) http.Handler {
 			body, _ := json.Marshal(key)
 			w.WriteHeader(key.StatusCode)
 			io.WriteString(w, string(body))
+			return
 		}
 	}
 

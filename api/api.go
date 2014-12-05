@@ -37,7 +37,7 @@ func (api *Api) DrawRoutes() {
 	goji.Get("/", api.Route(servicesController, "Index"))
 	goji.Post("/api/users", api.Route(usersController, "CreateUser"))
 	goji.Post("/api/signin", api.Route(usersController, "SignIn"))
-	goji.Use(ErrorHandlerMiddleware)
+	goji.Use(ErrorMiddleware)
 
 	// Private Routes
 	privateRoutes := web.New()
@@ -64,11 +64,15 @@ func (api *Api) Route(controller interface{}, route string) interface{} {
 		methodInterface := methodValue.Interface()
 		method := methodInterface.(func(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse)
 		response := method(&c, w, r)
-		w.WriteHeader(response.StatusCode)
-		if _, exists := c.Env["Content-Type"]; exists {
-			w.Header().Set("Content-Type", c.Env["Content-Type"].(string))
+		// Need to check if there's any error.
+		_, err := GetRequestError(&c)
+		if !err {
+			w.WriteHeader(response.StatusCode)
+			if _, exists := c.Env["Content-Type"]; exists {
+				w.Header().Set("Content-Type", c.Env["Content-Type"].(string))
+			}
+			io.WriteString(w, response.Payload)
 		}
-		io.WriteString(w, response.Payload)
 	}
 	return fn
 }

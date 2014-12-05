@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/albertoleal/backstage/account"
 	"github.com/albertoleal/backstage/db"
 	"github.com/tsuru/config"
 	"github.com/zenazn/goji/web"
@@ -12,15 +13,22 @@ import (
 )
 
 var teamsController *TeamsController
+var usersController *UsersController
+
+var alice *account.User
+var bob *account.User
+var mary *account.User
+var owner *account.User
+var team *account.Team
 
 func Test(t *testing.T) { TestingT(t) }
 
 type S struct {
-	recorder   *httptest.ResponseRecorder
+	Api *Api
 	env        map[string]interface{}
-	controller *UsersController //Should remove this.
-	router     *web.Mux
 	handler    http.HandlerFunc
+	recorder   *httptest.ResponseRecorder
+	router     *web.Mux
 }
 
 func (s *S) SetUpSuite(c *C) {
@@ -29,12 +37,22 @@ func (s *S) SetUpSuite(c *C) {
 }
 
 func (s *S) SetUpTest(c *C) {
-	s.controller = &UsersController{}
+	s.Api = &Api{}
 	teamsController = &TeamsController{}
+	usersController = &UsersController{}
+
 	s.recorder = httptest.NewRecorder()
 	s.env = map[string]interface{}{}
 	s.router = web.New()
 	s.handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
+
+	s.router.Use(ErrorMiddleware)
+
+	alice = &account.User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
+	bob = &account.User{Name: "Bob", Email: "bob@example.org", Username: "bob", Password: "123456"}
+	mary = &account.User{Name: "Bob", Email: "mary@example.org", Username: "mary", Password: "123456"}
+	owner = &account.User{Name: "Bob", Email: "owner@example.org", Username: "owner", Password: "123456"}
+	team = &account.Team{Name: "Team"}
 }
 
 func (s *S) TearDownSuite(c *C) {
@@ -43,6 +61,7 @@ func (s *S) TearDownSuite(c *C) {
 	defer storage.Close()
 	config.Unset("database:url")
 	config.Unset("database:name")
+	s.router.Abandon(ErrorMiddleware)
 }
 
 func (s *S) signIn() {

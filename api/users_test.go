@@ -1,7 +1,7 @@
 package api
 
 import (
-	"encoding/json"
+	// "encoding/json"
 	"net/http"
 	"strings"
 
@@ -19,66 +19,66 @@ func (s *S) TestCreateUser(c *C) {
 	}()
 	payload := `{"name": "Alice", "email": "alice@example.org", "username": "alice", "password": "123456"}`
 	b := strings.NewReader(payload)
-	req, err := http.NewRequest("POST", "/api/users", b)
-	req.Header.Set("Content-Type", "application/json")
-	c.Assert(err, IsNil)
-	response, erro := s.controller.CreateUser(&web.C{Env: s.env}, s.recorder, req)
-	expected := `{"name":"Alice","email":"alice@example.org","username":"alice"}`
-	c.Assert(erro, IsNil)
-	c.Assert(response.StatusCode, Equals, 201)
-	c.Assert(response.Payload, Equals, expected)
 
+	s.router.Post("/api/users", s.Api.Route(usersController, "CreateUser"))
+	req, _ := http.NewRequest("POST", "/api/users", b)
+	req.Header.Set("Content-Type", "application/json")
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, 201)
+  c.Assert(s.recorder.Body.String(), Equals, `{"name":"Alice","email":"alice@example.org","username":"alice"}`)
 }
 
 func (s *S) TestCreateUserWithInvalidPayloadFormat(c *C) {
 	payload := `"name": "Alice"`
 	b := strings.NewReader(payload)
-	req, err := http.NewRequest("POST", "/api/users", b)
+
+	s.router.Post("/api/users", s.Api.Route(usersController, "CreateUser"))
+	req, _ := http.NewRequest("POST", "/api/users", b)
 	req.Header.Set("Content-Type", "application/json")
-	c.Assert(err, IsNil)
 	webC := web.C{Env: s.env}
-	_, err = s.controller.CreateUser(&webC, s.recorder, req)
-	expected := `{"status_code":400,"payload":"The request was bad-formed."}`
-	c.Assert(err, NotNil)
-	key, _ := GetRequestError(&webC)
-	body, _ := json.Marshal(key)
-	c.Assert(string(body), Equals, expected)
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, 400)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"payload":"The request was bad-formed."}`)
 }
 
 func (s *S) TestCreateUserWithMissingRequiredFields(c *C) {
 	payload := `{}`
 	b := strings.NewReader(payload)
-	req, err := http.NewRequest("POST", "/api/users", b)
+
+	s.router.Post("/api/users", s.Api.Route(usersController, "CreateUser"))
+	req, _ := http.NewRequest("POST", "/api/users", b)
 	req.Header.Set("Content-Type", "application/json")
-	c.Assert(err, IsNil)
 	webC := web.C{Env: s.env}
-	_, err = s.controller.CreateUser(&webC, s.recorder, req)
-	expected := `{"status_code":400,"payload":"Name/Email/Username/Password cannot be empty."}`
-	c.Assert(err, NotNil)
-	key, _ := GetRequestError(&webC)
-	body, _ := json.Marshal(key)
-	c.Assert(string(body), Equals, expected)
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, 400)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"payload":"Name/Email/Username/Password cannot be empty."}`)
 }
 
 func (s *S) TestDeleteUser(c *C) {
-	user := &account.User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
-	user.Save()
-	defer user.Delete()
+	alice.Save()
+	defer alice.Delete()
 
-	req, err := http.NewRequest("DELETE", "/api/users", nil)
-	c.Assert(err, IsNil)
-	s.env[CurrentUser] = user
-	response := s.controller.DeleteUser(&web.C{Env: s.env}, s.recorder, req)
-	expected := `{"name":"Alice","email":"alice@example.org","username":"alice"}`
-	c.Assert(response.StatusCode, Equals, 200)
-	c.Assert(response.Payload, Equals, expected)
+	s.router.Delete("/api/users", s.Api.Route(usersController, "DeleteUser"))
+	req, _ := http.NewRequest("DELETE", "/api/users", nil)
+	s.env[CurrentUser] = alice
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, 200)
+	c.Assert(s.recorder.Body.String(), Equals, `{"name":"Alice","email":"alice@example.org","username":"alice"}`)
 }
 
 func (s *S) TestDeleteUserWithNotSignedUser(c *C) {
-	req, err := http.NewRequest("DELETE", "/api/users", nil)
-	c.Assert(err, IsNil)
-	s.env[CurrentUser] = "s"
-	response := s.controller.DeleteUser(&web.C{Env: s.env}, s.recorder, req)
-	c.Assert(response.StatusCode, Equals, 400)
-	c.Assert(response.Payload, Equals, "User is not signed in.")
+	s.router.Delete("/api/users", s.Api.Route(usersController, "DeleteUser"))
+	req, _ := http.NewRequest("DELETE", "/api/users", nil)
+	s.env[CurrentUser] = "invalid-user"
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, 400)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"payload":"User is not signed in."}`)
 }
