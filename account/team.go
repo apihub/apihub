@@ -7,47 +7,47 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-type Group struct {
+type Team struct {
 	Id    bson.ObjectId `bson:"_id,omitempty" json:"id,omitempty""`
 	Name  string        `json:"name"`
 	Users []string      `json:"users"`
 	Owner string        `json:"owner"`
 }
 
-func (group *Group) Save(owner *User) error {
+func (team *Team) Save(owner *User) error {
 	conn, err := db.Conn()
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
-	group.Users = []string{owner.Username}
-	group.Owner = owner.Username
-	err = conn.Groups().Insert(group)
+	team.Users = []string{owner.Username}
+	team.Owner = owner.Username
+	err = conn.Teams().Insert(team)
 	if mgo.IsDup(err) {
-		message := "Someone already has that group name. Could you try another?"
+		message := "Someone already has that team name. Could you try another?"
 		return &errors.ValidationError{Message: message}
 	}
 
 	return nil
 }
 
-func (group *Group) Delete() error {
+func (team *Team) Delete() error {
 	conn, err := db.Conn()
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
-	err = conn.Groups().Remove(group)
+	err = conn.Teams().Remove(team)
 	if err == mgo.ErrNotFound {
-		message := "Group not found."
+		message := "Team not found."
 		return &errors.ValidationError{Message: message}
 	}
 	return err
 }
 
-func (group *Group) AddUsers(usernames []string) error {
+func (team *Team) AddUsers(usernames []string) error {
 	conn, err := db.Conn()
 	if err != nil {
 		return err
@@ -61,18 +61,18 @@ func (group *Group) AddUsers(usernames []string) error {
 		if !user.Valid() {
 			continue
 		}
-		if _, contains := group.ContainsUser(user); contains == false {
-			group.Users = append(group.Users, user.Username)
+		if _, contains := team.ContainsUser(user); contains == false {
+			team.Users = append(team.Users, user.Username)
 			newUser = true
 		}
 	}
 	if newUser {
-		conn.Groups().Update(bson.M{"name": group.Name}, group)
+		conn.Teams().Update(bson.M{"name": team.Name}, team)
 	}
 	return nil
 }
 
-func (group *Group) RemoveUsers(usernames []string) error {
+func (team *Team) RemoveUsers(usernames []string) error {
 	conn, err := db.Conn()
 	if err != nil {
 		return err
@@ -85,7 +85,7 @@ func (group *Group) RemoveUsers(usernames []string) error {
 		user               *User
 	)
 	for _, username := range usernames {
-		if group.Owner == username {
+		if team.Owner == username {
 			message := "It is not possible to remove the owner from the team."
 			errOwnerNotRemoved = &errors.ValidationError{Message: message}
 			continue
@@ -95,17 +95,17 @@ func (group *Group) RemoveUsers(usernames []string) error {
 		if !user.Valid() {
 			continue
 		}
-		if i, ok := group.ContainsUser(user); ok {
-			hi := len(group.Users) - 1
+		if i, ok := team.ContainsUser(user); ok {
+			hi := len(team.Users) - 1
 			if hi > i {
-				group.Users[i] = group.Users[hi]
+				team.Users[i] = team.Users[hi]
 			}
-			group.Users = group.Users[:hi]
+			team.Users = team.Users[:hi]
 			removedUsers = true
 		}
 	}
 	if removedUsers {
-		conn.Groups().Update(bson.M{"name": group.Name}, group)
+		conn.Teams().Update(bson.M{"name": team.Name}, team)
 	}
 	if errOwnerNotRemoved != nil {
 		return errOwnerNotRemoved
@@ -113,61 +113,61 @@ func (group *Group) RemoveUsers(usernames []string) error {
 	return nil
 }
 
-func DeleteGroupByName(name string) error {
+func DeleteTeamByName(name string) error {
 	conn, err := db.Conn()
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
-	err = conn.Groups().Remove(bson.M{"name": name})
+	err = conn.Teams().Remove(bson.M{"name": name})
 	if err == mgo.ErrNotFound {
-		message := "Group not found."
+		message := "Team not found."
 		return &errors.ValidationError{Message: message}
 	}
 
 	return nil
 }
 
-func FindGroupByName(name string) (*Group, error) {
+func FindTeamByName(name string) (*Team, error) {
 	conn, err := db.Conn()
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Close()
 
-	var group Group
-	err = conn.Groups().Find(bson.M{"name": name}).One(&group)
+	var team Team
+	err = conn.Teams().Find(bson.M{"name": name}).One(&team)
 	if err == mgo.ErrNotFound {
-		message := "Group not found."
+		message := "Team not found."
 		return nil, &errors.ValidationError{Message: message}
 	}
 
-	return &group, nil
+	return &team, nil
 }
 
-func FindGroupById(id string) (*Group, error) {
+func FindTeamById(id string) (*Team, error) {
 	conn, err := db.Conn()
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Close()
 
-	var errNotFound = &errors.ValidationError{Message: "Group not found."}
+	var errNotFound = &errors.ValidationError{Message: "Team not found."}
 	if !bson.IsObjectIdHex(id) {
 		return nil, errNotFound
 	}
 
-	var group Group
-	err = conn.Groups().FindId(bson.ObjectIdHex(id)).One(&group)
+	var team Team
+	err = conn.Teams().FindId(bson.ObjectIdHex(id)).One(&team)
 	if err != nil {
 		return nil, errNotFound
 	}
 
-	return &group, nil
+	return &team, nil
 }
 
-func (group *Group) GetGroupUsers() ([]*User, error) {
+func (team *Team) GetTeamUsers() ([]*User, error) {
 	conn, err := db.Conn()
 	if err != nil {
 		return nil, err
@@ -176,7 +176,7 @@ func (group *Group) GetGroupUsers() ([]*User, error) {
 
 	var users []*User
 	var user *User
-	for _, username := range group.Users {
+	for _, username := range team.Users {
 		user, _ = FindUserByUsername(username)
 		users = append(users, user)
 	}
@@ -192,8 +192,8 @@ func getUsernames(users []*User) []string {
 	return usernames
 }
 
-func (group *Group) ContainsUser(user *User) (int, bool) {
-	for i, u := range group.Users {
+func (team *Team) ContainsUser(user *User) (int, bool) {
+	for i, u := range team.Users {
 		if u == user.Username {
 			return i, true
 		}

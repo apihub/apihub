@@ -31,7 +31,7 @@ func (api *Api) DrawRoutes() {
 	servicesController := &ServicesController{}
 	debugController := &DebugController{}
 	usersController := &UsersController{}
-	groupsController := &GroupsController{}
+	teamsController := &TeamsController{}
 
 	// Public Routes
 	goji.Get("/", api.Route(servicesController, "Index"))
@@ -48,12 +48,12 @@ func (api *Api) DrawRoutes() {
 	privateRoutes.Get("/helloworld", api.Route(debugController, "HelloWorld"))
 	privateRoutes.Delete("/users", api.Route(usersController, "DeleteUser"))
 
-	privateRoutes.Post("/teams", api.Route(groupsController, "CreateTeam"))
-	privateRoutes.Delete("/teams/:id", api.Route(groupsController, "DeleteTeam"))
-	privateRoutes.Get("/teams/:id", api.Route(groupsController, "GetTeamInfo"))
-	privateRoutes.Get("/teams", api.Route(groupsController, "GetUserTeams"))
-	privateRoutes.Post("/teams/:id/users", api.Route(groupsController, "AddUsersToTeam"))
-	privateRoutes.Delete("/teams/:id/users", api.Route(groupsController, "RemoveUsersFromTeam"))
+	privateRoutes.Post("/teams", api.Route(teamsController, "CreateTeam"))
+	privateRoutes.Delete("/teams/:id", api.Route(teamsController, "DeleteTeam"))
+	privateRoutes.Get("/teams/:id", api.Route(teamsController, "GetTeamInfo"))
+	privateRoutes.Get("/teams", api.Route(teamsController, "GetUserTeams"))
+	privateRoutes.Post("/teams/:id/users", api.Route(teamsController, "AddUsersToTeam"))
+	privateRoutes.Delete("/teams/:id/users", api.Route(teamsController, "RemoveUsersFromTeam"))
 }
 
 func (api *Api) Route(controller interface{}, route string) interface{} {

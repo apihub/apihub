@@ -11,7 +11,7 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-var groupsController *GroupsController
+var teamsController *TeamsController
 
 func Test(t *testing.T) { TestingT(t) }
 
@@ -30,7 +30,7 @@ func (s *S) SetUpSuite(c *C) {
 
 func (s *S) SetUpTest(c *C) {
 	s.controller = &UsersController{}
-	groupsController = &GroupsController{}
+	teamsController = &TeamsController{}
 	s.recorder = httptest.NewRecorder()
 	s.env = map[string]interface{}{}
 	s.router = web.New()

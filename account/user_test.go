@@ -82,10 +82,10 @@ func (s *S) TestGetTeams(c *C) {
 	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
 	defer user.Delete()
 	user.Save()
-	group := &Group{Name: "Group"}
-	group.Save(&user)
-	defer group.Delete()
+	team := &Team{Name: "Team"}
+	team.Save(&user)
+	defer team.Delete()
 	g, err := user.GetTeams()
 	c.Assert(err, IsNil)
-	c.Assert(g[0].Name, Equals, "Group")
+	c.Assert(g[0].Name, Equals, "Team")
 }

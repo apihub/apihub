@@ -10,11 +10,11 @@ import (
 	"github.com/zenazn/goji/web"
 )
 
-type GroupsController struct {
+type TeamsController struct {
 	ApiController
 }
 
-func (controller *GroupsController) CreateTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+func (controller *TeamsController) CreateTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	var response *HTTPResponse
 	owner, err := controller.getCurrentUser(c)
 	if err != nil {
@@ -29,34 +29,34 @@ func (controller *GroupsController) CreateTeam(c *web.C, w http.ResponseWriter, 
 		AddRequestError(c, response)
 		return response
 	}
-	group := &Group{}
-	if err := json.Unmarshal(body, group); err != nil {
+	team := &Team{}
+	if err := json.Unmarshal(body, team); err != nil {
 		fmt.Print("It was not possible to create a new team.")
 		response = &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
 		AddRequestError(c, response)
 		return response
 	}
 
-	err = group.Save(owner)
+	err = team.Save(owner)
 	if err != nil {
 		e := err.(*errors.ValidationError)
 		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: e.Message}
 		AddRequestError(c, erro)
 		return erro
 	}
-	group, err = FindGroupByName(group.Name)
+	team, err = FindTeamByName(team.Name)
 	if err != nil {
 		e := err.(*errors.ValidationError)
 		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: e.Message}
 		AddRequestError(c, erro)
 		return erro
 	}
-	payload, _ := json.Marshal(group)
+	payload, _ := json.Marshal(team)
 	response = &HTTPResponse{StatusCode: http.StatusCreated, Payload: string(payload)}
 	return response
 }
 
-func (controller *GroupsController) DeleteTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+func (controller *TeamsController) DeleteTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	var response *HTTPResponse
 	currentUser, err := controller.getCurrentUser(c)
 	if err != nil {
@@ -64,7 +64,7 @@ func (controller *GroupsController) DeleteTeam(c *web.C, w http.ResponseWriter, 
 		AddRequestError(c, response)
 		return response
 	}
-	team, err := FindGroupById(c.URLParams["id"])
+	team, err := FindTeamById(c.URLParams["id"])
 	if err != nil || team.Owner != currentUser.Username {
 		response = &HTTPResponse{StatusCode: http.StatusForbidden, Payload: "Team not found or you're not the owner."}
 		AddRequestError(c, response)
@@ -82,7 +82,7 @@ func (controller *GroupsController) DeleteTeam(c *web.C, w http.ResponseWriter, 
 	return response
 }
 
-func (controller *GroupsController) GetUserTeams(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+func (controller *TeamsController) GetUserTeams(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	var response *HTTPResponse
 	currentUser, err := controller.getCurrentUser(c)
 	if err != nil {
@@ -96,7 +96,7 @@ func (controller *GroupsController) GetUserTeams(c *web.C, w http.ResponseWriter
 	return response
 }
 
-func (controller *GroupsController) GetTeamInfo(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+func (controller *TeamsController) GetTeamInfo(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	var response *HTTPResponse
 	currentUser, err := controller.getCurrentUser(c)
 	if err != nil {
@@ -104,7 +104,7 @@ func (controller *GroupsController) GetTeamInfo(c *web.C, w http.ResponseWriter,
 		AddRequestError(c, response)
 		return response
 	}
-	team, err := FindGroupById(c.URLParams["id"])
+	team, err := FindTeamById(c.URLParams["id"])
 	if err != nil {
 		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "Team not found."}
 		AddRequestError(c, erro)
@@ -121,7 +121,7 @@ func (controller *GroupsController) GetTeamInfo(c *web.C, w http.ResponseWriter,
 	return response
 }
 
-func (controller *GroupsController) AddUsersToTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+func (controller *TeamsController) AddUsersToTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	var response *HTTPResponse
 	currentUser, err := controller.getCurrentUser(c)
 	if err != nil {
@@ -129,7 +129,7 @@ func (controller *GroupsController) AddUsersToTeam(c *web.C, w http.ResponseWrit
 		AddRequestError(c, response)
 		return response
 	}
-	team, err := FindGroupById(c.URLParams["id"])
+	team, err := FindTeamById(c.URLParams["id"])
 	if err != nil {
 		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "Team not found."}
 		AddRequestError(c, erro)
@@ -170,7 +170,7 @@ func (controller *GroupsController) AddUsersToTeam(c *web.C, w http.ResponseWrit
 	return response
 }
 
-func (controller *GroupsController) RemoveUsersFromTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+func (controller *TeamsController) RemoveUsersFromTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	var response *HTTPResponse
 	currentUser, err := controller.getCurrentUser(c)
 	if err != nil {
@@ -178,7 +178,7 @@ func (controller *GroupsController) RemoveUsersFromTeam(c *web.C, w http.Respons
 		AddRequestError(c, response)
 		return response
 	}
-	team, err := FindGroupById(c.URLParams["id"])
+	team, err := FindTeamById(c.URLParams["id"])
 	if err != nil {
 		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "Team not found."}
 		AddRequestError(c, erro)

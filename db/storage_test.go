@@ -44,10 +44,10 @@ func (s *S) TestUsers(c *C) {
 	c.Assert(users, DeepEquals, collection)
 }
 
-func (s *S) TestGroups(c *C) {
+func (s *S) TestTeams(c *C) {
 	storage, err := Conn()
 	c.Assert(err, IsNil)
-	groups := storage.Groups()
-	collection := storage.Collection("groups")
-	c.Assert(groups, DeepEquals, collection)
+	teams := storage.Teams()
+	collection := storage.Collection("teams")
+	c.Assert(teams, DeepEquals, collection)
 }

@@ -84,14 +84,14 @@ func FindUserByUsername(username string) (*User, error) {
 	return &user, nil
 }
 
-func (user *User) GetTeams() ([]*Group, error) {
+func (user *User) GetTeams() ([]*Team, error) {
 	conn, err := db.Conn()
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Close()
 
-	var groups []*Group
-	err = conn.Groups().Find(bson.M{"users": bson.M{"$in": []string{user.Username}}}).All(&groups)
-	return groups, nil
+	var teams []*Team
+	err = conn.Teams().Find(bson.M{"users": bson.M{"$in": []string{user.Username}}}).All(&teams)
+	return teams, nil
 }
