@@ -64,7 +64,7 @@ func GenerateToken(user *account.User) *TokenInfo {
 	}
 
 	token := &TokenInfo{User: user, Token: base64.URLEncoding.EncodeToString(rb),
-		Expires: ExpiresInSeconds, Type: "Token", CreatedAt: time.Now()}
+		Expires: ExpiresInSeconds, Type: "Token", CreatedAt: time.Now().In(time.UTC)}
 	conn, err := db.Conn()
 	if err != nil {
 		fmt.Println(err)

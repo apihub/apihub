@@ -91,7 +91,7 @@ func (user *User) GetTeams() ([]*Team, error) {
 	}
 	defer conn.Close()
 
-	var teams []*Team
+	var teams []*Team = []*Team{}
 	err = conn.Teams().Find(bson.M{"users": bson.M{"$in": []string{user.Username}}}).All(&teams)
 	return teams, nil
 }

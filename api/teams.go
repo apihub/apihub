@@ -82,7 +82,7 @@ func (handler *TeamsHandler) GetTeamInfo(c *web.C, w http.ResponseWriter, r *htt
 	}
 	_, ok := team.ContainsUser(currentUser)
 	if !ok {
-		return ResponseError(c, http.StatusBadRequest, "You do not belong to this team!")
+		return ResponseError(c, http.StatusForbidden, "You do not belong to this team!")
 	}
 
 	result, _ := json.Marshal(team)

@@ -184,8 +184,8 @@ func (s *S) TestGetTeamInfoWhenIsNotMemberOfTheTeam(c *C) {
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
-	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"payload":"You do not belong to this team!"}`)
+	c.Assert(s.recorder.Code, Equals, 403)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":403,"payload":"You do not belong to this team!"}`)
 }
 
 func (s *S) TestTeamInfoWhenUserIsNotSignedIn(c *C) {
