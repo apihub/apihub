@@ -151,9 +151,7 @@ func (handler *TeamsHandler) RemoveUsersFromTeam(c *web.C, w http.ResponseWriter
 		return ResponseError(c, http.StatusBadRequest, err.Error())
 	}
 	if keys["users"] == nil {
-		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "The request was bad-formed."}
-		AddRequestError(c, erro)
-		return erro
+		return ResponseError(c, http.StatusBadRequest, "The request was bad-formed.")
 	}
 	var users []string
 	for _, v := range keys["users"].([]interface{}) {
