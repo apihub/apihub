@@ -32,13 +32,14 @@ func (s *S) TearDownSuite(c *C) {
 }
 
 func (s *S) TestCreateServiceNewService(c *C) {
-	user := User{Username: "alice"}
-	service := Service{Name: "Backstage",
-		Endpoint:  map[string]interface{}{"latest": "http://example.org/api"},
+	owner := &User{Email: "owner@example.org"}
+	team := &Team{Name: "Team", Alias: "team"}
+	service := Service{
+		Endpoint:  "http://example.org/api",
 		Subdomain: "BACKSTAGE",
 	}
-	err := CreateService(&service, &user)
-	defer DeleteService(&service)
+	err := service.Save(owner, team)
+	defer service.Delete()
 
 	c.Check(service.Subdomain, Equals, "backstage")
 	_, ok := err.(*errors.ValidationError)
@@ -46,18 +47,21 @@ func (s *S) TestCreateServiceNewService(c *C) {
 }
 
 func (s *S) TestCannotCreateServiceServiceWhenSubdomainAlreadyExists(c *C) {
-	user := User{Username: "alice"}
-	service := Service{Subdomain: "backstage",
-		Endpoint: map[string]interface{}{"latest": "http://example.org/api"},
+	owner := &User{Email: "owner@example.org"}
+	team := &Team{Name: "Team", Alias: "team"}
+	service := Service{
+		Endpoint:  "http://example.org/api",
+		Subdomain: "backstage",
 	}
-	err := CreateService(&service, &user)
-	defer DeleteService(&service)
+	err := service.Save(owner, team)
+	defer service.Delete()
 	c.Check(err, IsNil)
 
-	service2 := Service{Subdomain: "backstage",
-		Endpoint: map[string]interface{}{"latest": "http://example.org/api"},
+	service2 := Service{
+		Subdomain: "backstage",
+		Endpoint:  "http://example.org/api",
 	}
-	err = CreateService(&service2, &user)
+	err = service2.Save(owner, team)
 	c.Check(err, NotNil)
 
 	e, ok := err.(*errors.ValidationError)
@@ -67,25 +71,27 @@ func (s *S) TestCannotCreateServiceServiceWhenSubdomainAlreadyExists(c *C) {
 }
 
 func (s *S) TestCannotCreateServiceAServiceWithoutRequiredFields(c *C) {
-	user := User{Username: "alice"}
-	service := Service{Subdomain: "backstage"}
-	err := CreateService(&service, &user)
+	owner := &User{Email: "owner@example.org"}
+	team := &Team{Name: "Team", Alias: "team"}
+	service := &Service{Subdomain: "backstage"}
+	err := service.Save(owner, team)
 	e := err.(*errors.ValidationError)
 	message := "Endpoint cannot be empty."
 	c.Assert(e.Message, Equals, message)
 
-	service = Service{}
-	err = CreateService(&service, &user)
+	service = &Service{}
+	err = service.Save(owner, team)
 	e = err.(*errors.ValidationError)
 	message = "Subdomain cannot be empty."
 	c.Assert(e.Message, Equals, message)
 }
 
 func (s *S) TestDeleteServiceANonExistingService(c *C) {
-	service := Service{Subdomain: "backstage",
-		Endpoint: map[string]interface{}{"latest": "http://example.org/api"},
+	service := &Service{
+		Subdomain: "backstage",
+		Endpoint:  "http://example.org/api",
 	}
-	err := DeleteService(&service)
+	err := service.Delete()
 
 	e, ok := err.(*errors.ValidationError)
 	c.Assert(ok, Equals, true)
@@ -94,19 +100,43 @@ func (s *S) TestDeleteServiceANonExistingService(c *C) {
 }
 
 func (s *S) TestDeleteServiceAnExistingService(c *C) {
-	user := User{Username: "alice"}
-	service := Service{Subdomain: "backstage",
-		Endpoint: map[string]interface{}{"latest": "http://example.org/api"},
+	owner := &User{Email: "owner@example.org"}
+	team := &Team{Name: "Team", Alias: "team"}
+	service := &Service{
+		Subdomain: "backstage",
+		Endpoint:  "http://example.org/api",
 	}
 
 	count, _ := CountService()
 	c.Assert(count, Equals, 0)
 
-	CreateService(&service, &user)
+	service.Save(owner, team)
 	count, _ = CountService()
 	c.Assert(count, Equals, 1)
 
-	DeleteService(&service)
+	service.Delete()
 	count, _ = CountService()
 	c.Assert(count, Equals, 0)
+}
+
+func (s *S) TestFindServiceBySubdomainByAlias(c *C) {
+	owner := &User{Email: "owner@example.org"}
+	team := &Team{Name: "Team", Alias: "team"}
+	service := &Service{
+		Subdomain: "backstage",
+		Endpoint:  "http://example.org/api",
+	}
+
+	defer service.Delete()
+	service.Save(owner, team)
+	se, _ := FindServiceBySubdomain(service.Subdomain)
+	c.Assert(se.Subdomain, Equals, service.Subdomain)
+}
+
+func (s *S) TestFindServiceBySubdomainWithInvalidName(c *C) {
+	_, err := FindServiceBySubdomain("Non Existing Service")
+	c.Assert(err, NotNil)
+	e := err.(*errors.ValidationError)
+	message := "Service not found."
+	c.Assert(e.Message, Equals, message)
 }
