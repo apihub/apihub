@@ -11,7 +11,7 @@ var (
 )
 
 func (s *S) SetUpTest(c *C) {
-	team = &Team{Name: "Team"}
+	team = &Team{Name: "Team", Alias: "Alias"}
 	owner = &User{Name: "Owner", Username: "owner", Email: "owner@example.org", Password: "123456"}
 }
 
@@ -27,6 +27,19 @@ func (s *S) TestCreateTeamWhenNameAlreadyExists(c *C) {
 	c.Assert(err, IsNil)
 
 	team = &Team{Name: "Team"}
+	err = team.Save(owner)
+	c.Assert(err, NotNil)
+	e := err.(*errors.ValidationError)
+	message := "Someone already has that team name or alias. Could you try another?"
+	c.Assert(e.Message, Equals, message)
+}
+
+func (s *S) TestCreateTeamWhenAliasAlreadyExists(c *C) {
+	err := team.Save(owner)
+	defer DeleteTeamByName("Team")
+	c.Assert(err, IsNil)
+
+	team = &Team{Name: "Another Team Name", Alias: "Alias"}
 	err = team.Save(owner)
 	c.Assert(err, NotNil)
 	e := err.(*errors.ValidationError)
