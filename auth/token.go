@@ -15,21 +15,22 @@ import (
 )
 
 const (
-	ExpiresInSeconds = 24 * 3600
-	TokenType        = "Token"
+	ExpiresInSeconds  = 24 * 3600
+	ExpiresTokenCache = ExpiresInSeconds - 10 // time in seconds to remove from expire time.
+	TokenType         = "Token"
 )
 
 type Token interface {
 	GetToken() (tokenType string, token string, error error)
+	TokenFor() *TokenInfo
 	GenerateToken() *TokenInfo
 }
 
 type TokenInfo struct {
-	User      *account.User `bson:"user" json:"-"`
-	Token     string        `json:"token"`
-	Type      string        `json:"token_type"`
-	Expires   int           `json:"expires"`
-	CreatedAt time.Time     `bson:"created_at" json:"created_at"`
+	Token     string `json:"token"`
+	Type      string `json:"token_type"`
+	Expires   int    `json:"expires"`
+	CreatedAt string `bson:"created_at" json:"created_at"`
 }
 
 func GetUserFromToken(auth string) (user *account.User, error error) {
@@ -56,6 +57,27 @@ func GetUserFromToken(auth string) (user *account.User, error error) {
 	return nil, errors.New("Invalid token format.")
 }
 
+// First, try to retrieve an existing token for the user. Return a new one if not found.
+func TokenFor(user *account.User) *TokenInfo {
+	token, err := getToken("token:" + user.Email)
+	if err != nil {
+		fmt.Print(err.Error())
+	}
+	var t TokenInfo
+	redis.ScanStruct(token, &t)
+	if t.Token == "" {
+		conn, err := db.Conn()
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer conn.Close()
+		t := GenerateToken(user)
+		go conn.Tokens("token:"+user.Email, ExpiresTokenCache, structs.Map(t))
+		return t
+	}
+	return &t
+}
+
 func GenerateToken(user *account.User) *TokenInfo {
 	rb := make([]byte, 32)
 	_, err := rand.Read(rb)
@@ -63,14 +85,18 @@ func GenerateToken(user *account.User) *TokenInfo {
 		fmt.Println(err)
 	}
 
-	token := &TokenInfo{User: user, Token: base64.URLEncoding.EncodeToString(rb),
-		Expires: ExpiresInSeconds, Type: "Token", CreatedAt: time.Now().In(time.UTC)}
+	token := &TokenInfo{
+		Token:     base64.URLEncoding.EncodeToString(rb),
+		Expires:   ExpiresInSeconds,
+		CreatedAt: time.Now().In(time.UTC).Format("2006-01-02T15:04:05Z07:00"),
+		Type:      "Token",
+	}
 	conn, err := db.Conn()
 	if err != nil {
 		fmt.Println(err)
 	}
 	defer conn.Close()
-	go conn.Tokens(token.Token, token.Expires, structs.Map(token.User))
+	go conn.Tokens(token.Token, token.Expires, structs.Map(user))
 	return token
 }
 

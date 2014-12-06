@@ -32,3 +32,10 @@ func (s *S) TestGenerateToken(c *C) {
 	c.Assert(token.Type, Equals, "Token")
 	c.Assert(len(token.Token), Equals, 44)
 }
+
+func (s *S) TestTokenForReturnsTheSameTokenIfValid(c *C) {
+	user := &account.User{Username: "alice", Email: "alice@bar.example.org"}
+	tokenInfo := TokenFor(user)
+	tokenInfo2 := TokenFor(user)
+	c.Assert(tokenInfo.Token, Equals, tokenInfo2.Token)
+}

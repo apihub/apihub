@@ -17,6 +17,6 @@ func SignIn(email string, password string) (*auth.TokenInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	token := auth.GenerateToken(user)
+	token := auth.TokenFor(user)
 	return token, err
 }
