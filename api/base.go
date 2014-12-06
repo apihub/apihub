@@ -16,8 +16,7 @@ type ApiHandler struct{}
 func (api *ApiHandler) getCurrentUser(c *web.C) (user *User, erro error) {
 	user, err := GetCurrentUser(c)
 	if err != nil {
-		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
-		AddRequestError(c, erro)
+		ResponseError(c, http.StatusBadRequest, err.Error())
 		return nil, err
 	}
 	return user, nil
@@ -33,4 +32,10 @@ func (api *ApiHandler) parseBody(body io.ReadCloser, r interface{}) error {
 		return errors.New("The request was bad-formed.")
 	}
 	return nil
+}
+
+func ResponseError(c *web.C, statusCode int, errorMessage string) *HTTPResponse {
+	response := &HTTPResponse{StatusCode: statusCode, Payload: errorMessage}
+	AddRequestError(c, response)
+	return response
 }

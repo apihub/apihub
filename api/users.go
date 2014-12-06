@@ -17,37 +17,29 @@ func (handler *UsersHandler) CreateUser(c *web.C, w http.ResponseWriter, r *http
 	user := &User{}
 	err := handler.parseBody(r.Body, &user)
 	if err != nil {
-		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "The request was bad-formed."}
-		AddRequestError(c, erro)
-		return erro
+		return ResponseError(c, http.StatusBadRequest, "The request was bad-formed.")
 	}
 
 	err = user.Save()
 	if err != nil {
 		e := err.(*errors.ValidationError)
-		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: e.Message}
-		AddRequestError(c, erro)
-		return erro
+		return ResponseError(c, http.StatusBadRequest, e.Message)
 	}
 	user.Password = ""
 	payload, _ := json.Marshal(user)
-	response := &HTTPResponse{StatusCode: http.StatusCreated, Payload: string(payload)}
-	return response
+	return &HTTPResponse{StatusCode: http.StatusCreated, Payload: string(payload)}
 }
 
 func (handler *UsersHandler) DeleteUser(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	user, err := GetCurrentUser(c)
 	if err != nil {
-		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: err.Error()}
-		AddRequestError(c, erro)
-		return erro
+		return ResponseError(c, http.StatusBadRequest, err.Error())
 	}
 
 	user.Delete()
 	user.Password = ""
 	payload, _ := json.Marshal(user)
-	response := &HTTPResponse{StatusCode: http.StatusOK, Payload: string(payload)}
-	return response
+	return &HTTPResponse{StatusCode: http.StatusOK, Payload: string(payload)}
 }
 
 func (handler *UsersHandler) SignIn(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
@@ -55,12 +47,9 @@ func (handler *UsersHandler) SignIn(c *web.C, w http.ResponseWriter, r *http.Req
 
 	token, err := SignIn(username, password)
 	if err != nil {
-		erro := &HTTPResponse{StatusCode: http.StatusBadRequest, Payload: "Invalid Username or Password."}
-		AddRequestError(c, erro)
-		return erro
+		return ResponseError(c, http.StatusBadRequest, "Invalid Username or Password.")
 	}
 
 	payload, _ := json.Marshal(token)
-	response := &HTTPResponse{StatusCode: http.StatusOK, Payload: string(payload)}
-	return response
+	return &HTTPResponse{StatusCode: http.StatusOK, Payload: string(payload)}
 }
