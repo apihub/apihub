@@ -39,11 +39,10 @@ func CreateService(service *Service, user *User) error {
 		return &errors.ValidationError{Message: message}
 	}
 
-	// FIXME: improve this.
 	service.Subdomain = strings.ToLower(service.Subdomain)
 	service.CreatedAt = time.Now().In(time.UTC)
 	service.UpdatedAt = time.Now().In(time.UTC)
-	service.Owner = user.Username
+	service.Owner = user.Email
 
 	err = conn.Services().Insert(service)
 	if mgo.IsDup(err) {

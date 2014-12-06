@@ -21,8 +21,8 @@ func (team *Team) Save(owner *User) error {
 	}
 	defer conn.Close()
 
-	team.Users = []string{owner.Username}
-	team.Owner = owner.Username
+	team.Users = []string{owner.Email}
+	team.Owner = owner.Email
 	err = conn.Teams().Insert(team)
 	if mgo.IsDup(err) {
 		message := "Someone already has that team name. Could you try another?"
@@ -47,7 +47,7 @@ func (team *Team) Delete() error {
 	return err
 }
 
-func (team *Team) AddUsers(usernames []string) error {
+func (team *Team) AddUsers(emails []string) error {
 	conn, err := db.Conn()
 	if err != nil {
 		return err
@@ -56,13 +56,13 @@ func (team *Team) AddUsers(usernames []string) error {
 
 	var newUser bool
 	var user *User
-	for _, username := range usernames {
-		user = &User{Username: username}
+	for _, email := range emails {
+		user = &User{Email: email}
 		if !user.Valid() {
 			continue
 		}
 		if _, contains := team.ContainsUser(user); contains == false {
-			team.Users = append(team.Users, user.Username)
+			team.Users = append(team.Users, user.Email)
 			newUser = true
 		}
 	}
@@ -72,7 +72,7 @@ func (team *Team) AddUsers(usernames []string) error {
 	return nil
 }
 
-func (team *Team) RemoveUsers(usernames []string) error {
+func (team *Team) RemoveUsers(emails []string) error {
 	conn, err := db.Conn()
 	if err != nil {
 		return err
@@ -84,14 +84,14 @@ func (team *Team) RemoveUsers(usernames []string) error {
 		errOwnerNotRemoved *errors.ValidationError
 		user               *User
 	)
-	for _, username := range usernames {
-		if team.Owner == username {
+	for _, email := range emails {
+		if team.Owner == email {
 			message := "It is not possible to remove the owner from the team."
 			errOwnerNotRemoved = &errors.ValidationError{Message: message}
 			continue
 		}
 
-		user = &User{Username: username}
+		user = &User{Email: email}
 		if !user.Valid() {
 			continue
 		}
@@ -176,25 +176,25 @@ func (team *Team) GetTeamUsers() ([]*User, error) {
 
 	var users []*User
 	var user *User
-	for _, username := range team.Users {
-		user, _ = FindUserByUsername(username)
+	for _, email := range team.Users {
+		user, _ = FindUserByEmail(email)
 		users = append(users, user)
 	}
 
 	return users, nil
 }
 
-func getUsernames(users []*User) []string {
-	usernames := make([]string, len(users))
+func getEmails(users []*User) []string {
+	emails := make([]string, len(users))
 	for i, u := range users {
-		usernames[i] = u.Username
+		emails[i] = u.Email
 	}
-	return usernames
+	return emails
 }
 
 func (team *Team) ContainsUser(user *User) (int, bool) {
 	for i, u := range team.Users {
-		if u == user.Username {
+		if u == user.Email {
 			return i, true
 		}
 	}

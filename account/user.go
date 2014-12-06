@@ -30,7 +30,7 @@ func (user *User) Save() error {
 	user.HashPassword()
 	err = conn.Users().Insert(user)
 	if mgo.IsDup(err) {
-		message := "Someone already has that username. Could you try another?."
+		message := "Someone already has that email. Could you try another?."
 		return &errors.ValidationError{Message: message}
 	}
 	return err
@@ -61,14 +61,14 @@ func (user *User) HashPassword() {
 }
 
 func (user *User) Valid() bool {
-	_, err := FindUserByUsername(user.Username)
+	_, err := FindUserByEmail(user.Email)
 	if err == nil {
 		return true
 	}
 	return false
 }
 
-func FindUserByUsername(username string) (*User, error) {
+func FindUserByEmail(email string) (*User, error) {
 	conn, err := db.Conn()
 	if err != nil {
 		return nil, err
@@ -76,7 +76,7 @@ func FindUserByUsername(username string) (*User, error) {
 	defer conn.Close()
 
 	var user User
-	err = conn.Users().Find(bson.M{"username": username}).One(&user)
+	err = conn.Users().Find(bson.M{"email": email}).One(&user)
 	if err == mgo.ErrNotFound {
 		return nil, &errors.ValidationError{Message: "User not found"}
 	}
@@ -92,6 +92,6 @@ func (user *User) GetTeams() ([]*Team, error) {
 	defer conn.Close()
 
 	var teams []*Team = []*Team{}
-	err = conn.Teams().Find(bson.M{"users": bson.M{"$in": []string{user.Username}}}).All(&teams)
+	err = conn.Teams().Find(bson.M{"users": bson.M{"$in": []string{user.Email}}}).All(&teams)
 	return teams, nil
 }

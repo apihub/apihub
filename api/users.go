@@ -43,11 +43,11 @@ func (handler *UsersHandler) DeleteUser(c *web.C, w http.ResponseWriter, r *http
 }
 
 func (handler *UsersHandler) SignIn(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
-	username, password := r.FormValue("username"), r.FormValue("password")
+	email, password := r.FormValue("email"), r.FormValue("password")
 
-	token, err := SignIn(username, password)
+	token, err := SignIn(email, password)
 	if err != nil {
-		return ResponseError(c, http.StatusBadRequest, "Invalid Username or Password.")
+		return ResponseError(c, http.StatusBadRequest, "Invalid Email or Password.")
 	}
 
 	payload, _ := json.Marshal(token)

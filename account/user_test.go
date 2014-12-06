@@ -7,21 +7,21 @@ import (
 )
 
 func (s *S) TestCreateUser(c *C) {
-	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
+	user := User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	defer user.Delete()
 	err := user.Save()
 	c.Assert(err, IsNil)
 }
 
 func (s *S) TestCreateUserWithSameUsername(c *C) {
-	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
+	user := User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	defer user.Delete()
 	user.Save()
 
 	user2 := User{Name: "Bob", Email: "bob@bar.com", Username: "alice", Password: "123456"}
 	err := user2.Save()
 	e := err.(*errors.ValidationError)
-	msg := "Someone already has that username. Could you try another?."
+	msg := "Someone already has that email. Could you try another?."
 	c.Assert(e.Message, Equals, msg)
 }
 
@@ -34,16 +34,16 @@ func (s *S) TestCreateUserWithoutRequiredFields(c *C) {
 }
 
 func (s *S) TestCreateUserShouldMaskThePassword(c *C) {
-	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
+	user := User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	defer user.Delete()
 	user.Save()
 
-	foundUser, _ := FindUserByUsername("alice")
+	foundUser, _ := FindUserByEmail(user.Email)
 	c.Assert(foundUser.Password, Not(Equals), "123456")
 }
 
 func (s *S) TestValid(c *C) {
-	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
+	user := User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	defer user.Delete()
 	user.Save()
 
@@ -52,34 +52,34 @@ func (s *S) TestValid(c *C) {
 }
 
 func (s *S) TestValidWhenUserDoesNotExistInTheDB(c *C) {
-	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
+	user := User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	valid := user.Valid()
 	c.Assert(valid, Equals, false)
 }
 
-func (s *S) FindUserByUsername(c *C) {
-	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
+func (s *S) FindUserByEmail(c *C) {
+	user := User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	defer user.Delete()
 	user.Save()
 
-	foundUser, err := FindUserByUsername("alice")
+	foundUser, err := FindUserByEmail(user.Email)
 	c.Assert(err, IsNil)
 	c.Assert(foundUser, NotNil)
 }
 
 func (s *S) TestFindUserWithInvalidUsername(c *C) {
-	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
+	user := User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	defer user.Delete()
 	user.Save()
 
-	_, err := FindUserByUsername("bob")
+	_, err := FindUserByEmail("bob@example.org")
 	e := err.(*errors.ValidationError)
 	msg := "User not found"
 	c.Assert(e.Message, Equals, msg)
 }
 
 func (s *S) TestGetTeams(c *C) {
-	user := User{Name: "Alice", Email: "foo@bar.com", Username: "alice", Password: "123456"}
+	user := User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	defer user.Delete()
 	user.Save()
 	team := &Team{Name: "Team"}

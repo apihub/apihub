@@ -11,7 +11,7 @@ import (
 
 func (s *S) TestCreateUser(c *C) {
 	defer func() {
-		user, err := account.FindUserByUsername("alice")
+		user, err := account.FindUserByEmail("alice@example.org")
 		c.Assert(err, IsNil)
 		err = user.Delete()
 		c.Assert(err, IsNil)

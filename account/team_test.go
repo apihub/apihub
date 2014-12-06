@@ -12,7 +12,7 @@ var (
 
 func (s *S) SetUpTest(c *C) {
 	team = &Team{Name: "Team"}
-	owner = &User{Name: "Alice", Username: "alice"}
+	owner = &User{Name: "Owner", Username: "owner", Email: "owner@example.org", Password: "123456"}
 }
 
 func (s *S) TestCreateTeam(c *C) {
@@ -49,7 +49,7 @@ func (s *S) TestAddUsersWithInvalidUser(c *C) {
 	defer DeleteTeamByName("Team")
 	g, _ := FindTeamByName("Team")
 
-	err = g.AddUsers([]string{"alice", "bob"})
+	err = g.AddUsers([]string{"owner@example.org", "bob@example.org"})
 	c.Assert(err, IsNil)
 
 	g, _ = FindTeamByName("Team")
@@ -61,10 +61,10 @@ func (s *S) TestAddUsersWithValidUser(c *C) {
 	defer DeleteTeamByName("Team")
 	g, _ := FindTeamByName("Team")
 
-	bob := &User{Name: "Bob", Email: "bob@bar.com", Username: "bob", Password: "123456"}
+	bob := &User{Name: "Bob", Email: "bob@example.org", Username: "bob", Password: "123456"}
 	bob.Save()
 	defer bob.Delete()
-	err = g.AddUsers([]string{"alice", "bob"})
+	err = g.AddUsers([]string{bob.Email})
 	c.Assert(err, IsNil)
 
 	g, _ = FindTeamByName("Team")
@@ -76,50 +76,53 @@ func (s *S) TestAddUsersWithSameUsername(c *C) {
 	defer DeleteTeamByName("Team")
 	g, _ := FindTeamByName("Team")
 	c.Assert(len(g.Users), Equals, 1)
-
-	err = g.AddUsers([]string{"alice", "alice"})
+	err = g.AddUsers([]string{"alice@example.org", "alice@example.org"})
 	c.Assert(err, IsNil)
-
 	g, _ = FindTeamByName("Team")
 	c.Assert(len(g.Users), Equals, 1)
 }
 
 func (s *S) TestRemoveUsers(c *C) {
 	err := team.Save(owner)
+	bob := &User{Name: "Bob", Email: "bob@example.org", Username: "bob", Password: "123456"}
+	bob.Save()
+	defer bob.Delete()
 	defer DeleteTeamByName("Team")
 	g, _ := FindTeamByName("Team")
-	err = g.AddUsers([]string{"alice", "bob"})
-	err = g.RemoveUsers([]string{"bob"})
+	err = g.AddUsers([]string{bob.Email})
+	g, _ = FindTeamByName("Team")
+	c.Assert(len(g.Users), Equals, 2)
+	err = g.RemoveUsers([]string{bob.Email})
 	c.Assert(err, IsNil)
 	g, _ = FindTeamByName("Team")
 	c.Assert(len(g.Users), Equals, 1)
-	c.Assert(g.Users[0], Equals, "alice")
+	c.Assert(g.Users[0], Equals, "owner@example.org")
 }
 
 func (s *S) TestRemoveUsersWithNonExistingUser(c *C) {
 	err := team.Save(owner)
 	defer DeleteTeamByName("Team")
 	g, _ := FindTeamByName("Team")
-	err = g.RemoveUsers([]string{"bob"})
+	err = g.RemoveUsers([]string{"bob@example.org"})
 	c.Assert(err, IsNil)
 }
 
 func (s *S) TestRemoveUsersWhenTheUserIsOwner(c *C) {
 	err := team.Save(owner)
 	defer DeleteTeamByName("Team")
-	mary := &User{Name: "Mary", Email: "mary@bar.com", Username: "mary", Password: "123456"}
+	mary := &User{Name: "Mary", Email: "mary@example.org", Username: "mary", Password: "123456"}
 	mary.Save()
 	defer mary.Delete()
-	team.AddUsers([]string{"mary", "bob"})
+	team.AddUsers([]string{"mary@example.org", "bob@example.org"})
 
-	err = team.RemoveUsers([]string{owner.Username, "bob"})
+	err = team.RemoveUsers([]string{owner.Email, "bob@example.org"})
 	c.Assert(err, Not(IsNil))
 	e := err.(*errors.ValidationError)
 	c.Assert(e.Message, Equals, "It is not possible to remove the owner from the team.")
 
 	g, _ := FindTeamByName("Team")
 	c.Assert(len(g.Users), Equals, 2)
-	c.Assert(g.Users[0], Equals, owner.Username)
+	c.Assert(g.Users[0], Equals, owner.Email)
 }
 
 func (s *S) TestDeleteTeamByName(c *C) {
@@ -138,7 +141,6 @@ func (s *S) TestDeleteTeamByNameWithInvalidName(c *C) {
 }
 
 func (s *S) TestFindTeamByName(c *C) {
-	owner := &User{Name: "Alice", Email: "alice@bar.com", Username: "alice", Password: "123456"}
 	err := team.Save(owner)
 
 	defer DeleteTeamByName("Team")
@@ -157,7 +159,6 @@ func (s *S) TestFindTeamByNameWithInvalidName(c *C) {
 }
 
 func (s *S) TestFindTeamById(c *C) {
-	owner := &User{Name: "Alice", Email: "alice@bar.com", Username: "alice", Password: "123456"}
 	err := team.Save(owner)
 	defer DeleteTeamByName("Team")
 	c.Assert(err, IsNil)
@@ -175,25 +176,25 @@ func (s *S) TestFindTeamByIdWithInvalidId(c *C) {
 }
 
 func (s *S) TestGetTeamUsers(c *C) {
-	alice := &User{Name: "Alice", Email: "alice@bar.com", Username: "alice", Password: "123456"}
+	alice := &User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	defer alice.Delete()
 	alice.Save()
-	bob := &User{Name: "Bob", Email: "bob@bar.com", Username: "bob", Password: "123456"}
+	bob := &User{Name: "Bob", Email: "bob@example.org", Username: "bob", Password: "123456"}
 	defer bob.Delete()
 	bob.Save()
 
 	team.Save(alice)
-	team.AddUsers([]string{"bob"})
+	team.AddUsers([]string{bob.Email})
 	defer DeleteTeamByName("Team")
 
 	g, _ := FindTeamByName("Team")
 	users, _ := g.GetTeamUsers()
-	c.Assert(users[0].Username, Equals, alice.Username)
-	c.Assert(users[1].Username, Equals, bob.Username)
+	c.Assert(users[0].Email, Equals, alice.Email)
+	c.Assert(users[1].Email, Equals, bob.Email)
 }
 
 func (s *S) TestContainsUser(c *C) {
-	bob := &User{Name: "Bob", Email: "bob@bar.com", Username: "bob", Password: "123456"}
+	bob := &User{Name: "Bob", Email: "bob@example.org", Username: "bob", Password: "123456"}
 	defer bob.Delete()
 	bob.Save()
 

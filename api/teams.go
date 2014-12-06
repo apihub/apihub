@@ -46,7 +46,7 @@ func (handler *TeamsHandler) DeleteTeam(c *web.C, w http.ResponseWriter, r *http
 	}
 
 	team, err := FindTeamById(c.URLParams["id"])
-	if err != nil || team.Owner != currentUser.Username {
+	if err != nil || team.Owner != currentUser.Email {
 		return ResponseError(c, http.StatusForbidden, "Team not found or you're not the owner.")
 	}
 	err = team.Delete()
