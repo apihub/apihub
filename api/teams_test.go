@@ -26,7 +26,26 @@ func (s *S) TestCreateTeam(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 201)
-	c.Assert(s.recorder.Body.String(), Matches, "^{\"id\":\".*?\",\"name\":\"Team\",\"users\":\\[\"alice@example.org\"\\],\"owner\":\"alice@example.org\"}$")
+	c.Assert(s.recorder.Body.String(), Matches, "^{\"id\":\".*?\",\"name\":\"Team\",\"alias\":\"team\",\"users\":\\[\"alice@example.org\"\\],\"owner\":\"alice@example.org\"}$")
+}
+
+func (s *S) TestCreateTeamWithAlias(c *C) {
+	alice.Save()
+	defer alice.Delete()
+	defer account.DeleteTeamByName("Team")
+
+	payload := `{"name": "Team", "alias": "my alias"}`
+	b := strings.NewReader(payload)
+
+	s.router.Post("/api/teams", s.Api.Route(teamsHandler, "CreateTeam"))
+	req, _ := http.NewRequest("POST", "/api/teams", b)
+	req.Header.Set("Content-Type", "application/json")
+	s.env[CurrentUser] = alice
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, 201)
+	c.Assert(s.recorder.Body.String(), Matches, "^{\"id\":\".*?\",\"name\":\"Team\",\"alias\":\"my-alias\",\"users\":\\[\"alice@example.org\"\\],\"owner\":\"alice@example.org\"}$")
 }
 
 func (s *S) TestCreateTeamWhenUserIsNotSignedIn(c *C) {
@@ -74,7 +93,7 @@ func (s *S) TestDeleteTeam(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 200)
-	c.Assert(s.recorder.Body.String(), Equals, `{"name":"Team","users":["owner@example.org"],"owner":"owner@example.org"}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"name":"Team","alias":"team","users":["owner@example.org"],"owner":"owner@example.org"}`)
 }
 
 func (s *S) TestDeleteTeamWhenUserIsNotOwner(c *C) {
@@ -123,7 +142,7 @@ func (s *S) TestGetUserTeams(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 200)
-	c.Assert(s.recorder.Body.String(), Matches, "^\\[{\"id\":\".*?\",\"name\":\"Team\",\"users\":\\[\"owner@example.org\"\\],\"owner\":\"owner@example.org\"}\\]$")
+	c.Assert(s.recorder.Body.String(), Matches, "^\\[{\"id\":\".*?\",\"name\":\"Team\",\"alias\":\"team\",\"users\":\\[\"owner@example.org\"\\],\"owner\":\"owner@example.org\"}\\]$")
 }
 
 func (s *S) TestGetUserTeamsWhenUserIsNotSignedIn(c *C) {
@@ -150,7 +169,7 @@ func (s *S) TestGetTeamInfo(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 200)
-	c.Assert(s.recorder.Body.String(), Matches, "^{\"id\":\".*?\",\"name\":\"Team\",\"users\":\\[\"owner@example.org\"\\],\"owner\":\"owner@example.org\"}$")
+	c.Assert(s.recorder.Body.String(), Matches, "^{\"id\":\".*?\",\"name\":\"Team\",\"alias\":\"team\",\"users\":\\[\"owner@example.org\"\\],\"owner\":\"owner@example.org\"}$")
 }
 
 func (s *S) TestGetTeamInfoWhenTeamNotFound(c *C) {
@@ -206,7 +225,7 @@ func (s *S) TestAddUsersToTeam(c *C) {
 	defer owner.Delete()
 	defer account.DeleteTeamByName(team.Name)
 
-	payload := `{"users": ["`+bob.Email+`"]}`
+	payload := `{"users": ["` + bob.Email + `"]}`
 	b := strings.NewReader(payload)
 
 	g, _ := account.FindTeamByName(team.Name)
@@ -217,7 +236,7 @@ func (s *S) TestAddUsersToTeam(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 201)
-	c.Assert(s.recorder.Body.String(), Matches, "^{\"id\":\".*?\",\"name\":\"Team\",\"users\":\\[\"owner@example.org\",\"bob@example.org\"\\],\"owner\":\"owner@example.org\"}$")
+	c.Assert(s.recorder.Body.String(), Matches, "^{\"id\":\".*?\",\"name\":\"Team\",\"alias\":\"team\",\"users\":\\[\"owner@example.org\",\"bob@example.org\"\\],\"owner\":\"owner@example.org\"}$")
 }
 
 func (s *S) TestAddUserToTeamWithInvalidPaylod(c *C) {
@@ -228,7 +247,7 @@ func (s *S) TestAddUserToTeamWithInvalidPaylod(c *C) {
 	defer bob.Delete()
 	defer account.DeleteTeamByName(team.Name)
 
-	payload := `{"members": ["`+bob.Email+`"]}`
+	payload := `{"members": ["` + bob.Email + `"]}`
 	b := strings.NewReader(payload)
 
 	g, _ := account.FindTeamByName(team.Name)
@@ -295,7 +314,7 @@ func (s *S) TestRemoveUsersFromTeam(c *C) {
 	defer owner.Delete()
 	defer account.DeleteTeamByName(team.Name)
 
-	payload := `{"users": ["`+bob.Email+`"]}`
+	payload := `{"users": ["` + bob.Email + `"]}`
 	b := strings.NewReader(payload)
 
 	g, _ := account.FindTeamByName(team.Name)
@@ -306,7 +325,7 @@ func (s *S) TestRemoveUsersFromTeam(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 200)
-	c.Assert(s.recorder.Body.String(), Matches, "^{\"id\":\".*?\",\"name\":\"Team\",\"users\":\\[\"owner@example.org\"\\],\"owner\":\"owner@example.org\"}$")
+	c.Assert(s.recorder.Body.String(), Matches, "^{\"id\":\".*?\",\"name\":\"Team\",\"alias\":\"team\",\"users\":\\[\"owner@example.org\"\\],\"owner\":\"owner@example.org\"}$")
 }
 
 func (s *S) TestRemoveUsersFromTeamWithInvalidPaylod(c *C) {
@@ -317,7 +336,7 @@ func (s *S) TestRemoveUsersFromTeamWithInvalidPaylod(c *C) {
 	defer bob.Delete()
 	defer account.DeleteTeamByName(team.Name)
 
-	payload := `{"members": ["`+bob.Email+`"]}`
+	payload := `{"members": ["` + bob.Email + `"]}`
 	b := strings.NewReader(payload)
 
 	g, _ := account.FindTeamByName(team.Name)
@@ -372,7 +391,7 @@ func (s *S) TestRemoveUsersFromTeamWhenUserIsOwner(c *C) {
 	defer owner.Delete()
 	defer team.Delete()
 
-	payload := `{"users": ["`+owner.Email+`"]}`
+	payload := `{"users": ["` + owner.Email + `"]}`
 	b := strings.NewReader(payload)
 
 	g, _ := account.FindTeamByName(team.Name)

@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	DefaultRedisHost = "127.0.0.1:6379"
+	DefaultRedisHost    = "127.0.0.1:6379"
 	DefaultDatabaseHost = "127.0.0.1:27017"
 	DefaultDatabaseName = "backstage"
 )
@@ -112,8 +112,10 @@ func (storage *Storage) Users() *storage.Collection {
 
 func (storage *Storage) Teams() *storage.Collection {
 	nameIndex := mgo.Index{Key: []string{"name"}, Unique: true}
+	aliasIndex := mgo.Index{Key: []string{"alias"}, Unique: true}
 	collection := storage.Collection("teams")
 	collection.EnsureIndex(nameIndex)
+	collection.EnsureIndex(aliasIndex)
 	return collection
 }
 

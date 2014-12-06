@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	team *Team
+	team  *Team
 	owner *User
 )
 
@@ -30,7 +30,7 @@ func (s *S) TestCreateTeamWhenNameAlreadyExists(c *C) {
 	err = team.Save(owner)
 	c.Assert(err, NotNil)
 	e := err.(*errors.ValidationError)
-	message := "Someone already has that team name. Could you try another?"
+	message := "Someone already has that team name or alias. Could you try another?"
 	c.Assert(e.Message, Equals, message)
 }
 

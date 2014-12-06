@@ -3,6 +3,7 @@ package account
 import (
 	"github.com/albertoleal/backstage/db"
 	"github.com/albertoleal/backstage/errors"
+	. "github.com/mrvdot/golang-utils"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -10,6 +11,7 @@ import (
 type Team struct {
 	Id    bson.ObjectId `bson:"_id,omitempty" json:"id,omitempty""`
 	Name  string        `json:"name"`
+	Alias string        `json:"alias"`
 	Users []string      `json:"users"`
 	Owner string        `json:"owner"`
 }
@@ -23,9 +25,14 @@ func (team *Team) Save(owner *User) error {
 
 	team.Users = []string{owner.Email}
 	team.Owner = owner.Email
+	if team.Alias == "" {
+		team.Alias = GenerateSlug(team.Name)
+	} else {
+		team.Alias = GenerateSlug(team.Alias)
+	}
 	err = conn.Teams().Insert(team)
 	if mgo.IsDup(err) {
-		message := "Someone already has that team name. Could you try another?"
+		message := "Someone already has that team name or alias. Could you try another?"
 		return &errors.ValidationError{Message: message}
 	}
 
