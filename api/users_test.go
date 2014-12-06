@@ -40,7 +40,7 @@ func (s *S) TestCreateUserWithInvalidPayloadFormat(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"payload":"The request was bad-formed."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"The request was bad-formed."}`)
 }
 
 func (s *S) TestCreateUserWithMissingRequiredFields(c *C) {
@@ -54,7 +54,7 @@ func (s *S) TestCreateUserWithMissingRequiredFields(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"payload":"Name/Email/Username/Password cannot be empty."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"Name/Email/Username/Password cannot be empty."}`)
 }
 
 func (s *S) TestDeleteUser(c *C) {
@@ -79,5 +79,5 @@ func (s *S) TestDeleteUserWithNotSignedUser(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"payload":"User is not signed in."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"User is not signed in."}`)
 }

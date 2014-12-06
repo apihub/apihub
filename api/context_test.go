@@ -29,7 +29,7 @@ func (s *S) TestAddGetRequestError(c *C) {
 	m.ServeHTTPC(web.C{Env: env}, recorder, req)
 
 	c.Assert(recorder.Code, Equals, 401)
-	c.Assert(recorder.Body.String(), Equals, "{\"status_code\":401,\"payload\":\"You do not have access to this resource.\"}\n")
+	c.Assert(recorder.Body.String(), Equals, "{\"status_code\":401,\"message\":\"You do not have access to this resource.\"}\n")
 }
 
 func (s *S) TestSetAndGetCurrentUser(c *C) {
