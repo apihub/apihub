@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	. "github.com/albertoleal/backstage/account"
 	"github.com/albertoleal/backstage/auth"
 	"github.com/albertoleal/backstage/errors"
 	"github.com/zenazn/goji/web"
@@ -14,14 +13,13 @@ import (
 
 func (s *S) TestAuthorizationMiddlewareWithValidToken(c *C) {
 	s.router.Use(AuthorizationMiddleware)
-	user := &User{Username: "bob", Name: "Bob", Email: "bob@example.org", Password: "123456"}
-	err := user.Save()
-	defer user.Delete()
+	err := alice.Save()
+	defer alice.Delete()
 	if err != nil {
 		c.Error(err)
 	}
 
-	tokenInfo := auth.GenerateToken(user)
+	tokenInfo := auth.GenerateToken(alice)
 	s.router.Get("/", s.handler)
 
 	req, _ := http.NewRequest("GET", "/", nil)

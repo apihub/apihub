@@ -14,11 +14,11 @@ func (s *S) TestCreateUser(c *C) {
 }
 
 func (s *S) TestCreateUserWithSameUsername(c *C) {
-	user := User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
-	defer user.Delete()
+	user := &User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	user.Save()
+	defer user.Delete()
 
-	user2 := User{Name: "Bob", Email: "bob@bar.com", Username: "alice", Password: "123456"}
+	user2 := &User{Name: "Bob", Email: "bob@bar.com", Username: "alice", Password: "123456"}
 	err := user2.Save()
 	e := err.(*errors.ValidationError)
 	msg := "Someone already has that email. Could you try another?."

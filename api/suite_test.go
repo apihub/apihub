@@ -14,21 +14,23 @@ import (
 
 var teamsHandler *TeamsHandler
 var usersHandler *UsersHandler
+var servicesHandler *ServicesHandler
 
 var alice *account.User
 var bob *account.User
 var mary *account.User
 var owner *account.User
 var team *account.Team
+var service *account.Service
 
 func Test(t *testing.T) { TestingT(t) }
 
 type S struct {
-	Api *Api
-	env        map[string]interface{}
-	handler    http.HandlerFunc
-	recorder   *httptest.ResponseRecorder
-	router     *web.Mux
+	Api      *Api
+	env      map[string]interface{}
+	handler  http.HandlerFunc
+	recorder *httptest.ResponseRecorder
+	router   *web.Mux
 }
 
 func (s *S) SetUpSuite(c *C) {
@@ -40,6 +42,7 @@ func (s *S) SetUpTest(c *C) {
 	s.Api = &Api{}
 	teamsHandler = &TeamsHandler{}
 	usersHandler = &UsersHandler{}
+	servicesHandler = &ServicesHandler{}
 
 	s.recorder = httptest.NewRecorder()
 	s.env = map[string]interface{}{}
@@ -50,9 +53,13 @@ func (s *S) SetUpTest(c *C) {
 
 	alice = &account.User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	bob = &account.User{Name: "Bob", Email: "bob@example.org", Username: "bob", Password: "123456"}
-	mary = &account.User{Name: "Bob", Email: "mary@example.org", Username: "mary", Password: "123456"}
-	owner = &account.User{Name: "Bob", Email: "owner@example.org", Username: "owner", Password: "123456"}
-	team = &account.Team{Name: "Team", Alias:"team"}
+	mary = &account.User{Name: "Mary", Email: "mary@example.org", Username: "mary", Password: "123456"}
+	owner = &account.User{Name: "Owner", Email: "owner@example.org", Username: "owner", Password: "123456"}
+	team = &account.Team{Name: "Team", Alias: "team"}
+	service = &account.Service{
+		Endpoint:  "http://example.org/api",
+		Subdomain: "backstage",
+	}
 }
 
 func (s *S) TearDownSuite(c *C) {
@@ -62,10 +69,6 @@ func (s *S) TearDownSuite(c *C) {
 	config.Unset("database:url")
 	config.Unset("database:name")
 	s.router.Abandon(ErrorMiddleware)
-}
-
-func (s *S) signIn() {
-
 }
 
 var _ = Suite(&S{})

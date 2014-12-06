@@ -54,11 +54,15 @@ func (api *Api) DrawRoutes() {
 	privateRoutes.Get("/teams", api.Route(teamsHandler, "GetUserTeams"))
 	privateRoutes.Post("/teams/:alias/users", api.Route(teamsHandler, "AddUsersToTeam"))
 	privateRoutes.Delete("/teams/:alias/users", api.Route(teamsHandler, "RemoveUsersFromTeam"))
+
+	privateRoutes.Post("/services", api.Route(servicesHandler, "CreateService"))
+	privateRoutes.Delete("/services/:subdomain", api.Route(servicesHandler, "DeleteService"))
+	privateRoutes.Get("/services/:subdomain", api.Route(servicesHandler, "GetServiceInfo"))
 }
 
 func (api *Api) Route(handler interface{}, route string) interface{} {
 	fn := func(c web.C, w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "apilication/json")
+		w.Header().Set("Content-Type", "application/json")
 
 		methodValue := reflect.ValueOf(handler).MethodByName(route)
 		methodInterface := methodValue.Interface()

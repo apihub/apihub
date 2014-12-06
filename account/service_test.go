@@ -46,7 +46,7 @@ func (s *S) TestCreateServiceNewService(c *C) {
 	c.Check(ok, Equals, false)
 }
 
-func (s *S) TestCannotCreateServiceServiceWhenSubdomainAlreadyExists(c *C) {
+func (s *S) TestCannotCreateServiceWhenSubdomainAlreadyExists(c *C) {
 	owner := &User{Email: "owner@example.org"}
 	team := &Team{Name: "Team", Alias: "team"}
 	service := Service{
@@ -135,6 +135,28 @@ func (s *S) TestFindServiceBySubdomainByAlias(c *C) {
 
 func (s *S) TestFindServiceBySubdomainWithInvalidName(c *C) {
 	_, err := FindServiceBySubdomain("Non Existing Service")
+	c.Assert(err, NotNil)
+	e := err.(*errors.ValidationError)
+	message := "Service not found."
+	c.Assert(e.Message, Equals, message)
+}
+
+func (s *S) TestDeleteServiceBySubdomain(c *C) {
+	owner := &User{Email: "owner@example.org"}
+	team := &Team{Name: "Team", Alias: "team"}
+	service := &Service{
+		Subdomain: "backstage",
+		Endpoint:  "http://example.org/api",
+	}
+	defer service.Delete()
+	err := service.Save(owner, team)
+	c.Assert(err, IsNil)
+	err = DeleteServiceBySubdomain(service.Subdomain)
+	c.Assert(err, IsNil)
+}
+
+func (s *S) TestDeleteServiceBySubdomainWithInvalidSubdomain(c *C) {
+	err := DeleteServiceBySubdomain("Non existing service")
 	c.Assert(err, NotNil)
 	e := err.(*errors.ValidationError)
 	message := "Service not found."
