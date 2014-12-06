@@ -153,6 +153,23 @@ func FindTeamByName(name string) (*Team, error) {
 	return &team, nil
 }
 
+func FindTeamByAlias(alias string) (*Team, error) {
+	conn, err := db.Conn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	var team Team
+	err = conn.Teams().Find(bson.M{"alias": alias}).One(&team)
+	if err == mgo.ErrNotFound {
+		message := "Team not found."
+		return nil, &errors.ValidationError{Message: message}
+	}
+
+	return &team, nil
+}
+
 func FindTeamById(id string) (*Team, error) {
 	conn, err := db.Conn()
 	if err != nil {

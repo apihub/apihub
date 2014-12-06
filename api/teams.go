@@ -45,7 +45,7 @@ func (handler *TeamsHandler) DeleteTeam(c *web.C, w http.ResponseWriter, r *http
 		return ResponseError(c, http.StatusBadRequest, err.Error())
 	}
 
-	team, err := FindTeamById(c.URLParams["id"])
+	team, err := FindTeamByAlias(c.URLParams["alias"])
 	if err != nil || team.Owner != currentUser.Email {
 		return ResponseError(c, http.StatusForbidden, "Team not found or you're not the owner.")
 	}
@@ -76,7 +76,7 @@ func (handler *TeamsHandler) GetTeamInfo(c *web.C, w http.ResponseWriter, r *htt
 		return ResponseError(c, http.StatusBadRequest, err.Error())
 	}
 
-	team, err := FindTeamById(c.URLParams["id"])
+	team, err := FindTeamByAlias(c.URLParams["alias"])
 	if err != nil {
 		return ResponseError(c, http.StatusBadRequest, "Team not found.")
 	}
@@ -95,7 +95,7 @@ func (handler *TeamsHandler) AddUsersToTeam(c *web.C, w http.ResponseWriter, r *
 		return ResponseError(c, http.StatusBadRequest, err.Error())
 	}
 
-	team, err := FindTeamById(c.URLParams["id"])
+	team, err := FindTeamByAlias(c.URLParams["alias"])
 	if err != nil {
 		return ResponseError(c, http.StatusBadRequest, "Team not found.")
 	}
@@ -135,7 +135,7 @@ func (handler *TeamsHandler) RemoveUsersFromTeam(c *web.C, w http.ResponseWriter
 		return ResponseError(c, http.StatusBadRequest, err.Error())
 	}
 
-	team, err := FindTeamById(c.URLParams["id"])
+	team, err := FindTeamByAlias(c.URLParams["alias"])
 	if err != nil {
 		return ResponseError(c, http.StatusBadRequest, "Team not found.")
 	}

@@ -49,11 +49,11 @@ func (api *Api) DrawRoutes() {
 	privateRoutes.Delete("/users", api.Route(usersHandler, "DeleteUser"))
 
 	privateRoutes.Post("/teams", api.Route(teamsHandler, "CreateTeam"))
-	privateRoutes.Delete("/teams/:id", api.Route(teamsHandler, "DeleteTeam"))
-	privateRoutes.Get("/teams/:id", api.Route(teamsHandler, "GetTeamInfo"))
+	privateRoutes.Delete("/teams/:alias", api.Route(teamsHandler, "DeleteTeam"))
+	privateRoutes.Get("/teams/:alias", api.Route(teamsHandler, "GetTeamInfo"))
 	privateRoutes.Get("/teams", api.Route(teamsHandler, "GetUserTeams"))
-	privateRoutes.Post("/teams/:id/users", api.Route(teamsHandler, "AddUsersToTeam"))
-	privateRoutes.Delete("/teams/:id/users", api.Route(teamsHandler, "RemoveUsersFromTeam"))
+	privateRoutes.Post("/teams/:alias/users", api.Route(teamsHandler, "AddUsersToTeam"))
+	privateRoutes.Delete("/teams/:alias/users", api.Route(teamsHandler, "RemoveUsersFromTeam"))
 }
 
 func (api *Api) Route(handler interface{}, route string) interface{} {

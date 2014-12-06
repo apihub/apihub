@@ -188,6 +188,23 @@ func (s *S) TestFindTeamByIdWithInvalidId(c *C) {
 	c.Assert(e.Message, Equals, message)
 }
 
+func (s *S) TestFindTeamByAlias(c *C) {
+	err := team.Save(owner)
+	defer DeleteTeamByName("Team")
+	c.Assert(err, IsNil)
+
+	g, _ := FindTeamByAlias("alias")
+	c.Assert(g.Name, Equals, "Team")
+}
+
+func (s *S) TestFindTeamByAliasWithInvalidName(c *C) {
+	_, err := FindTeamByAlias("Non Existing Team")
+	c.Assert(err, NotNil)
+	e := err.(*errors.ValidationError)
+	message := "Team not found."
+	c.Assert(e.Message, Equals, message)
+}
+
 func (s *S) TestGetTeamUsers(c *C) {
 	alice := &User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	defer alice.Delete()

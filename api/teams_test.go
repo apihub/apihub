@@ -86,8 +86,8 @@ func (s *S) TestDeleteTeam(c *C) {
 	defer team.Delete()
 
 	g, _ := account.FindTeamByName(team.Name)
-	s.router.Delete("/api/teams/:id", s.Api.Route(teamsHandler, "DeleteTeam"))
-	req, _ := http.NewRequest("DELETE", "/api/teams/"+g.Id.Hex(), nil)
+	s.router.Delete("/api/teams/:alias", s.Api.Route(teamsHandler, "DeleteTeam"))
+	req, _ := http.NewRequest("DELETE", "/api/teams/"+g.Alias, nil)
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -105,8 +105,8 @@ func (s *S) TestDeleteTeamWhenUserIsNotOwner(c *C) {
 	defer bob.Delete()
 
 	g, _ := account.FindTeamByName(team.Name)
-	s.router.Delete("/api/teams/:id", s.Api.Route(teamsHandler, "DeleteTeam"))
-	req, _ := http.NewRequest("DELETE", "/api/teams/"+g.Id.Hex(), nil)
+	s.router.Delete("/api/teams/:alias", s.Api.Route(teamsHandler, "DeleteTeam"))
+	req, _ := http.NewRequest("DELETE", "/api/teams/"+g.Alias, nil)
 	s.env[CurrentUser] = bob
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -119,7 +119,7 @@ func (s *S) TestDeleteTeamIsNotFound(c *C) {
 	bob.Save()
 	defer bob.Delete()
 
-	s.router.Delete("/api/teams/:id", s.Api.Route(teamsHandler, "DeleteTeam"))
+	s.router.Delete("/api/teams/:alias", s.Api.Route(teamsHandler, "DeleteTeam"))
 	req, _ := http.NewRequest("DELETE", "/api/teams/invalid-id", nil)
 	s.env[CurrentUser] = bob
 	webC := web.C{Env: s.env}
@@ -162,8 +162,8 @@ func (s *S) TestGetTeamInfo(c *C) {
 	defer team.Delete()
 
 	g, _ := account.FindTeamByName(team.Name)
-	s.router.Get("/api/teams/:id", s.Api.Route(teamsHandler, "GetTeamInfo"))
-	req, _ := http.NewRequest("GET", "/api/teams/"+g.Id.Hex(), nil)
+	s.router.Get("/api/teams/:alias", s.Api.Route(teamsHandler, "GetTeamInfo"))
+	req, _ := http.NewRequest("GET", "/api/teams/"+g.Alias, nil)
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -178,7 +178,7 @@ func (s *S) TestGetTeamInfoWhenTeamNotFound(c *C) {
 	defer owner.Delete()
 	defer team.Delete()
 
-	s.router.Get("/api/teams/:id", s.Api.Route(teamsHandler, "GetTeamInfo"))
+	s.router.Get("/api/teams/:alias", s.Api.Route(teamsHandler, "GetTeamInfo"))
 	req, _ := http.NewRequest("GET", "/api/teams/invalid-id", nil)
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
@@ -197,8 +197,8 @@ func (s *S) TestGetTeamInfoWhenIsNotMemberOfTheTeam(c *C) {
 	defer team.Delete()
 
 	g, _ := account.FindTeamByName(team.Name)
-	s.router.Get("/api/teams/:id", s.Api.Route(teamsHandler, "GetTeamInfo"))
-	req, _ := http.NewRequest("GET", "/api/teams/"+g.Id.Hex(), nil)
+	s.router.Get("/api/teams/:alias", s.Api.Route(teamsHandler, "GetTeamInfo"))
+	req, _ := http.NewRequest("GET", "/api/teams/"+g.Alias, nil)
 	s.env[CurrentUser] = bob
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -208,7 +208,7 @@ func (s *S) TestGetTeamInfoWhenIsNotMemberOfTheTeam(c *C) {
 }
 
 func (s *S) TestTeamInfoWhenUserIsNotSignedIn(c *C) {
-	s.router.Get("/api/teams/:id", s.Api.Route(teamsHandler, "GetTeamInfo"))
+	s.router.Get("/api/teams/:alias", s.Api.Route(teamsHandler, "GetTeamInfo"))
 	req, _ := http.NewRequest("GET", "/api/teams/1", nil)
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -229,8 +229,8 @@ func (s *S) TestAddUsersToTeam(c *C) {
 	b := strings.NewReader(payload)
 
 	g, _ := account.FindTeamByName(team.Name)
-	s.router.Post("/api/teams/:id/users", s.Api.Route(teamsHandler, "AddUsersToTeam"))
-	req, _ := http.NewRequest("POST", "/api/teams/"+g.Id.Hex()+"/users", b)
+	s.router.Post("/api/teams/:alias/users", s.Api.Route(teamsHandler, "AddUsersToTeam"))
+	req, _ := http.NewRequest("POST", "/api/teams/"+g.Alias+"/users", b)
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -251,8 +251,8 @@ func (s *S) TestAddUserToTeamWithInvalidPaylod(c *C) {
 	b := strings.NewReader(payload)
 
 	g, _ := account.FindTeamByName(team.Name)
-	s.router.Post("/api/teams/:id/users", s.Api.Route(teamsHandler, "AddUsersToTeam"))
-	req, _ := http.NewRequest("POST", "/api/teams/"+g.Id.Hex()+"/users", b)
+	s.router.Post("/api/teams/:alias/users", s.Api.Route(teamsHandler, "AddUsersToTeam"))
+	req, _ := http.NewRequest("POST", "/api/teams/"+g.Alias+"/users", b)
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -267,7 +267,7 @@ func (s *S) TestAddUserToTeamWhenTeamNotFound(c *C) {
 	defer owner.Delete()
 	defer team.Delete()
 
-	s.router.Post("/api/teams/:id/users", s.Api.Route(teamsHandler, "AddUsersToTeam"))
+	s.router.Post("/api/teams/:alias/users", s.Api.Route(teamsHandler, "AddUsersToTeam"))
 	req, _ := http.NewRequest("POST", "/api/teams/invalid-id/users", nil)
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
@@ -286,8 +286,8 @@ func (s *S) TestAddUsersToTeamWhenUserDoesNotBelongToIt(c *C) {
 	defer team.Delete()
 
 	g, _ := account.FindTeamByName(team.Name)
-	s.router.Post("/api/teams/:id/users", s.Api.Route(teamsHandler, "AddUsersToTeam"))
-	req, _ := http.NewRequest("POST", "/api/teams/"+g.Id.Hex()+"/users", nil)
+	s.router.Post("/api/teams/:alias/users", s.Api.Route(teamsHandler, "AddUsersToTeam"))
+	req, _ := http.NewRequest("POST", "/api/teams/"+g.Alias+"/users", nil)
 	s.env[CurrentUser] = bob
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -297,7 +297,7 @@ func (s *S) TestAddUsersToTeamWhenUserDoesNotBelongToIt(c *C) {
 }
 
 func (s *S) TestAddUsersToTeamWhenUserIsNotSignedIn(c *C) {
-	s.router.Post("/api/teams/:id/users", s.Api.Route(teamsHandler, "AddUsersToTeam"))
+	s.router.Post("/api/teams/:alias/users", s.Api.Route(teamsHandler, "AddUsersToTeam"))
 	req, _ := http.NewRequest("POST", "/api/teams/invalid-id/users", nil)
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -318,8 +318,8 @@ func (s *S) TestRemoveUsersFromTeam(c *C) {
 	b := strings.NewReader(payload)
 
 	g, _ := account.FindTeamByName(team.Name)
-	s.router.Delete("/api/teams/:id/users", s.Api.Route(teamsHandler, "RemoveUsersFromTeam"))
-	req, _ := http.NewRequest("DELETE", "/api/teams/"+g.Id.Hex()+"/users", b)
+	s.router.Delete("/api/teams/:alias/users", s.Api.Route(teamsHandler, "RemoveUsersFromTeam"))
+	req, _ := http.NewRequest("DELETE", "/api/teams/"+g.Alias+"/users", b)
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -340,8 +340,8 @@ func (s *S) TestRemoveUsersFromTeamWithInvalidPaylod(c *C) {
 	b := strings.NewReader(payload)
 
 	g, _ := account.FindTeamByName(team.Name)
-	s.router.Delete("/api/teams/:id/users", s.Api.Route(teamsHandler, "RemoveUsersFromTeam"))
-	req, _ := http.NewRequest("DELETE", "/api/teams/"+g.Id.Hex()+"/users", b)
+	s.router.Delete("/api/teams/:alias/users", s.Api.Route(teamsHandler, "RemoveUsersFromTeam"))
+	req, _ := http.NewRequest("DELETE", "/api/teams/"+g.Alias+"/users", b)
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -356,7 +356,7 @@ func (s *S) TestRemoveUsersFromTeamWhenTeamNotFound(c *C) {
 	defer bob.Delete()
 	defer team.Delete()
 
-	s.router.Delete("/api/teams/:id/users", s.Api.Route(teamsHandler, "RemoveUsersFromTeam"))
+	s.router.Delete("/api/teams/:alias/users", s.Api.Route(teamsHandler, "RemoveUsersFromTeam"))
 	req, _ := http.NewRequest("DELETE", "/api/teams/invalid-id/users", nil)
 	s.env[CurrentUser] = bob
 	webC := web.C{Env: s.env}
@@ -375,8 +375,8 @@ func (s *S) TestRemoveUsersFromTeamWhenUserDoesNotBelongToIt(c *C) {
 	defer team.Delete()
 
 	g, _ := account.FindTeamByName(team.Name)
-	s.router.Delete("/api/teams/:id/users", s.Api.Route(teamsHandler, "RemoveUsersFromTeam"))
-	req, _ := http.NewRequest("DELETE", "/api/teams/"+g.Id.Hex()+"/users", nil)
+	s.router.Delete("/api/teams/:alias/users", s.Api.Route(teamsHandler, "RemoveUsersFromTeam"))
+	req, _ := http.NewRequest("DELETE", "/api/teams/"+g.Alias+"/users", nil)
 	s.env[CurrentUser] = bob
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -395,8 +395,8 @@ func (s *S) TestRemoveUsersFromTeamWhenUserIsOwner(c *C) {
 	b := strings.NewReader(payload)
 
 	g, _ := account.FindTeamByName(team.Name)
-	s.router.Delete("/api/teams/:id/users", s.Api.Route(teamsHandler, "RemoveUsersFromTeam"))
-	req, _ := http.NewRequest("DELETE", "/api/teams/"+g.Id.Hex()+"/users", b)
+	s.router.Delete("/api/teams/:alias/users", s.Api.Route(teamsHandler, "RemoveUsersFromTeam"))
+	req, _ := http.NewRequest("DELETE", "/api/teams/"+g.Alias+"/users", b)
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -406,7 +406,7 @@ func (s *S) TestRemoveUsersFromTeamWhenUserIsOwner(c *C) {
 }
 
 func (s *S) TestRemoveUserFromTeamWhenUserIsNotSignedIn(c *C) {
-	s.router.Delete("/api/teams/:id/users", s.Api.Route(teamsHandler, "RemoveUsersFromTeam"))
+	s.router.Delete("/api/teams/:alias/users", s.Api.Route(teamsHandler, "RemoveUsersFromTeam"))
 	req, _ := http.NewRequest("DELETE", "/api/teams/invalid-id/users", nil)
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)

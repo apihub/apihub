@@ -52,7 +52,7 @@ func (s *S) SetUpTest(c *C) {
 	bob = &account.User{Name: "Bob", Email: "bob@example.org", Username: "bob", Password: "123456"}
 	mary = &account.User{Name: "Bob", Email: "mary@example.org", Username: "mary", Password: "123456"}
 	owner = &account.User{Name: "Bob", Email: "owner@example.org", Username: "owner", Password: "123456"}
-	team = &account.Team{Name: "Team"}
+	team = &account.Team{Name: "Team", Alias:"team"}
 }
 
 func (s *S) TearDownSuite(c *C) {
