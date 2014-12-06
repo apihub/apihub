@@ -366,6 +366,26 @@ func (s *S) TestRemoveUsersFromTeamWhenUserDoesNotBelongToIt(c *C) {
 	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":403,"payload":"You do not belong to this team!"}`)
 }
 
+func (s *S) TestRemoveUsersFromTeamWhenUserIsOwner(c *C) {
+	owner.Save()
+	team.Save(owner)
+	defer owner.Delete()
+	defer team.Delete()
+
+	payload := `{"users": ["owner"]}`
+	b := strings.NewReader(payload)
+
+	g, _ := account.FindTeamByName(team.Name)
+	s.router.Delete("/api/teams/:id/users", s.Api.Route(teamsHandler, "RemoveUsersFromTeam"))
+	req, _ := http.NewRequest("DELETE", "/api/teams/"+g.Id.Hex()+"/users", b)
+	s.env[CurrentUser] = owner
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, 403)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":403,"payload":"It is not possible to remove the owner from the team."}`)
+}
+
 func (s *S) TestRemoveUserFromTeamWhenUserIsNotSignedIn(c *C) {
 	s.router.Delete("/api/teams/:id/users", s.Api.Route(teamsHandler, "RemoveUsersFromTeam"))
 	req, _ := http.NewRequest("DELETE", "/api/teams/invalid-id/users", nil)

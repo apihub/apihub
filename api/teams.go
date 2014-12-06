@@ -164,7 +164,7 @@ func (handler *TeamsHandler) RemoveUsersFromTeam(c *web.C, w http.ResponseWriter
 
 	err = team.RemoveUsers(users)
 	if err != nil {
-		return ResponseError(c, http.StatusBadRequest, err.Error())
+		return ResponseError(c, http.StatusForbidden, err.Error())
 	}
 	result, _ := json.Marshal(team)
 	return &HTTPResponse{StatusCode: http.StatusOK, Payload: string(result)}
