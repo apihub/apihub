@@ -17,3 +17,12 @@ install:
 
 script:
   - go test -x ./...
+
+services:
+  - mongodb
+  - redis
+
+notifications:
+  email:
+    recipients:
+      - albertonb@gmail.com
