@@ -20,7 +20,7 @@ script:
 
 services:
   - mongodb
-  - redis
+  - redis-server
 
 notifications:
   email:
