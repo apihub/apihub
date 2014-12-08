@@ -97,25 +97,23 @@ func GetRedis() redis.Conn {
 }
 
 func (storage *Storage) Services() *storage.Collection {
-	subdomainIndex := mgo.Index{Key: []string{"subdomain"}, Unique: true}
+	subdomainIndex := mgo.Index{Key: []string{"subdomain"}, Unique: true, Background: false}
 	collection := storage.Collection("services")
 	collection.EnsureIndex(subdomainIndex)
 	return collection
 }
 
 func (storage *Storage) Users() *storage.Collection {
-	emailIndex := mgo.Index{Key: []string{"email"}, Unique: true}
+	emailIndex := mgo.Index{Key: []string{"email"}, Unique: true, Background: false}
 	collection := storage.Collection("users")
 	collection.EnsureIndex(emailIndex)
 	return collection
 }
 
 func (storage *Storage) Teams() *storage.Collection {
-	nameIndex := mgo.Index{Key: []string{"name"}, Unique: true}
-	aliasIndex := mgo.Index{Key: []string{"alias"}, Unique: true}
+	nameIndex := mgo.Index{Key: []string{"name"}, Unique: true, Background: false}
 	collection := storage.Collection("teams")
 	collection.EnsureIndex(nameIndex)
-	collection.EnsureIndex(aliasIndex)
 	return collection
 }
 
