@@ -32,7 +32,7 @@ func (team *Team) Save(owner *User) error {
 	}
 	err = conn.Teams().Insert(team)
 	if mgo.IsDup(err) {
-		message := "Someone already has that team name or alias. Could you try another?"
+		message := "Someone already has that team alias. Could you try another?"
 		return &errors.ValidationError{Message: message}
 	}
 

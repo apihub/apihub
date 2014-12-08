@@ -21,29 +21,16 @@ func (s *S) TestCreateTeam(c *C) {
 	c.Assert(err, IsNil)
 }
 
-func (s *S) TestCreateTeamWhenNameAlreadyExists(c *C) {
-	err := team.Save(owner)
-	defer DeleteTeamByName("Team")
-	c.Assert(err, IsNil)
-
-	team = &Team{Name: "Team"}
-	err = team.Save(owner)
-	c.Assert(err, NotNil)
-	e := err.(*errors.ValidationError)
-	message := "Someone already has that team name or alias. Could you try another?"
-	c.Assert(e.Message, Equals, message)
-}
-
 func (s *S) TestCreateTeamWhenAliasAlreadyExists(c *C) {
 	err := team.Save(owner)
 	defer DeleteTeamByName("Team")
 	c.Assert(err, IsNil)
 
-	team = &Team{Name: "Another Team Name", Alias: "Alias"}
+	team = &Team{Name: "Another Team Name", Alias: team.Alias}
 	err = team.Save(owner)
 	c.Assert(err, NotNil)
 	e := err.(*errors.ValidationError)
-	message := "Someone already has that team name or alias. Could you try another?"
+	message := "Someone already has that team alias. Could you try another?"
 	c.Assert(e.Message, Equals, message)
 }
 
