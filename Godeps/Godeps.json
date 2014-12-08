@@ -7,8 +7,13 @@
 	"Deps": [
 		{
 			"ImportPath": "code.google.com/p/go.crypto/bcrypt",
-			"Comment": "null-236",
-			"Rev": "69e2a90ed92d03812364aeb947b7068dc42e561e"
+			"Comment": "null-231",
+			"Rev": "88f995681294397936c136182f54e1f6891db323"
+		},
+		{
+			"ImportPath": "code.google.com/p/go.crypto/blowfish",
+			"Comment": "null-231",
+			"Rev": "88f995681294397936c136182f54e1f6891db323"
 		},
 		{
 			"ImportPath": "github.com/fatih/structs",
@@ -28,13 +33,17 @@
 			"Rev": "6b1ef893dc11e0447abda6da20a5203481878dda"
 		},
 		{
+			"ImportPath": "github.com/mrvdot/golang-utils",
+			"Rev": "3bbc7a96a9bb228742142c93d529c0e77567740a"
+		},
+		{
 			"ImportPath": "github.com/tsuru/config",
 			"Rev": "96579b79a0a66b9b6c95a8ff7c344aa512b41288"
 		},
 		{
 			"ImportPath": "github.com/tsuru/tsuru/db/storage",
-			"Comment": "0.9.0-11-g20901e3",
-			"Rev": "20901e3072e2c3f626b3d960cfd0afee92be3785"
+			"Comment": "0.8.0-40-g4eaaba6",
+			"Rev": "4eaaba695805889ec326b86e7af468b084c12446"
 		},
 		{
 			"ImportPath": "github.com/zenazn/goji",
@@ -42,17 +51,12 @@
 			"Rev": "285133e626ca70d5bcf7c57d2fb63328dc21b364"
 		},
 		{
-			"ImportPath": "golang.org/x/crypto/blowfish",
-			"Comment": "null-236",
-			"Rev": "69e2a90ed92d03812364aeb947b7068dc42e561e"
-		},
-		{
 			"ImportPath": "gopkg.in/check.v1",
 			"Rev": "64131543e7896d5bcc6bd5a76287eb75ea96c673"
 		},
 		{
 			"ImportPath": "gopkg.in/mgo.v2",
-			"Rev": "e2e914857713db7497cca2bd7fc0b030fc9cb22d"
+			"Rev": "8c1ecfe7d8a0b5bc49a809f4c15955e514f77a80"
 		},
 		{
 			"ImportPath": "gopkg.in/v1/yaml",
