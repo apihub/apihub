@@ -6,7 +6,7 @@ import (
 	"github.com/albertoleal/backstage/auth"
 )
 
-func SignIn(email string, password string) (*auth.TokenInfo, error) {
+func Login(email string, password string) (*auth.TokenInfo, error) {
 	var user *account.User
 	user, err := account.FindUserByEmail(email)
 	if err != nil {
