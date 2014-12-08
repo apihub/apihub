@@ -30,7 +30,7 @@ func (user *User) Save() error {
 	user.HashPassword()
 	err = conn.Users().Insert(user)
 	if mgo.IsDup(err) {
-		message := "Someone already has that email. Could you try another?."
+		message := "Someone already has that email. Could you try another?"
 		return &errors.ValidationError{Message: message}
 	}
 	return err

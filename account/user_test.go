@@ -21,7 +21,7 @@ func (s *S) TestCreateUserWithSameUsername(c *C) {
 	user2 := &User{Name: "Bob", Email: "bob@bar.com", Username: "alice", Password: "123456"}
 	err := user2.Save()
 	e := err.(*errors.ValidationError)
-	msg := "Someone already has that email. Could you try another?."
+	msg := "Someone already has that email. Could you try another?"
 	c.Assert(e.Message, Equals, msg)
 }
 
