@@ -1,6 +1,7 @@
 help:
 	@echo '    race ..................... runs race condition tests'
 	@echo '    test ..................... runs tests'
+	@echo '    run-api .................. runs api server'
 
 test:
 	go test ./...
@@ -14,7 +15,7 @@ save-deps:
 	$(GOPATH)/bin/godep save ./...
 
 run-api:
-	go run ./api/httpserver.go
+	go run ./api/cmd/httpserver.go
 
 race:
 	go test $(GO_EXTRAFLAGS) -race -i ./...
