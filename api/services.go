@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	. "github.com/albertoleal/backstage/account"
-	"github.com/albertoleal/backstage/errors"
+	. "github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/errors"
 	"github.com/zenazn/goji/web"
 )
 

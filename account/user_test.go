@@ -3,7 +3,7 @@ package account
 import (
 	. "gopkg.in/check.v1"
 
-	"github.com/albertoleal/backstage/errors"
+	"github.com/backstage/backstage/errors"
 )
 
 func (s *S) TestCreateUser(c *C) {

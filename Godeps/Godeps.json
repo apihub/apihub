@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/albertoleal/backstage",
+	"ImportPath": "github.com/backstage/backstage",
 	"GoVersion": "go1.3.3",
 	"Packages": [
 		"./..."

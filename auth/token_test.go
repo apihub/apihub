@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"github.com/albertoleal/backstage/account"
+	"github.com/backstage/backstage/account"
 	. "gopkg.in/check.v1"
 )
 

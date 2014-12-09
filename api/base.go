@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	. "github.com/albertoleal/backstage/account"
+	. "github.com/backstage/backstage/account"
 	"github.com/zenazn/goji/web"
 )
 

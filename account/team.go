@@ -1,8 +1,8 @@
 package account
 
 import (
-	"github.com/albertoleal/backstage/db"
-	"github.com/albertoleal/backstage/errors"
+	"github.com/backstage/backstage/db"
+	"github.com/backstage/backstage/errors"
 	. "github.com/mrvdot/golang-utils"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"

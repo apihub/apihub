@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/albertoleal/backstage/auth"
-	"github.com/albertoleal/backstage/errors"
+	"github.com/backstage/backstage/auth"
+	"github.com/backstage/backstage/errors"
 	"github.com/zenazn/goji/web"
 	. "gopkg.in/check.v1"
 )

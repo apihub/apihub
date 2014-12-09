@@ -3,7 +3,7 @@ package api
 import (
 	"errors"
 
-	"github.com/albertoleal/backstage/account"
+	"github.com/backstage/backstage/account"
 	"github.com/zenazn/goji/web"
 )
 

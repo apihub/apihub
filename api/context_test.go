@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/albertoleal/backstage/account"
+	"github.com/backstage/backstage/account"
 	"github.com/zenazn/goji/web"
 	. "gopkg.in/check.v1"
 )

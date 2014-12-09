@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/albertoleal/backstage/account"
-	"github.com/albertoleal/backstage/db"
+	"github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/db"
 	"github.com/fatih/structs"
 	"github.com/garyburd/redigo/redis"
 )

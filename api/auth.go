@@ -2,8 +2,8 @@ package api
 
 import (
 	"code.google.com/p/go.crypto/bcrypt"
-	"github.com/albertoleal/backstage/account"
-	"github.com/albertoleal/backstage/auth"
+	"github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/auth"
 )
 
 func Login(email string, password string) (*auth.TokenInfo, error) {

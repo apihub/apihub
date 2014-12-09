@@ -6,8 +6,8 @@ import (
 	"github.com/tsuru/config"
 	. "gopkg.in/check.v1"
 
-	"github.com/albertoleal/backstage/db"
-	"github.com/albertoleal/backstage/errors"
+	"github.com/backstage/backstage/db"
+	"github.com/backstage/backstage/errors"
 )
 
 type S struct{}

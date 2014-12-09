@@ -4,7 +4,7 @@ import (
 	"testing"
 	. "gopkg.in/check.v1"
 	"github.com/tsuru/config"
-	"github.com/albertoleal/backstage/db"
+	"github.com/backstage/backstage/db"
 )
 
 func Test(t *testing.T) { TestingT(t) }

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/albertoleal/backstage/account"
+	"github.com/backstage/backstage/account"
 	"github.com/zenazn/goji/web"
 	. "gopkg.in/check.v1"
 )

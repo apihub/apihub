@@ -1,7 +1,7 @@
 package main
 
 import (
-	. "github.com/albertoleal/backstage/api"
+	. "github.com/backstage/backstage/api"
 	"github.com/zenazn/goji"
 )
 

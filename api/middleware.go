@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/albertoleal/backstage/auth"
-	"github.com/albertoleal/backstage/errors"
+	"github.com/backstage/backstage/auth"
+	"github.com/backstage/backstage/errors"
 	"github.com/zenazn/goji/web"
 	. "github.com/zenazn/goji/web/middleware"
 )

@@ -1,7 +1,7 @@
 package account
 
 import (
-	"github.com/albertoleal/backstage/errors"
+	"github.com/backstage/backstage/errors"
 	. "gopkg.in/check.v1"
 )
 

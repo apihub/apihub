@@ -2,8 +2,8 @@ package account
 
 import (
 	"code.google.com/p/go.crypto/bcrypt"
-	"github.com/albertoleal/backstage/db"
-	"github.com/albertoleal/backstage/errors"
+	"github.com/backstage/backstage/db"
+	"github.com/backstage/backstage/errors"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
