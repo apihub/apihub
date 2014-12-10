@@ -16,8 +16,7 @@ install:
   - godep restore ./...
 
 script:
-  - go test -x -v -./... covermode=count -coverprofile=coverage.out
-  - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken=$COVERALLS_TOKEN
+  - go test -x ./...
 
 services:
   - mongodb
