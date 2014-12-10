@@ -15,7 +15,7 @@ type UsersHandler struct {
 
 func (handler *UsersHandler) CreateUser(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	user := &User{}
-	err := handler.parseBody(r.Body, &user)
+	err := handler.parseBody(r.Body, user)
 	if err != nil {
 		return ResponseError(c, http.StatusBadRequest, "The request was bad-formed.")
 	}
@@ -44,7 +44,7 @@ func (handler *UsersHandler) DeleteUser(c *web.C, w http.ResponseWriter, r *http
 
 func (handler *UsersHandler) Login(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	user := &User{}
-	err := handler.parseBody(r.Body, &user)
+	err := handler.parseBody(r.Body, user)
 	if err != nil {
 		return ResponseError(c, http.StatusBadRequest, "The request was bad-formed.")
 	}
