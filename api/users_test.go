@@ -26,7 +26,7 @@ func (s *S) TestCreateUser(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 201)
-  c.Assert(s.recorder.Body.String(), Equals, `{"name":"Alice","email":"alice@example.org","username":"alice"}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"name":"Alice","email":"alice@example.org","username":"alice"}`)
 }
 
 func (s *S) TestCreateUserWithInvalidPayloadFormat(c *C) {
@@ -80,4 +80,51 @@ func (s *S) TestDeleteUserWithNotSignedUser(c *C) {
 
 	c.Assert(s.recorder.Code, Equals, 400)
 	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"User is not signed in."}`)
+}
+
+func (s *S) TestLoginUser(c *C) {
+	bob.Save()
+	defer bob.Delete()
+	payload := `{"email":"bob@example.org", "password":"123456"}`
+	b := strings.NewReader(payload)
+
+	s.router.Post("/api/login", s.Api.Route(usersHandler, "Login"))
+	req, _ := http.NewRequest("POST", "/api/login", b)
+	req.Header.Set("Content-Type", "application/json")
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, 200)
+}
+
+func (s *S) TestLoginUserWithBadCredentials(c *C) {
+	bob.Save()
+	defer bob.Delete()
+	payload := `{"email":"bob@example.org", "password":"123"}`
+	b := strings.NewReader(payload)
+
+	s.router.Post("/api/login", s.Api.Route(usersHandler, "Login"))
+	req, _ := http.NewRequest("POST", "/api/login", b)
+	req.Header.Set("Content-Type", "application/json")
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, 400)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"Invalid Email or Password."}`)
+}
+
+func (s *S) TestLoginUserWithMalformedRequest(c *C) {
+	bob.Save()
+	defer bob.Delete()
+	payload := `"email":"bob@example.org", "password":"123456"}`
+	b := strings.NewReader(payload)
+
+	s.router.Post("/api/login", s.Api.Route(usersHandler, "Login"))
+	req, _ := http.NewRequest("POST", "/api/login", b)
+	req.Header.Set("Content-Type", "application/json")
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, 400)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"The request was bad-formed."}`)
 }

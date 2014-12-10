@@ -43,9 +43,13 @@ func (handler *UsersHandler) DeleteUser(c *web.C, w http.ResponseWriter, r *http
 }
 
 func (handler *UsersHandler) Login(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
-	email, password := r.FormValue("email"), r.FormValue("password")
+	user := &User{}
+	err := handler.parseBody(r.Body, &user)
+	if err != nil {
+		return ResponseError(c, http.StatusBadRequest, "The request was bad-formed.")
+	}
 
-	token, err := Login(email, password)
+	token, err := Login(user.Email, user.Password)
 	if err != nil {
 		return ResponseError(c, http.StatusBadRequest, "Invalid Email or Password.")
 	}
