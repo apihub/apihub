@@ -49,7 +49,7 @@ func (handler *UsersHandler) Login(c *web.C, w http.ResponseWriter, r *http.Requ
 		return ResponseError(c, http.StatusBadRequest, "The request was bad-formed.")
 	}
 
-	token, err := Login(user.Email, user.Password)
+	token, err := Login(user)
 	if err != nil {
 		return ResponseError(c, http.StatusBadRequest, "Invalid Email or Password.")
 	}

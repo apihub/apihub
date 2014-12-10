@@ -9,12 +9,15 @@ func (s *S) TestLogin(c *C) {
 	user := &User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	user.Save()
 	defer user.Delete()
-	_, ok := Login(user.Email, "123456")
+
+	u := &User{Email: "alice@example.org", Password: "123456"}
+	_, ok := Login(u)
 	c.Assert(ok, IsNil)
 }
 
 func (s *S) TestLoginWithInvalidUsername(c *C) {
-	_, ok := Login("invalid-email", "123456")
+	user := &User{Username: "invalid-email", Password: "123456"}
+	_, ok := Login(user)
 	c.Assert(ok, NotNil)
 }
 
@@ -22,6 +25,6 @@ func (s *S) TestLoginWithInvalidPassword(c *C) {
 	user := &User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	user.Save()
 	defer user.Delete()
-	_, ok := Login(user.Email, "invalid-password")
+	_, ok := Login(user)
 	c.Assert(ok, NotNil)
 }
