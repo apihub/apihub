@@ -23,6 +23,11 @@ func (team *Team) Save(owner *User) error {
 	}
 	defer conn.Close()
 
+	if team.Name == "" {
+		message := "Name cannot be empty."
+		return &errors.ValidationError{Message: message}
+	}
+
 	team.Users = []string{owner.Email}
 	team.Owner = owner.Email
 	if team.Alias == "" {

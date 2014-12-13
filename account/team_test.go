@@ -21,6 +21,14 @@ func (s *S) TestCreateTeam(c *C) {
 	c.Assert(err, IsNil)
 }
 
+func (s *S) TestCreateTeamWithoutRequiredFields(c *C) {
+	team := Team{}
+	err := team.Save(owner)
+	e := err.(*errors.ValidationError)
+	msg := "Name cannot be empty."
+	c.Assert(e.Message, Equals, msg)
+}
+
 func (s *S) TestCreateTeamWhenAliasAlreadyExists(c *C) {
 	err := team.Save(owner)
 	defer DeleteTeamByName("Team")
