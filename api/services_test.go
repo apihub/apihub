@@ -189,5 +189,5 @@ func (s *S) TestGetServiceInfoWhenIsNotInTeam(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 403)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":403,"message":"You don not have access to this."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":403,"message":"You do not belong to this team!"}`)
 }

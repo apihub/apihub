@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	. "github.com/backstage/backstage/account"
-	"github.com/backstage/backstage/errors"
+	. "github.com/backstage/backstage/errors"
 	"github.com/zenazn/goji/web"
 )
 
@@ -27,13 +27,11 @@ func (handler *TeamsHandler) CreateTeam(c *web.C, w http.ResponseWriter, r *http
 
 	err = team.Save(currentUser)
 	if err != nil {
-		e := err.(*errors.ValidationError)
-		return ResponseError(c, http.StatusBadRequest, e.Message)
+		return ResponseError(c, http.StatusBadRequest, err.Error())
 	}
 	team, err = FindTeamByName(team.Name)
 	if err != nil {
-		e := err.(*errors.ValidationError)
-		return ResponseError(c, http.StatusBadRequest, e.Message)
+		return ResponseError(c, http.StatusBadRequest, err.Error())
 	}
 	payload, _ := json.Marshal(team)
 	return &HTTPResponse{StatusCode: http.StatusCreated, Payload: string(payload)}
@@ -47,11 +45,11 @@ func (handler *TeamsHandler) DeleteTeam(c *web.C, w http.ResponseWriter, r *http
 
 	team, err := FindTeamByAlias(c.URLParams["alias"])
 	if err != nil || team.Owner != currentUser.Email {
-		return ResponseError(c, http.StatusForbidden, "Team not found or you're not the owner.")
+		return ResponseError(c, http.StatusForbidden, ErrOnlyOwnerHasPermission.Error())
 	}
 	err = team.Delete()
 	if err != nil {
-		return ResponseError(c, http.StatusBadRequest, "It was not possible to delete your team.")
+		return ResponseError(c, http.StatusBadRequest, err.Error())
 	}
 
 	team.Id = ""
@@ -78,11 +76,11 @@ func (handler *TeamsHandler) GetTeamInfo(c *web.C, w http.ResponseWriter, r *htt
 
 	team, err := FindTeamByAlias(c.URLParams["alias"])
 	if err != nil {
-		return ResponseError(c, http.StatusBadRequest, "Team not found.")
+		return ResponseError(c, http.StatusBadRequest, err.Error())
 	}
-	_, ok := team.ContainsUser(currentUser)
-	if !ok {
-		return ResponseError(c, http.StatusForbidden, "You do not belong to this team!")
+	_, err = team.ContainsUser(currentUser)
+	if err != nil {
+		return ResponseError(c, http.StatusForbidden, err.Error())
 	}
 
 	result, _ := json.Marshal(team)
@@ -99,9 +97,9 @@ func (handler *TeamsHandler) AddUsersToTeam(c *web.C, w http.ResponseWriter, r *
 	if err != nil {
 		return ResponseError(c, http.StatusBadRequest, "Team not found.")
 	}
-	_, ok := team.ContainsUser(currentUser)
-	if !ok {
-		return ResponseError(c, http.StatusForbidden, "You do not belong to this team!")
+	_, err = team.ContainsUser(currentUser)
+	if err != nil {
+		return ResponseError(c, http.StatusForbidden, err.Error())
 	}
 
 	var keys map[string]interface{}
@@ -140,9 +138,9 @@ func (handler *TeamsHandler) RemoveUsersFromTeam(c *web.C, w http.ResponseWriter
 		return ResponseError(c, http.StatusBadRequest, "Team not found.")
 	}
 
-	_, ok := team.ContainsUser(currentUser)
-	if !ok {
-		return ResponseError(c, http.StatusForbidden, "You do not belong to this team!")
+	_, err = team.ContainsUser(currentUser)
+	if err != nil {
+		return ResponseError(c, http.StatusForbidden, err.Error())
 	}
 
 	var keys map[string]interface{}

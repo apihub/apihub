@@ -73,7 +73,7 @@ func (team *Team) AddUsers(emails []string) error {
 		if !user.Valid() {
 			continue
 		}
-		if _, contains := team.ContainsUser(user); contains == false {
+		if _, err := team.ContainsUser(user); err != nil {
 			team.Users = append(team.Users, user.Email)
 			newUser = true
 		}
@@ -107,7 +107,7 @@ func (team *Team) RemoveUsers(emails []string) error {
 		if !user.Valid() {
 			continue
 		}
-		if i, ok := team.ContainsUser(user); ok {
+		if i, err := team.ContainsUser(user); err == nil {
 			hi := len(team.Users) - 1
 			if hi > i {
 				team.Users[i] = team.Users[hi]
@@ -221,11 +221,11 @@ func getEmails(users []*User) []string {
 	return emails
 }
 
-func (team *Team) ContainsUser(user *User) (int, bool) {
+func (team *Team) ContainsUser(user *User) (int, error) {
 	for i, u := range team.Users {
 		if u == user.Email {
-			return i, true
+			return i, nil
 		}
 	}
-	return -1, false
+	return -1, errors.ErrUserNotInTeam
 }

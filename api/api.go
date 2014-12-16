@@ -68,7 +68,7 @@ func (api *Api) Route(handler interface{}, route string) interface{} {
 		methodInterface := methodValue.Interface()
 		method := methodInterface.(func(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse)
 		response := method(&c, w, r)
-		// Need to check if there's any error.
+
 		_, err := GetRequestError(&c)
 		if !err {
 			w.WriteHeader(response.StatusCode)

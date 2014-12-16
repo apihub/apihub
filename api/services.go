@@ -82,8 +82,8 @@ func (handler *ServicesHandler) GetServiceInfo(c *web.C, w http.ResponseWriter, 
 	if err != nil {
 		return ResponseError(c, http.StatusBadRequest, "Team not found.")
 	}
-	if _, ok := team.ContainsUser(currentUser); !ok {
-		return ResponseError(c, http.StatusForbidden, "You don not have access to this.")
+	if _, err := team.ContainsUser(currentUser); err != nil{
+		return ResponseError(c, http.StatusForbidden, err.Error())
 	}
 
 	result, _ := json.Marshal(service)

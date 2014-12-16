@@ -111,7 +111,7 @@ func (s *S) TestDeleteTeamWhenUserIsNotOwner(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 403)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":403,"message":"Team not found or you're not the owner."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":403,"message":"Only the owner has permission to perform this operation."}`)
 }
 
 func (s *S) TestDeleteTeamIsNotFound(c *C) {
@@ -125,7 +125,7 @@ func (s *S) TestDeleteTeamIsNotFound(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 403)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":403,"message":"Team not found or you're not the owner."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":403,"message":"Only the owner has permission to perform this operation."}`)
 }
 
 func (s *S) TestGetUserTeams(c *C) {

@@ -226,8 +226,8 @@ func (s *S) TestContainsUser(c *C) {
 	team.Save(owner)
 	defer DeleteTeamByName("Team")
 	g, _ := FindTeamByName("Team")
-	_, ok := g.ContainsUser(owner)
-	c.Assert(ok, Equals, true)
-	_, ok = g.ContainsUser(bob)
-	c.Assert(ok, Equals, false)
+	_, err := g.ContainsUser(owner)
+	c.Assert(err, IsNil)
+	_, err = g.ContainsUser(bob)
+	c.Assert(err, Not(IsNil))
 }
