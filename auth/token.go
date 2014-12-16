@@ -3,12 +3,12 @@ package auth
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/backstage/backstage/account"
+	. "github.com/backstage/backstage/errors"
 	"github.com/backstage/backstage/db"
 	"github.com/fatih/structs"
 	"github.com/garyburd/redigo/redis"
@@ -54,7 +54,7 @@ func GetUserFromToken(auth string) (user *account.User, error error) {
 		}
 	}
 
-	return nil, errors.New("Invalid token format.")
+	return nil, ErrInvalidTokenFormat
 }
 
 // First, try to retrieve an existing token for the user. Return a new one if not found.

@@ -79,12 +79,12 @@ func (s *S) TestFindUserWithInvalidUsername(c *C) {
 }
 
 func (s *S) TestGetTeams(c *C) {
-	user := User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
+	user := &User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	defer user.Delete()
 	user.Save()
 	team := &Team{Name: "Team"}
-	team.Save(&user)
-	defer team.Delete()
+	team.Save(user)
+	defer DeleteTeamByAlias(team.Alias, user)
 	g, err := user.GetTeams()
 	c.Assert(err, IsNil)
 	c.Assert(g[0].Name, Equals, "Team")

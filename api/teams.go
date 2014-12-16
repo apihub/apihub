@@ -36,14 +36,15 @@ func (handler *TeamsHandler) DeleteTeam(c *web.C, w http.ResponseWriter, r *http
 	if err != nil {
 		return BadRequest(err.Error())
 	}
-	// TODO: Remove this logic from here.
-	team, err := FindTeamByAlias(c.URLParams["alias"])
-	if err != nil || team.Owner != currentUser.Email {
-		return Forbidden(ErrOnlyOwnerHasPermission.Error())
-	}
-	err = team.Delete()
+
+	team, err := DeleteTeamByAlias(c.URLParams["alias"], currentUser)
 	if err != nil {
-		return BadRequest(err.Error())
+		switch err.(type) {
+		case *ForbiddenError:
+			return Forbidden(err.Error())
+		default:
+			return BadRequest(err.Error())
+		}
 	}
 	return OK(team.ToString())
 }
@@ -65,15 +66,16 @@ func (handler *TeamsHandler) GetTeamInfo(c *web.C, w http.ResponseWriter, r *htt
 		return BadRequest(err.Error())
 	}
 
-	//TODO: Remove this logic from here.
-	team, err := FindTeamByAlias(c.URLParams["alias"])
+	team, err := FindTeamByAlias(c.URLParams["alias"], currentUser)
 	if err != nil {
-		return BadRequest(err.Error())
+		switch err.(type) {
+		case *ForbiddenError:
+			return Forbidden(err.Error())
+		default:
+			return BadRequest(err.Error())
+		}
 	}
-	_, err = team.ContainsUser(currentUser)
-	if err != nil {
-		return Forbidden(err.Error())
-	}
+
 	return OK(team.ToString())
 }
 
@@ -83,14 +85,14 @@ func (handler *TeamsHandler) AddUsersToTeam(c *web.C, w http.ResponseWriter, r *
 		return BadRequest(err.Error())
 	}
 
-	//TODO: Remove this logic from here.
-	team, err := FindTeamByAlias(c.URLParams["alias"])
+	team, err := FindTeamByAlias(c.URLParams["alias"], currentUser)
 	if err != nil {
-		return BadRequest(ErrTeamNotFound.Error())
-	}
-	_, err = team.ContainsUser(currentUser)
-	if err != nil {
-		return Forbidden(err.Error())
+		switch err.(type) {
+		case *ForbiddenError:
+			return Forbidden(err.Error())
+		default:
+			return BadRequest(err.Error())
+		}
 	}
 
 	var t *Team
@@ -111,14 +113,14 @@ func (handler *TeamsHandler) RemoveUsersFromTeam(c *web.C, w http.ResponseWriter
 		return BadRequest(err.Error())
 	}
 
-	//TODO: Remove this logic from here
-	team, err := FindTeamByAlias(c.URLParams["alias"])
+	team, err := FindTeamByAlias(c.URLParams["alias"], currentUser)
 	if err != nil {
-		return BadRequest(ErrTeamNotFound.Error())
-	}
-	_, err = team.ContainsUser(currentUser)
-	if err != nil {
-		return Forbidden(err.Error())
+		switch err.(type) {
+		case *ForbiddenError:
+			return Forbidden(err.Error())
+		default:
+			return BadRequest(err.Error())
+		}
 	}
 
 	var t *Team

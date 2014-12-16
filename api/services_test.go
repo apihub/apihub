@@ -12,7 +12,7 @@ import (
 func (s *S) TestCreateService(c *C) {
 	owner.Save()
 	team.Save(owner)
-	defer team.Delete()
+	defer account.DeleteTeamByAlias(team.Alias, owner)
 	defer owner.Delete()
 	defer account.DeleteServiceBySubdomain("backstage")
 
@@ -48,7 +48,7 @@ func (s *S) TestCreateServiceWhenUserIsNotSignedIn(c *C) {
 func (s *S) TestCreateServiceWhenTeamDoesNotExist(c *C) {
 	owner.Save()
 	team.Save(owner)
-	defer team.Delete()
+	defer account.DeleteTeamByAlias(team.Alias, owner)
 	defer owner.Delete()
 	defer account.DeleteServiceBySubdomain("backstage")
 
@@ -69,7 +69,7 @@ func (s *S) TestCreateServiceWhenTeamDoesNotExist(c *C) {
 func (s *S) TestCreateServiceWithInvalidMessageFormat(c *C) {
 	owner.Save()
 	team.Save(owner)
-	defer team.Delete()
+	defer account.DeleteTeamByAlias(team.Alias, owner)
 	defer owner.Delete()
 	defer account.DeleteServiceBySubdomain("backstage")
 
@@ -90,7 +90,7 @@ func (s *S) TestDeleteService(c *C) {
 	owner.Save()
 	team.Save(owner)
 	service.Save(owner, team)
-	defer team.Delete()
+	defer account.DeleteTeamByAlias(team.Alias, owner)
 	defer owner.Delete()
 	defer service.Delete()
 
@@ -109,7 +109,7 @@ func (s *S) TestDeleteServiceWhenUserIsNotOwner(c *C) {
 	owner.Save()
 	team.Save(owner)
 	service.Save(owner, team)
-	defer team.Delete()
+	defer account.DeleteTeamByAlias(team.Alias, owner)
 	defer alice.Delete()
 	defer owner.Delete()
 	defer service.Delete()
@@ -144,7 +144,7 @@ func (s *S) TestGetServiceInfo(c *C) {
 	owner.Save()
 	team.Save(owner)
 	service.Save(owner, team)
-	defer team.Delete()
+	defer account.DeleteTeamByAlias(team.Alias, owner)
 	defer owner.Delete()
 	defer service.Delete()
 
@@ -177,7 +177,7 @@ func (s *S) TestGetServiceInfoWhenIsNotInTeam(c *C) {
 	owner.Save()
 	team.Save(owner)
 	service.Save(owner, team)
-	defer team.Delete()
+	defer account.DeleteTeamByAlias(team.Alias, owner)
 	defer bob.Delete()
 	defer owner.Delete()
 	defer service.Delete()

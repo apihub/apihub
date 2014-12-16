@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	. "github.com/backstage/backstage/account"
+	. "github.com/backstage/backstage/errors"
 	"github.com/zenazn/goji/web"
 )
 
@@ -27,10 +28,16 @@ func (handler *ServicesHandler) CreateService(c *web.C, w http.ResponseWriter, r
 		return BadRequest(err.Error())
 	}
 
-	team, err := FindTeamByAlias(service.Team)
+	team, err := FindTeamByAlias(service.Team, currentUser)
 	if err != nil {
-		return BadRequest(err.Error())
+		switch err.(type) {
+		case *ForbiddenError:
+			return Forbidden(err.Error())
+		default:
+			return BadRequest(err.Error())
+		}
 	}
+
 	err = service.Save(currentUser, team)
 	if err != nil {
 		return BadRequest(err.Error())
@@ -73,13 +80,14 @@ func (handler *ServicesHandler) GetServiceInfo(c *web.C, w http.ResponseWriter, 
 		return Forbidden("Service not found or you dont belong to the team responsible for it.")
 	}
 
-	//TODO: Remove this logic from here
-	team, err := FindTeamByAlias(service.Team)
+	_, err = FindTeamByAlias(service.Team, currentUser)
 	if err != nil {
-		return BadRequest(ErrTeamNotFound.Error())
-	}
-	if _, err := team.ContainsUser(currentUser); err != nil {
-		return Forbidden(err.Error())
+		switch err.(type) {
+		case *ForbiddenError:
+			return Forbidden(err.Error())
+		default:
+			return BadRequest(err.Error())
+		}
 	}
 
 	result, _ := json.Marshal(service)

@@ -46,7 +46,15 @@ func (team *Team) Save(owner *User) error {
 	return nil
 }
 
-func (team *Team) Delete() error {
+func DeleteTeamByAlias(alias string, user *User) (*Team, error) {
+	team, err := FindTeamByAlias(alias, user)
+	if err != nil || team.Owner != user.Email {
+		return nil, &errors.ForbiddenError{Message: errors.ErrOnlyOwnerHasPermission.Error()}
+	}
+	return team, team.delete()
+}
+
+func (team *Team) delete() error {
 	conn, err := db.Conn()
 	if err != nil {
 		return err
@@ -160,7 +168,19 @@ func FindTeamByName(name string) (*Team, error) {
 	return &team, nil
 }
 
-func FindTeamByAlias(alias string) (*Team, error) {
+func FindTeamByAlias(alias string, user *User) (*Team, error) {
+	team, err := findTeamByAlias(alias)
+	if err != nil {
+		return nil, errors.ErrTeamNotFound
+	}
+	_, err = team.ContainsUser(user)
+	if err != nil {
+		return nil, &errors.ForbiddenError{Message: err.Error()}
+	}
+	return team, nil
+}
+
+func findTeamByAlias(alias string) (*Team, error) {
 	conn, err := db.Conn()
 	if err != nil {
 		return nil, err

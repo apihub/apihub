@@ -47,7 +47,7 @@ func (s *S) TestDeleteTeam(c *C) {
 	team.Save(owner)
 	g, _ := FindTeamByName(team.Name)
 	c.Assert(len(g.Users), Equals, 1)
-	team.Delete()
+	DeleteTeamByAlias(team.Alias, owner)
 	_, err := FindTeamByName(teamName)
 	c.Assert(err, Not(IsNil))
 }
@@ -188,16 +188,14 @@ func (s *S) TestFindTeamByAlias(c *C) {
 	defer DeleteTeamByName("Team")
 	c.Assert(err, IsNil)
 
-	g, _ := FindTeamByAlias("alias")
+	g, _ := FindTeamByAlias("alias", owner)
 	c.Assert(g.Name, Equals, "Team")
 }
 
 func (s *S) TestFindTeamByAliasWithInvalidName(c *C) {
-	_, err := FindTeamByAlias("Non Existing Team")
+	_, err := FindTeamByAlias("Non Existing Team", owner)
 	c.Assert(err, NotNil)
-	e := err.(*errors.ValidationError)
-	message := "Team not found."
-	c.Assert(e.Message, Equals, message)
+	c.Assert(err.Error(), Equals, "Team not found.")
 }
 
 func (s *S) TestGetTeamUsers(c *C) {
