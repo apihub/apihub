@@ -7,15 +7,19 @@ Several apis require a similar set of features on the backend, such as: authenti
 
 ##Quickstart
 
+```bash
   git clone https://github.com/backstage/backstage.git
   cd backstage
   make setup
   make run-api
+```
 
 ##Running Tests
 
+```bash
   make test
   make race # If you want to check if there's any race condition.
+```
 
 ## Links:
 
