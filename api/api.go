@@ -37,6 +37,7 @@ func (api *Api) DrawRoutes() {
 	goji.Get("/", api.Route(servicesHandler, "Index"))
 	goji.Post("/api/users", api.Route(usersHandler, "CreateUser"))
 	goji.Post("/api/login", api.Route(usersHandler, "Login"))
+	goji.Use(ErrorMiddleware)
 
 	// Private Routes
 	privateRoutes := web.New()

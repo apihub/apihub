@@ -12,6 +12,5 @@ type DebugHandler struct {
 
 func (handler *DebugHandler) HelloWorld(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	c.Env["Content-Type"] = "text/plain"
-	response := &HTTPResponse{StatusCode: http.StatusOK, Message: "Hello World"}
-	return response
+	return OK("Hello World")
 }

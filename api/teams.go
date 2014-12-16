@@ -65,7 +65,7 @@ func (handler *TeamsHandler) GetTeamInfo(c *web.C, w http.ResponseWriter, r *htt
 		return BadRequest(err.Error())
 	}
 
-	//TODO: Remove this login from here.
+	//TODO: Remove this logic from here.
 	team, err := FindTeamByAlias(c.URLParams["alias"])
 	if err != nil {
 		return BadRequest(err.Error())
@@ -83,7 +83,7 @@ func (handler *TeamsHandler) AddUsersToTeam(c *web.C, w http.ResponseWriter, r *
 		return BadRequest(err.Error())
 	}
 
-	//TODO: Remove this login from here.
+	//TODO: Remove this logic from here.
 	team, err := FindTeamByAlias(c.URLParams["alias"])
 	if err != nil {
 		return BadRequest(ErrTeamNotFound.Error())
@@ -111,7 +111,7 @@ func (handler *TeamsHandler) RemoveUsersFromTeam(c *web.C, w http.ResponseWriter
 		return BadRequest(err.Error())
 	}
 
-	//TODO: Remove this login from here
+	//TODO: Remove this logic from here
 	team, err := FindTeamByAlias(c.URLParams["alias"])
 	if err != nil {
 		return BadRequest(ErrTeamNotFound.Error())
