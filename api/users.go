@@ -51,7 +51,7 @@ func (handler *UsersHandler) Login(c *web.C, w http.ResponseWriter, r *http.Requ
 
 	token, err := Login(user)
 	if err != nil {
-		return ResponseError(c, http.StatusBadRequest, "Invalid Email or Password.")
+		return ResponseError(c, http.StatusBadRequest, "Authentication failed.")
 	}
 
 	payload, _ := json.Marshal(token)

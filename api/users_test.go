@@ -110,7 +110,7 @@ func (s *S) TestLoginUserWithBadCredentials(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"Invalid Email or Password."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"Authentication failed."}`)
 }
 
 func (s *S) TestLoginUserWithMalformedRequest(c *C) {
