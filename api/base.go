@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
+	"net/http"
 
 	. "github.com/backstage/backstage/account"
 	"github.com/zenazn/goji/web"
@@ -29,4 +30,20 @@ func (api *ApiHandler) parseBody(body io.ReadCloser, r interface{}) error {
 		return ErrBadRequest
 	}
 	return nil
+}
+
+func BadRequest(message string) *HTTPResponse {
+	return &HTTPResponse{StatusCode: http.StatusBadRequest, Message: message}
+}
+
+func Created(message string) *HTTPResponse {
+	return &HTTPResponse{StatusCode: http.StatusCreated, Message: message}
+}
+
+func OK(message string) *HTTPResponse {
+	return &HTTPResponse{StatusCode: http.StatusOK, Message: message}
+}
+
+func Forbidden(message string) *HTTPResponse {
+	return &HTTPResponse{StatusCode: http.StatusForbidden, Message: message}
 }

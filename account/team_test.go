@@ -231,3 +231,9 @@ func (s *S) TestContainsUser(c *C) {
 	_, err = g.ContainsUser(bob)
 	c.Assert(err, Not(IsNil))
 }
+
+func (s *S) TestTeamToString(c *C) {
+	team := &Team{Id: "123", Name: "Backstage", Owner: "alice@example.org", Users: []string{"alice@example.org"}}
+	str := team.ToString()
+	c.Assert(str, Equals, `{"name":"Backstage","alias":"","users":["alice@example.org"],"owner":"alice@example.org"}`)
+}

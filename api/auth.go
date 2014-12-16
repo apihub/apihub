@@ -11,11 +11,10 @@ func Login(u *User) (*auth.TokenInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(u.Password))
 	if err != nil {
 		return nil, err
 	}
 	token := auth.TokenFor(user)
-	return token, err
+	return token, nil
 }

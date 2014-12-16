@@ -25,7 +25,7 @@ func (s *S) TestCreateTeam(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 201)
-	c.Assert(s.recorder.Body.String(), Matches, "^{\"id\":\".*?\",\"name\":\"Team\",\"alias\":\"team\",\"users\":\\[\"alice@example.org\"\\],\"owner\":\"alice@example.org\"}$")
+	c.Assert(s.recorder.Body.String(), Matches, "^{\"name\":\"Team\",\"alias\":\"team\",\"users\":\\[\"alice@example.org\"\\],\"owner\":\"alice@example.org\"}$")
 }
 
 func (s *S) TestCreateTeamWithAlias(c *C) {
@@ -44,7 +44,7 @@ func (s *S) TestCreateTeamWithAlias(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 201)
-	c.Assert(s.recorder.Body.String(), Matches, "^{\"id\":\".*?\",\"name\":\"Team\",\"alias\":\"my-alias\",\"users\":\\[\"alice@example.org\"\\],\"owner\":\"alice@example.org\"}$")
+	c.Assert(s.recorder.Body.String(), Matches, "^{\"name\":\"Team\",\"alias\":\"my-alias\",\"users\":\\[\"alice@example.org\"\\],\"owner\":\"alice@example.org\"}$")
 }
 
 func (s *S) TestCreateTeamWhenUserIsNotSignedIn(c *C) {
@@ -141,7 +141,7 @@ func (s *S) TestGetUserTeams(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 200)
-	c.Assert(s.recorder.Body.String(), Matches, "^\\[{\"id\":\".*?\",\"name\":\"Team\",\"alias\":\"team\",\"users\":\\[\"owner@example.org\"\\],\"owner\":\"owner@example.org\"}\\]$")
+	c.Assert(s.recorder.Body.String(), Matches, "^\\[{\"name\":\"Team\",\"alias\":\"team\",\"users\":\\[\"owner@example.org\"\\],\"owner\":\"owner@example.org\"}\\]$")
 }
 
 func (s *S) TestGetUserTeamsWhenUserIsNotSignedIn(c *C) {
@@ -168,7 +168,7 @@ func (s *S) TestGetTeamInfo(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 200)
-	c.Assert(s.recorder.Body.String(), Matches, "^{\"id\":\".*?\",\"name\":\"Team\",\"alias\":\"team\",\"users\":\\[\"owner@example.org\"\\],\"owner\":\"owner@example.org\"}$")
+	c.Assert(s.recorder.Body.String(), Matches, "^{\"name\":\"Team\",\"alias\":\"team\",\"users\":\\[\"owner@example.org\"\\],\"owner\":\"owner@example.org\"}$")
 }
 
 func (s *S) TestGetTeamInfoWhenTeamNotFound(c *C) {
@@ -235,10 +235,10 @@ func (s *S) TestAddUsersToTeam(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 201)
-	c.Assert(s.recorder.Body.String(), Matches, "^{\"id\":\".*?\",\"name\":\"Team\",\"alias\":\"team\",\"users\":\\[\"owner@example.org\",\"bob@example.org\"\\],\"owner\":\"owner@example.org\"}$")
+	c.Assert(s.recorder.Body.String(), Matches, "^{\"name\":\"Team\",\"alias\":\"team\",\"users\":\\[\"owner@example.org\",\"bob@example.org\"\\],\"owner\":\"owner@example.org\"}$")
 }
 
-func (s *S) TestAddUserToTeamWithInvalidPaylod(c *C) {
+func (s *S) TestAddUserToTeamWithInvalidPayload(c *C) {
 	owner.Save()
 	bob.Save()
 	team.Save(owner)
@@ -246,7 +246,7 @@ func (s *S) TestAddUserToTeamWithInvalidPaylod(c *C) {
 	defer bob.Delete()
 	defer account.DeleteTeamByName(team.Name)
 
-	payload := `{"members": ["` + bob.Email + `"]}`
+	payload := `"users": ["` + bob.Email + `"]`
 	b := strings.NewReader(payload)
 
 	g, _ := account.FindTeamByName(team.Name)
@@ -324,10 +324,32 @@ func (s *S) TestRemoveUsersFromTeam(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 200)
-	c.Assert(s.recorder.Body.String(), Matches, "^{\"id\":\".*?\",\"name\":\"Team\",\"alias\":\"team\",\"users\":\\[\"owner@example.org\"\\],\"owner\":\"owner@example.org\"}$")
+	c.Assert(s.recorder.Body.String(), Matches, "^{\"name\":\"Team\",\"alias\":\"team\",\"users\":\\[\"owner@example.org\"\\],\"owner\":\"owner@example.org\"}$")
 }
 
-func (s *S) TestRemoveUsersFromTeamWithInvalidPaylod(c *C) {
+func (s *S) TestRemoveUsersFromTeamWithInvalidPayload(c *C) {
+	owner.Save()
+	bob.Save()
+	team.Save(owner)
+	defer owner.Delete()
+	defer bob.Delete()
+	defer account.DeleteTeamByName(team.Name)
+
+	payload := `"members": ["` + bob.Email + `"]`
+	b := strings.NewReader(payload)
+
+	g, _ := account.FindTeamByName(team.Name)
+	s.router.Delete("/api/teams/:alias/users", s.Api.Route(teamsHandler, "RemoveUsersFromTeam"))
+	req, _ := http.NewRequest("DELETE", "/api/teams/"+g.Alias+"/users", b)
+	s.env[CurrentUser] = owner
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, 400)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"The request was invalid or cannot be served."}`)
+}
+
+func (s *S) TestRemoveUsersFromTeamWithInvalidKey(c *C) {
 	owner.Save()
 	bob.Save()
 	team.Save(owner)
@@ -345,8 +367,8 @@ func (s *S) TestRemoveUsersFromTeamWithInvalidPaylod(c *C) {
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
-	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"The request was invalid or cannot be served."}`)
+	c.Assert(s.recorder.Code, Equals, 200)
+	c.Assert(s.recorder.Body.String(), Equals, `{"name":"Team","alias":"team","users":["owner@example.org"],"owner":"owner@example.org"}`)
 }
 
 func (s *S) TestRemoveUsersFromTeamWhenTeamNotFound(c *C) {

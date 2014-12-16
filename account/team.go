@@ -1,6 +1,8 @@
 package account
 
 import (
+	"encoding/json"
+
 	"github.com/backstage/backstage/db"
 	"github.com/backstage/backstage/errors"
 	. "github.com/mrvdot/golang-utils"
@@ -9,7 +11,7 @@ import (
 )
 
 type Team struct {
-	Id    bson.ObjectId `bson:"_id,omitempty" json:"id,omitempty""`
+	Id    bson.ObjectId `bson:"_id,omitempty" json:"-""`
 	Name  string        `json:"name"`
 	Alias string        `json:"alias"`
 	Users []string      `json:"users"`
@@ -228,4 +230,11 @@ func (team *Team) ContainsUser(user *User) (int, error) {
 		}
 	}
 	return -1, errors.ErrUserNotInTeam
+}
+
+//Return a representation of a team without sensitive data.
+func (team *Team) ToString() string {
+	team.Id = ""
+	t, _ := json.Marshal(team)
+	return string(t)
 }

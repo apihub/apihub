@@ -89,3 +89,9 @@ func (s *S) TestGetTeams(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(g[0].Name, Equals, "Team")
 }
+
+func (s *S) TestUserToString(c *C) {
+	user := User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
+	str := user.ToString()
+	c.Assert(str, Equals, `{"name":"Alice","email":"alice@example.org","username":"alice"}`)
+}

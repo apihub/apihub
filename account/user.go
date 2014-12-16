@@ -1,6 +1,8 @@
 package account
 
 import (
+	"encoding/json"
+
 	"code.google.com/p/go.crypto/bcrypt"
 	"github.com/backstage/backstage/db"
 	"github.com/backstage/backstage/errors"
@@ -56,16 +58,15 @@ func (user *User) HashPassword() {
 	if err != nil {
 		panic(err)
 	}
-
 	user.Password = string(hash[:])
 }
 
 func (user *User) Valid() bool {
 	_, err := FindUserByEmail(user.Email)
-	if err == nil {
-		return true
+	if err != nil {
+		return false
 	}
-	return false
+	return true
 }
 
 func FindUserByEmail(email string) (*User, error) {
@@ -80,7 +81,6 @@ func FindUserByEmail(email string) (*User, error) {
 	if err == mgo.ErrNotFound {
 		return nil, &errors.ValidationError{Message: "User not found"}
 	}
-
 	return &user, nil
 }
 
@@ -90,8 +90,14 @@ func (user *User) GetTeams() ([]*Team, error) {
 		return nil, err
 	}
 	defer conn.Close()
-
 	var teams []*Team = []*Team{}
 	err = conn.Teams().Find(bson.M{"users": bson.M{"$in": []string{user.Email}}}).All(&teams)
 	return teams, nil
+}
+
+//Return a representation of user but without sensitive data.
+func (user *User) ToString() string {
+	user.Password = ""
+	u, _ := json.Marshal(user)
+	return string(u)
 }
