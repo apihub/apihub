@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,8 +13,7 @@ import (
 	"github.com/zenazn/goji/web/middleware"
 )
 
-type Api struct {
-}
+type Api struct{}
 
 func (api *Api) Init() {
 	err := config.ReadConfigFile("config.yaml")
@@ -37,7 +37,6 @@ func (api *Api) DrawRoutes() {
 	goji.Get("/", api.Route(servicesHandler, "Index"))
 	goji.Post("/api/users", api.Route(usersHandler, "CreateUser"))
 	goji.Post("/api/login", api.Route(usersHandler, "Login"))
-	goji.Use(ErrorMiddleware)
 
 	// Private Routes
 	privateRoutes := web.New()
@@ -68,15 +67,17 @@ func (api *Api) Route(handler interface{}, route string) interface{} {
 		methodInterface := methodValue.Interface()
 		method := methodInterface.(func(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse)
 		response := method(&c, w, r)
+		body := response.Message
 
-		_, err := GetRequestError(&c)
-		if !err {
-			w.WriteHeader(response.StatusCode)
-			if _, exists := c.Env["Content-Type"]; exists {
-				w.Header().Set("Content-Type", c.Env["Content-Type"].(string))
-			}
-			io.WriteString(w, response.Payload)
+		w.WriteHeader(response.StatusCode)
+		if _, exists := c.Env["Content-Type"]; exists {
+			w.Header().Set("Content-Type", c.Env["Content-Type"].(string))
 		}
+		if response.StatusCode >= http.StatusBadRequest {
+			payload, _ := json.Marshal(response)
+			body = string(payload)
+		}
+		io.WriteString(w, body)
 	}
 	return fn
 }

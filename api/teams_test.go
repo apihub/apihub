@@ -58,10 +58,10 @@ func (s *S) TestCreateTeamWhenUserIsNotSignedIn(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"User is not signed in."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"Invalid or expired token. Please log in with your Backstage credentials."}`)
 }
 
-func (s *S) TestCreateTeamWithInvalidPayloadFormat(c *C) {
+func (s *S) TestCreateTeamWithInvalidMessageFormat(c *C) {
 	alice.Save()
 	defer alice.Delete()
 
@@ -75,7 +75,7 @@ func (s *S) TestCreateTeamWithInvalidPayloadFormat(c *C) {
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"The request was bad-formed."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"The request was invalid or cannot be served."}`)
 }
 
 func (s *S) TestDeleteTeam(c *C) {
@@ -151,7 +151,7 @@ func (s *S) TestGetUserTeamsWhenUserIsNotSignedIn(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"User is not signed in."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"Invalid or expired token. Please log in with your Backstage credentials."}`)
 }
 
 func (s *S) TestGetTeamInfo(c *C) {
@@ -213,7 +213,7 @@ func (s *S) TestTeamInfoWhenUserIsNotSignedIn(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"User is not signed in."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"Invalid or expired token. Please log in with your Backstage credentials."}`)
 }
 
 func (s *S) TestAddUsersToTeam(c *C) {
@@ -257,7 +257,7 @@ func (s *S) TestAddUserToTeamWithInvalidPaylod(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"The request was bad-formed."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"The request was invalid or cannot be served."}`)
 }
 
 func (s *S) TestAddUserToTeamWhenTeamNotFound(c *C) {
@@ -302,7 +302,7 @@ func (s *S) TestAddUsersToTeamWhenUserIsNotSignedIn(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"User is not signed in."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"Invalid or expired token. Please log in with your Backstage credentials."}`)
 }
 
 func (s *S) TestRemoveUsersFromTeam(c *C) {
@@ -346,7 +346,7 @@ func (s *S) TestRemoveUsersFromTeamWithInvalidPaylod(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"The request was bad-formed."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"The request was invalid or cannot be served."}`)
 }
 
 func (s *S) TestRemoveUsersFromTeamWhenTeamNotFound(c *C) {
@@ -411,5 +411,5 @@ func (s *S) TestRemoveUserFromTeamWhenUserIsNotSignedIn(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"User is not signed in."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"Invalid or expired token. Please log in with your Backstage credentials."}`)
 }

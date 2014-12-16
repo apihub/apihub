@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	. "github.com/backstage/backstage/account"
-	"github.com/backstage/backstage/errors"
 	"github.com/zenazn/goji/web"
 )
 
@@ -17,43 +16,42 @@ func (handler *UsersHandler) CreateUser(c *web.C, w http.ResponseWriter, r *http
 	user := &User{}
 	err := handler.parseBody(r.Body, user)
 	if err != nil {
-		return ResponseError(c, http.StatusBadRequest, "The request was bad-formed.")
+		return &HTTPResponse{StatusCode: http.StatusBadRequest, Message: err.Error()}
 	}
 
 	err = user.Save()
 	if err != nil {
-		e := err.(*errors.ValidationError)
-		return ResponseError(c, http.StatusBadRequest, e.Message)
+		return &HTTPResponse{StatusCode: http.StatusBadRequest, Message: err.Error()}
 	}
 	user.Password = ""
 	payload, _ := json.Marshal(user)
-	return &HTTPResponse{StatusCode: http.StatusCreated, Payload: string(payload)}
+	return &HTTPResponse{StatusCode: http.StatusCreated, Message: string(payload)}
 }
 
 func (handler *UsersHandler) DeleteUser(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	user, err := GetCurrentUser(c)
 	if err != nil {
-		return ResponseError(c, http.StatusBadRequest, err.Error())
+		return &HTTPResponse{StatusCode: http.StatusBadRequest, Message: err.Error()}
 	}
 
 	user.Delete()
 	user.Password = ""
 	payload, _ := json.Marshal(user)
-	return &HTTPResponse{StatusCode: http.StatusOK, Payload: string(payload)}
+	return &HTTPResponse{StatusCode: http.StatusOK, Message: string(payload)}
 }
 
 func (handler *UsersHandler) Login(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	user := &User{}
 	err := handler.parseBody(r.Body, user)
 	if err != nil {
-		return ResponseError(c, http.StatusBadRequest, "The request was bad-formed.")
+		return &HTTPResponse{StatusCode: http.StatusBadRequest, Message: err.Error()}
 	}
 
 	token, err := Login(user)
 	if err != nil {
-		return ResponseError(c, http.StatusBadRequest, "Authentication failed.")
+		return &HTTPResponse{StatusCode: http.StatusBadRequest, Message: ErrAuthenticationFailed.Error()}
 	}
 
 	payload, _ := json.Marshal(token)
-	return &HTTPResponse{StatusCode: http.StatusOK, Payload: string(payload)}
+	return &HTTPResponse{StatusCode: http.StatusOK, Message: string(payload)}
 }

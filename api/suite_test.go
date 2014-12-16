@@ -49,8 +49,6 @@ func (s *S) SetUpTest(c *C) {
 	s.router = web.New()
 	s.handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
 
-	s.router.Use(ErrorMiddleware)
-
 	alice = &account.User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	bob = &account.User{Name: "Bob", Email: "bob@example.org", Username: "bob", Password: "123456"}
 	mary = &account.User{Name: "Mary", Email: "mary@example.org", Username: "mary", Password: "123456"}
@@ -68,7 +66,6 @@ func (s *S) TearDownSuite(c *C) {
 	defer storage.Close()
 	config.Unset("database:url")
 	config.Unset("database:name")
-	s.router.Abandon(ErrorMiddleware)
 }
 
 var _ = Suite(&S{})

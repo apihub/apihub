@@ -39,7 +39,7 @@ func (s *S) TestAuthorizationMiddlewareWithInvalidToken(c *C) {
 	s.router.ServeHTTPC(cc, s.recorder, req)
 	erro, _ := GetRequestError(&cc)
 	c.Assert(erro.StatusCode, Equals, http.StatusUnauthorized)
-	c.Assert(erro.Payload, Equals, "You do not have access to this resource.")
+	c.Assert(erro.Message, Equals, "You do not have access to this resource.")
 }
 
 func (s *S) TestAuthorizationMiddlewareWithMissingToken(c *C) {
@@ -50,7 +50,7 @@ func (s *S) TestAuthorizationMiddlewareWithMissingToken(c *C) {
 	s.router.ServeHTTPC(cc, s.recorder, req)
 	erro, _ := GetRequestError(&cc)
 	c.Assert(erro.StatusCode, Equals, http.StatusUnauthorized)
-	c.Assert(erro.Payload, Equals, "You do not have access to this resource.")
+	c.Assert(erro.Message, Equals, "You do not have access to this resource.")
 }
 
 func (s *S) TestRequestIdMiddleware(c *C) {

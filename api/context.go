@@ -1,8 +1,6 @@
 package api
 
 import (
-	"errors"
-
 	"github.com/backstage/backstage/account"
 	"github.com/zenazn/goji/web"
 )
@@ -11,8 +9,6 @@ const (
 	ErrRequestKey string = "RequestError"
 	CurrentUser   string = "CurrentUser"
 )
-
-var ErrUserNotSigned = errors.New("User is not signed in.")
 
 func AddRequestError(c *web.C, error *HTTPResponse) {
 	c.Env[ErrRequestKey] = error
@@ -34,7 +30,7 @@ func SetCurrentUser(c *web.C, user interface{}) {
 func GetCurrentUser(c *web.C) (*account.User, error) {
 	user, ok := c.Env[CurrentUser].(*account.User)
 	if !ok || !user.Valid() {
-		return nil, ErrUserNotSigned
+		return nil, ErrLoginRequired
 	}
 	return user, nil
 }

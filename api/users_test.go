@@ -29,7 +29,7 @@ func (s *S) TestCreateUser(c *C) {
 	c.Assert(s.recorder.Body.String(), Equals, `{"name":"Alice","email":"alice@example.org","username":"alice"}`)
 }
 
-func (s *S) TestCreateUserWithInvalidPayloadFormat(c *C) {
+func (s *S) TestCreateUserWithInvalidMessageFormat(c *C) {
 	payload := `"name": "Alice"`
 	b := strings.NewReader(payload)
 
@@ -40,7 +40,7 @@ func (s *S) TestCreateUserWithInvalidPayloadFormat(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"The request was bad-formed."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"The request was invalid or cannot be served."}`)
 }
 
 func (s *S) TestCreateUserWithMissingRequiredFields(c *C) {
@@ -79,7 +79,7 @@ func (s *S) TestDeleteUserWithNotSignedUser(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"User is not signed in."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"Invalid or expired token. Please log in with your Backstage credentials."}`)
 }
 
 func (s *S) TestLoginUser(c *C) {
@@ -126,5 +126,5 @@ func (s *S) TestLoginUserWithMalformedRequest(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"The request was bad-formed."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"The request was invalid or cannot be served."}`)
 }

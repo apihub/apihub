@@ -16,7 +16,7 @@ func (s *S) TestAddGetRequestError(c *C) {
 
 	m.Get("/helloworld", func(c web.C, w http.ResponseWriter, r *http.Request) {
 		AddRequestError(&c, &HTTPResponse{StatusCode: http.StatusUnauthorized,
-			Payload: "You do not have access to this resource."})
+			Message: "You do not have access to this resource."})
 
 		key, _ := GetRequestError(&c)
 		body, _ := json.Marshal(key)
@@ -59,7 +59,7 @@ func (s *S) TestGetCurrentUserWhenNotSignedIn(c *C) {
 
 	m.Get("/helloworld", func(co web.C, w http.ResponseWriter, r *http.Request) {
 		_, err := GetCurrentUser(&co)
-		c.Assert(err.Error(), Equals, "User is not signed in.")
+		c.Assert(err.Error(), Equals, "Invalid or expired token. Please log in with your Backstage credentials.")
 	})
 
 	req, _ := http.NewRequest("GET", "/helloworld", nil)

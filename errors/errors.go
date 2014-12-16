@@ -3,7 +3,7 @@ package errors
 import "errors"
 
 var (
-  ErrUserNotInTeam = errors.New("You do not belong to this team!")
+  ErrUserNotInTeam          = errors.New("You do not belong to this team!")
   ErrOnlyOwnerHasPermission = errors.New("Only the owner has permission to perform this operation.")
 )
 
