@@ -62,7 +62,7 @@ func (handler *ServicesHandler) DeleteService(c *web.C, w http.ResponseWriter, r
 	}
 	err = service.Delete()
 	if err != nil {
-		return BadRequest("It was not possible to delete your service.")
+		return BadRequest(err.Error())
 	}
 
 	payload, _ := json.Marshal(service)
@@ -77,7 +77,7 @@ func (handler *ServicesHandler) GetServiceInfo(c *web.C, w http.ResponseWriter, 
 
 	service, err := FindServiceBySubdomain(c.URLParams["subdomain"])
 	if err != nil {
-		return Forbidden("Service not found or you dont belong to the team responsible for it.")
+		return Forbidden(ErrServiceNotFound.Error())
 	}
 
 	_, err = FindTeamByAlias(service.Team, currentUser)

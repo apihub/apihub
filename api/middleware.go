@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/backstage/backstage/auth"
-	"github.com/backstage/backstage/errors"
 	"github.com/zenazn/goji/web"
 	. "github.com/zenazn/goji/web/middleware"
 )
@@ -18,7 +17,7 @@ func AuthorizationMiddleware(c *web.C, h http.Handler) http.Handler {
 		authorization := r.Header.Get("Authorization")
 		user, err := auth.GetUserFromToken(authorization)
 		if err != nil {
-			AddRequestError(c, &HTTPResponse{StatusCode: http.StatusUnauthorized, Message: "You do not have access to this resource."})
+			AddRequestError(c, Unauthorized("You do not have access to this resource."))
 			return
 		}
 		SetCurrentUser(c, user)
@@ -55,7 +54,7 @@ func RequestIdMiddleware(c *web.C, h http.Handler) http.Handler {
 }
 
 func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	notFound := &errors.HTTPError{StatusCode: http.StatusNotFound, Message: "The resource you are looking for was not found."}
+	notFound := NotFound("The resource you are looking for was not found.")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(notFound.StatusCode)
 	body, _ := json.Marshal(notFound)

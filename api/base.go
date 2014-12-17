@@ -47,3 +47,11 @@ func OK(message string) *HTTPResponse {
 func Forbidden(message string) *HTTPResponse {
 	return &HTTPResponse{StatusCode: http.StatusForbidden, Message: message}
 }
+
+func NotFound(message string) *HTTPResponse {
+	return &HTTPResponse{StatusCode: http.StatusNotFound, Message: message}
+}
+
+func Unauthorized(message string) *HTTPResponse {
+	return &HTTPResponse{StatusCode: http.StatusUnauthorized, Message: message}
+}

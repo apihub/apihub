@@ -122,7 +122,7 @@ func (s *S) TestDeleteServiceWhenUserIsNotOwner(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 403)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":403,"message":"Service not found or you're not the owner."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":403,"message":"Service not found."}`)
 }
 
 func (s *S) TestDeleteServiceIsNotFound(c *C) {
@@ -137,7 +137,7 @@ func (s *S) TestDeleteServiceIsNotFound(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 403)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":403,"message":"Service not found or you're not the owner."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":403,"message":"Service not found."}`)
 }
 
 func (s *S) TestGetServiceInfo(c *C) {
@@ -169,7 +169,7 @@ func (s *S) TestGetServiceInfoWhenServiceIsNotFound(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 403)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":403,"message":"Service not found or you dont belong to the team responsible for it."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":403,"message":"Service not found."}`)
 }
 
 func (s *S) TestGetServiceInfoWhenIsNotInTeam(c *C) {
