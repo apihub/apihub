@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/backstage/backstage/account"
-	. "github.com/backstage/backstage/errors"
 	"github.com/backstage/backstage/db"
+	. "github.com/backstage/backstage/errors"
 	"github.com/fatih/structs"
 	"github.com/garyburd/redigo/redis"
 )
@@ -46,10 +46,15 @@ func GetUserFromToken(auth string) (user *account.User, error error) {
 			if err != nil {
 				return nil, err
 			}
+			if len(u) == 0 {
+				return nil, ErrTokenNotFound
+			}
 			var user account.User
 			if err := redis.ScanStruct(u, &user); err != nil {
 				fmt.Print(err)
+				return nil, err
 			}
+			//panic(u)
 			return &user, nil
 		}
 	}
@@ -76,6 +81,20 @@ func TokenFor(user *account.User) *TokenInfo {
 		return t
 	}
 	return &t
+}
+
+func RevokeTokensFor(user *account.User) {
+	conn, err := db.Conn()
+	defer conn.Close()
+	ti := "token:" + user.Email
+	token, err := getToken(ti)
+	if err != nil {
+		fmt.Print(err.Error())
+	}
+	var t TokenInfo
+	redis.ScanStruct(token, &t)
+	conn.DeleteToken(t.Token)
+	conn.DeleteToken(ti)
 }
 
 func GenerateToken(user *account.User) *TokenInfo {

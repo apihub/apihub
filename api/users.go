@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	. "github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/auth"
 	"github.com/zenazn/goji/web"
 )
 
@@ -30,6 +31,7 @@ func (handler *UsersHandler) DeleteUser(c *web.C, w http.ResponseWriter, r *http
 	if err != nil {
 		return BadRequest(err.Error())
 	}
+	auth.RevokeTokensFor(user)
 	user.Delete()
 	return OK(user.ToString())
 }

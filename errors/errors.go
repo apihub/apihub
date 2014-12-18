@@ -7,7 +7,8 @@ var (
 	ErrOnlyOwnerHasPermission = errors.New("Only the owner has permission to perform this operation.")
 	ErrInvalidTokenFormat     = errors.New("Invalid token format.")
 	ErrTeamNotFound           = errors.New("Team not found.")
-	ErrServiceNotFound      	= errors.New("Service not found.")
+	ErrServiceNotFound        = errors.New("Service not found.")
+	ErrTokenNotFound          = errors.New("Token not found.")
 )
 
 type ValidationError struct {

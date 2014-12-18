@@ -13,7 +13,7 @@ func (s *S) TestGenerateAndGetUserFromToken(c *C) {
 	c.Assert(u.Email, Equals, "alice@bar.example.org")
 }
 
-func (s *S) TestGenerateAndGetUsernameFromTokenWithInvalidTokenType(c *C) {
+func (s *S) TestGenerateAndGetUserFromTokenWithInvalidTokenType(c *C) {
 	user := &account.User{Username: "alice", Email: "alice@bar.example.org"}
 	tokenInfo := GenerateToken(user)
 	user, err := GetUserFromToken("InvalidType " + tokenInfo.Token)
@@ -21,9 +21,15 @@ func (s *S) TestGenerateAndGetUsernameFromTokenWithInvalidTokenType(c *C) {
 	c.Assert(user, IsNil)
 }
 
-func (s *S) TestGetUsernameFromTokenWithInvalidFormat(c *C) {
+func (s *S) TestGetUserFromTokenWithInvalidFormat(c *C) {
 	user, err := GetUserFromToken("Invalid-Format")
 	c.Assert(err.Error(), Equals, "Invalid token format.")
+	c.Assert(user, IsNil)
+}
+
+func (s *S) TestGetUserFromTokenWithNonExistingToken(c *C) {
+	user, err := GetUserFromToken("Token xyz")
+	c.Assert(err.Error(), Equals, "Token not found.")
 	c.Assert(user, IsNil)
 }
 
@@ -38,4 +44,14 @@ func (s *S) TestTokenForReturnsTheSameTokenIfValid(c *C) {
 	tokenInfo := TokenFor(user)
 	tokenInfo2 := TokenFor(user)
 	c.Assert(tokenInfo.Token, Equals, tokenInfo2.Token)
+}
+
+func (s *S) TestRevokeTokensFor(c *C) {
+	user := &account.User{Username: "alice", Email: "betao@bar.example.org"}
+	tokenInfo := TokenFor(user)
+	_, err := GetUserFromToken(tokenInfo.Type + " " + tokenInfo.Token)
+	c.Assert(err, IsNil)
+	RevokeTokensFor(user)
+	_, err = GetUserFromToken(tokenInfo.Type + " " + tokenInfo.Token)
+	c.Assert(err, Not(IsNil))
 }
