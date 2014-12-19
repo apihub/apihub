@@ -40,9 +40,7 @@ func Conn() (*Storage, error) {
 }
 
 func (storage *Storage) Services() *storage.Collection {
-	subdomainIndex := mgo.Index{Key: []string{"subdomain"}, Unique: true, Background: false}
 	collection := storage.Collection("services")
-	collection.EnsureIndex(subdomainIndex)
 	return collection
 }
 
