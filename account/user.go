@@ -45,12 +45,43 @@ func (user *User) Delete() error {
 	}
 	defer conn.Close()
 
-	err = conn.Users().Remove(user)
+	err = user.remove()
 	if err == mgo.ErrNotFound {
 		message := "User not found."
 		return &errors.ValidationError{Message: message}
 	}
 	return err
+}
+
+//TODO: txn
+func (user *User) remove() error {
+	conn, err := db.Conn()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	var ts []*Team = []*Team{}
+	err = conn.Teams().Find(bson.M{"users": bson.M{"$size": 1}, "owner": user.Email}).All(&ts)
+	if err != nil {
+		return err
+	}
+	var teams []string
+	for _, t := range ts {
+		teams = append(teams, t.Alias)
+	}
+	_, err = conn.Services().RemoveAll(bson.M{"team": bson.M{"$in": teams}})
+	if err != nil {
+		return err
+	}
+	_, err = conn.Teams().RemoveAll(bson.M{"alias": bson.M{"$in": teams}})
+	if err != nil {
+		return err
+	}
+	err = conn.Users().Remove(user)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (user *User) HashPassword() {
