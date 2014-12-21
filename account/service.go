@@ -1,3 +1,4 @@
+// Package account encapsulates the business logic, determing how to manage teams, users and services.
 package account
 
 import (
@@ -9,6 +10,11 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// The Service type is an encapsulation of a service details.
+// It is not allowed to have more than one service with the same subdomain.
+// The `AllowKeylessUse` field indicates if the proxy should validate the authorization header.
+// The `Disabled` field indicates if the proxy dispatch the requests to the service.
+// The `Timeout` field represents how milliseconds the proxy wait for the response, before returning an error.
 type Service struct {
 	Subdomain       string `bson:"_id" json:"subdomain"`
 	AllowKeylessUse bool   `json:"allow_keyless_use"`
@@ -21,6 +27,10 @@ type Service struct {
 	Timeout         int    `json:"timeout"`
 }
 
+// Save creates a new service.
+//
+// It requires to inform the fields: Subdomain and Endpoint.
+// It is not allowed to create two services with the same subdomain.
 func (service *Service) Save(owner *User, team *Team) error {
 	conn, err := db.Conn()
 	if err != nil {
@@ -32,7 +42,7 @@ func (service *Service) Save(owner *User, team *Team) error {
 		message := "Subdomain cannot be empty."
 		return &errors.ValidationError{Message: message}
 	}
-	if len(service.Endpoint) == 0 {
+	if service.Endpoint == "" {
 		message := "Endpoint cannot be empty."
 		return &errors.ValidationError{Message: message}
 	}
@@ -49,6 +59,7 @@ func (service *Service) Save(owner *User, team *Team) error {
 	return err
 }
 
+// Delete removes an existing service from the server.
 func (service *Service) Delete() error {
 	conn, err := db.Conn()
 	if err != nil {
@@ -67,6 +78,7 @@ func (service *Service) Delete() error {
 	return err
 }
 
+// Return the total of services in the database.
 func CountService() (int, error) {
 	conn, err := db.Conn()
 	if err != nil {
@@ -77,6 +89,8 @@ func CountService() (int, error) {
 	return conn.Services().Count()
 }
 
+// Try to find a service by its subdomain.
+// If the service is not found, return an error. Return the service otherwise.
 func FindServiceBySubdomain(subdomain string) (*Service, error) {
 	conn, err := db.Conn()
 	if err != nil {
@@ -94,6 +108,7 @@ func FindServiceBySubdomain(subdomain string) (*Service, error) {
 	return &service, nil
 }
 
+// DeleteServicesBySubdomain removes an existing service from the server based on given subdomain.
 func DeleteServiceBySubdomain(subdomain string) error {
 	conn, err := db.Conn()
 	if err != nil {
@@ -110,6 +125,8 @@ func DeleteServiceBySubdomain(subdomain string) error {
 	return nil
 }
 
+// Find all the services for a given team alias.
+// Return an empty list if nothing is found.
 func FindServicesByTeam(teamAlias string) ([]*Service, error) {
 	conn, err := db.Conn()
 	if err != nil {

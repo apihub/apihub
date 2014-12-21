@@ -1,3 +1,4 @@
+// Package db encapsulates connection with different storages: MongoDB, Redis.
 package db
 
 import (

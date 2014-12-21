@@ -1,3 +1,4 @@
+// Package api provides interfaces to interact with account through HTTP.
 package api
 
 import (

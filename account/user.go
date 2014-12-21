@@ -10,6 +10,8 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// The User type is an encapsulation of a user details.
+// A valid user is capable to interact with the API to manage teams and services.
 type User struct {
 	Name     string `json:"name,omitempty"`
 	Email    string `json:"email,omitempty"`
@@ -17,6 +19,11 @@ type User struct {
 	Password string `json:"password,omitempty"`
 }
 
+// Save creates a new user account.
+//
+// It requires to inform the fields: Name, Email and Password.
+// It is not allowed to create two users with the same email address.
+// It returns an error if the user creation fails.
 func (user *User) Save() error {
 	conn, err := db.Conn()
 	if err != nil {
@@ -38,6 +45,11 @@ func (user *User) Save() error {
 	return err
 }
 
+// Delete removes an existing user from the server.
+//
+// All the teams and services which the corresponding user
+// is the only member are deleted along with the user account.
+// It returns an error if the user is not found.
 func (user *User) Delete() error {
 	conn, err := db.Conn()
 	if err != nil {
@@ -84,6 +96,7 @@ func (user *User) remove() error {
 	return nil
 }
 
+// Encrypts the user password before saving it in the database.
 func (user *User) HashPassword() {
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -92,6 +105,8 @@ func (user *User) HashPassword() {
 	user.Password = string(hash[:])
 }
 
+// Valid checks if the user exists in the database.
+// Returns `true` if so, and `false` otherwise.
 func (user *User) Valid() bool {
 	_, err := FindUserByEmail(user.Email)
 	if err != nil {
@@ -100,6 +115,8 @@ func (user *User) Valid() bool {
 	return true
 }
 
+// Try to find a user by its email address.
+// If the user is not found, return an error. Return the user otherwise.
 func FindUserByEmail(email string) (*User, error) {
 	conn, err := db.Conn()
 	if err != nil {
@@ -115,6 +132,7 @@ func FindUserByEmail(email string) (*User, error) {
 	return &user, nil
 }
 
+// Return a list of all the teams which the user belongs to.
 func (user *User) GetTeams() ([]*Team, error) {
 	conn, err := db.Conn()
 	if err != nil {

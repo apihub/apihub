@@ -10,6 +10,9 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// The Team type is an encapsulation of a team details.
+// It is not allowed to have more than one team with the same alias.
+// The `Owner` field indicates the user who created the team.
 type Team struct {
 	Id       bson.ObjectId `bson:"_id,omitempty" json:"-""`
 	Name     string        `json:"name"`
@@ -19,6 +22,10 @@ type Team struct {
 	Services []*Service    `json:"services,omitempty"`
 }
 
+// Save creates a new team.
+//
+// It requires to inform the owner and a name.
+// If the `alias` is not informed, it will be generate based on the team name.
 func (team *Team) Save(owner *User) error {
 	conn, err := db.Conn()
 	if err != nil {
@@ -47,6 +54,11 @@ func (team *Team) Save(owner *User) error {
 	return nil
 }
 
+// DeleteTeamByAlias removes an existing team from the server based on given alias.
+//
+// Only the owner is allowed to remove the team. If the user is not the owner,
+// an error will be returned.
+// Deletes all the services that belong to the team.
 func DeleteTeamByAlias(alias string, user *User) (*Team, error) {
 	team, err := FindTeamByAlias(alias, user)
 	if err != nil || team.Owner != user.Email {
@@ -79,6 +91,11 @@ func (team *Team) delete() error {
 	return nil
 }
 
+// Add valid user in the team.
+//
+// Update the database only if the user is valid.
+// Otherwise, ignore invalid or non-existing users.
+// Do nothing if the user is already in the team.
 func (team *Team) AddUsers(emails []string) error {
 	conn, err := db.Conn()
 	if err != nil {
@@ -104,6 +121,10 @@ func (team *Team) AddUsers(emails []string) error {
 	return nil
 }
 
+// Remove a user from the team.
+//
+// Do nothing if the user is not in the team.
+// Return an error if trying to remove the owner. It's not allowed to do that.
 func (team *Team) RemoveUsers(emails []string) error {
 	conn, err := db.Conn()
 	if err != nil {
@@ -145,6 +166,8 @@ func (team *Team) RemoveUsers(emails []string) error {
 	return nil
 }
 
+// DeleteTeamByName removes an existing team from the server based on given name.
+// Unlike the `Delete` method, it does not delete the services. Be aware of this.
 func DeleteTeamByName(name string) error {
 	conn, err := db.Conn()
 	if err != nil {
@@ -161,6 +184,7 @@ func DeleteTeamByName(name string) error {
 	return nil
 }
 
+// Find the team info and all the services for a given team name.
 func FindTeamByName(name string) (*Team, error) {
 	conn, err := db.Conn()
 	if err != nil {
@@ -182,6 +206,9 @@ func FindTeamByName(name string) (*Team, error) {
 	return &team, nil
 }
 
+// Find the team info and all the services for a given team alias.
+// It returns the team info if the user belongs to the team.
+// Return an error otherwise.
 func FindTeamByAlias(alias string, user *User) (*Team, error) {
 	team, err := findTeamByAlias(alias)
 	if err != nil {
@@ -215,6 +242,9 @@ func findTeamByAlias(alias string) (*Team, error) {
 	return &team, nil
 }
 
+// Find the team info and all the services for a given team id.
+// Unlike the `FindTeamByAlias` method, it does not check if the
+// user belong to the team.
 func FindTeamById(id string) (*Team, error) {
 	conn, err := db.Conn()
 	if err != nil {
@@ -240,6 +270,7 @@ func FindTeamById(id string) (*Team, error) {
 	return &team, nil
 }
 
+// Return a list of users that belongs to the given team.
 func (team *Team) GetTeamUsers() ([]*User, error) {
 	conn, err := db.Conn()
 	if err != nil {
@@ -265,6 +296,8 @@ func getEmails(users []*User) []string {
 	return emails
 }
 
+// Check if the user belongs to the team.
+// Return the position if so.
 func (team *Team) ContainsUser(user *User) (int, error) {
 	for i, u := range team.Users {
 		if u == user.Email {
