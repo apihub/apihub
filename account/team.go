@@ -56,7 +56,6 @@ func DeleteTeamByAlias(alias string, user *User) (*Team, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return team, team.delete()
 }
 
@@ -67,14 +66,17 @@ func (team *Team) delete() error {
 	}
 	defer conn.Close()
 
-	err = conn.Teams().Remove(team)
+	err = conn.Teams().RemoveId(team.Id)
 	if err == mgo.ErrNotFound {
 		message := "Team not found."
 		return &errors.ValidationError{Message: message}
 	}
 
-	//TODO: remove services.
-	return err
+	_, err = conn.Services().RemoveAll(bson.M{"team": team.Alias})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (team *Team) AddUsers(emails []string) error {
