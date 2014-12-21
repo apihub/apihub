@@ -104,7 +104,7 @@ func (handler *TeamsHandler) AddUsersToTeam(c *web.C, w http.ResponseWriter, r *
 	if err != nil {
 		return BadRequest(err.Error())
 	}
-	return Created(team.ToString())
+	return OK(team.ToString())
 }
 
 func (handler *TeamsHandler) RemoveUsersFromTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {

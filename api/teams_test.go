@@ -253,7 +253,7 @@ func (s *S) TestAddUsersToTeam(c *C) {
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
-	c.Assert(s.recorder.Code, Equals, 201)
+	c.Assert(s.recorder.Code, Equals, 200)
 	c.Assert(s.recorder.Body.String(), Matches, "^{\"name\":\"Team\",\"alias\":\"team\",\"users\":\\[\"owner@example.org\",\"bob@example.org\"\\],\"owner\":\"owner@example.org\"}$")
 }
 
