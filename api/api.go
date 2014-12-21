@@ -24,6 +24,10 @@ func (api *Api) Init() {
 	}
 }
 
+// Register all the routes to be used by the API.
+// There are two kind of routes: public and private.
+// "Public routes" don't need to receive a valid http authorization token.
+// On the other hand, "Private routes" expects to receive a valid http authorization token.
 func (api *Api) DrawRoutes() {
 	goji.Use(RequestIdMiddleware)
 	goji.NotFound(NotFoundHandler)
@@ -61,6 +65,8 @@ func (api *Api) DrawRoutes() {
 	privateRoutes.Get("/services/:subdomain", api.Route(servicesHandler, "GetServiceInfo"))
 }
 
+// Create a router based on given handler and method.
+// Use reflection to find the method and execute it.
 func (api *Api) Route(handler interface{}, route string) interface{} {
 	fn := func(c web.C, w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

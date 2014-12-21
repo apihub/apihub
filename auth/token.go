@@ -1,3 +1,4 @@
+// Package auth provides an interface to authenticate user against the api.
 package auth
 
 import (
@@ -21,9 +22,10 @@ const (
 )
 
 type Token interface {
-	GetToken() (tokenType string, token string, error error)
-	TokenFor() *TokenInfo
-	GenerateToken() *TokenInfo
+	GetUserFromToken(auth string) (user *account.User, error error)
+	TokenFor(user *account.User) *TokenInfo
+	RevokeTokensFor(user *account.User)
+	GenerateToken(user *account.User) *TokenInfo
 }
 
 type TokenInfo struct {
@@ -33,6 +35,8 @@ type TokenInfo struct {
 	CreatedAt string `bson:"created_at" json:"created_at"`
 }
 
+// Convert a Token in a user.
+// Given a token, find the user.
 func GetUserFromToken(auth string) (user *account.User, error error) {
 	var (
 		tt string
@@ -62,6 +66,8 @@ func GetUserFromToken(auth string) (user *account.User, error error) {
 	return nil, ErrInvalidTokenFormat
 }
 
+// Return an auth token for the given user.
+// This token should be used when calling the HTTP Api.
 // First, try to retrieve an existing token for the user. Return a new one if not found.
 func TokenFor(user *account.User) *TokenInfo {
 	token, err := getToken("token:" + user.Email)
@@ -83,6 +89,8 @@ func TokenFor(user *account.User) *TokenInfo {
 	return &t
 }
 
+// Revoke the tokens for the given user.
+// One example of use is when the user destroy its own account.
 func RevokeTokensFor(user *account.User) {
 	conn, err := db.Conn()
 	defer conn.Close()
@@ -97,6 +105,7 @@ func RevokeTokensFor(user *account.User) {
 	conn.DeleteToken(ti)
 }
 
+// Generate a token for given user.
 func GenerateToken(user *account.User) *TokenInfo {
 	rb := make([]byte, 32)
 	_, err := rand.Read(rb)

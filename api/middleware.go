@@ -17,7 +17,7 @@ func AuthorizationMiddleware(c *web.C, h http.Handler) http.Handler {
 		authorization := r.Header.Get("Authorization")
 		user, err := auth.GetUserFromToken(authorization)
 		if err != nil {
-			AddRequestError(c, Unauthorized("You do not have access to this resource."))
+			AddRequestError(c, Unauthorized("Request refused or access is not allowed."))
 			return
 		}
 		SetCurrentUser(c, user)
@@ -54,7 +54,7 @@ func RequestIdMiddleware(c *web.C, h http.Handler) http.Handler {
 }
 
 func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	notFound := NotFound("The resource you are looking for was not found.")
+	notFound := NotFound("The resource requested does not exist.")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(notFound.StatusCode)
 	body, _ := json.Marshal(notFound)
