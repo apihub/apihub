@@ -162,3 +162,23 @@ func (s *S) TestDeleteServiceBySubdomainWithInvalidSubdomain(c *C) {
 	message := "Service not found."
 	c.Assert(e.Message, Equals, message)
 }
+
+func (s *S) TestFindServicesByTeam(c *C) {
+	owner := &User{Email: "owner@example.org"}
+	team := &Team{Name: "Team", Alias: "team"}
+	service := &Service{
+		Subdomain: "backstage",
+		Endpoint:  "http://example.org/api",
+	}
+
+	defer service.Delete()
+	service.Save(owner, team)
+	se, _ := FindServicesByTeam(team.Alias)
+	c.Assert(len(se), Equals, 1)
+	c.Assert(se[0].Subdomain, Equals, "backstage")
+}
+
+func (s *S) TestFindServicesByTeamWithoutElements(c *C) {
+	se, _ := FindServicesByTeam("non-existing-team")
+	c.Assert(len(se), Equals, 0)
+}

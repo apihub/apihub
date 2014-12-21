@@ -11,11 +11,12 @@ import (
 )
 
 type Team struct {
-	Id    bson.ObjectId `bson:"_id,omitempty" json:"-""`
-	Name  string        `json:"name"`
-	Alias string        `json:"alias"`
-	Users []string      `json:"users"`
-	Owner string        `json:"owner"`
+	Id       bson.ObjectId `bson:"_id,omitempty" json:"-""`
+	Name     string        `json:"name"`
+	Alias    string        `json:"alias"`
+	Users    []string      `json:"users"`
+	Owner    string        `json:"owner"`
+	Services []*Service    `json:"services,omitempty"`
 }
 
 func (team *Team) Save(owner *User) error {
@@ -51,6 +52,11 @@ func DeleteTeamByAlias(alias string, user *User) (*Team, error) {
 	if err != nil || team.Owner != user.Email {
 		return nil, &errors.ForbiddenError{Message: errors.ErrOnlyOwnerHasPermission.Error()}
 	}
+	team.Services, err = FindServicesByTeam(alias)
+	if err != nil {
+		return nil, err
+	}
+
 	return team, team.delete()
 }
 
@@ -66,6 +72,8 @@ func (team *Team) delete() error {
 		message := "Team not found."
 		return &errors.ValidationError{Message: message}
 	}
+
+	//TODO: remove services.
 	return err
 }
 
@@ -164,6 +172,10 @@ func FindTeamByName(name string) (*Team, error) {
 		message := "Team not found."
 		return nil, &errors.ValidationError{Message: message}
 	}
+	team.Services, err = FindServicesByTeam(team.Alias)
+	if err != nil {
+		return nil, err
+	}
 
 	return &team, nil
 }
@@ -176,6 +188,10 @@ func FindTeamByAlias(alias string, user *User) (*Team, error) {
 	_, err = team.ContainsUser(user)
 	if err != nil {
 		return nil, &errors.ForbiddenError{Message: err.Error()}
+	}
+	team.Services, err = FindServicesByTeam(alias)
+	if err != nil {
+		return nil, err
 	}
 	return team, nil
 }
@@ -215,6 +231,10 @@ func FindTeamById(id string) (*Team, error) {
 		return nil, errNotFound
 	}
 
+	team.Services, err = FindServicesByTeam(team.Alias)
+	if err != nil {
+		return nil, err
+	}
 	return &team, nil
 }
 

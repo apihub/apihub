@@ -171,6 +171,25 @@ func (s *S) TestGetTeamInfo(c *C) {
 	c.Assert(s.recorder.Body.String(), Matches, "^{\"name\":\"Team\",\"alias\":\"team\",\"users\":\\[\"owner@example.org\"\\],\"owner\":\"owner@example.org\"}$")
 }
 
+func (s *S) TestGetTeamInfoIncludeServices(c *C) {
+	owner.Save()
+	team.Save(owner)
+	service.Save(owner, team)
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+	defer owner.Delete()
+	defer service.Delete()
+
+	g, _ := account.FindTeamByName(team.Name)
+	s.router.Get("/api/teams/:alias", s.Api.Route(teamsHandler, "GetTeamInfo"))
+	req, _ := http.NewRequest("GET", "/api/teams/"+g.Alias, nil)
+	s.env[CurrentUser] = owner
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, 200)
+	c.Assert(s.recorder.Body.String(), Matches, "^{\"name\":\"Team\",\"alias\":\"team\",\"users\":\\[\"owner@example.org\"\\],\"owner\":\"owner@example.org\",\"services\":\\[.*?\\]}$")
+}
+
 func (s *S) TestGetTeamInfoWhenTeamNotFound(c *C) {
 	owner.Save()
 	team.Save(owner)
