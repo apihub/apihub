@@ -9,7 +9,7 @@ Most of the API endpoints require authentication. So you need to log in to gain 
 
 ::
 
-  curl -XPOST -i http://localhost:8000/api/login -H "Content-Type: application/json" -d '{"email": "alice@example.org": "password": 123}'
+  curl -XPOST -i http://localhost:8000/api/login -H "Content-Type: application/json" -d '{"email": "alice@example.org", "password": "123"}'
 
 If you have informed the correct credentials, the response will be:
 

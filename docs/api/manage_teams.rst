@@ -15,6 +15,46 @@ It's required to inform a valid name. The `alias` attribute is optional. If you 
 
   The current user is added to the team automatically as owner.
 
+Resource URL
+------------
+.. highlight:: bash
+
+::
+
+  http://localhost:8000/api/teams
+
+
+Resource Information
+--------------------
+
++---------------------------+----------+
+| Response formats          |   JSON   |
++---------------------------+----------+
+| Requires authentication?  |    Yes   |
++---------------------------+----------+
+
+Payload Parameters
+------------------
++-------------------+--------------+-------------------+-------------------+
+|    Parameter      |     Type     |     Required?     |      Unique?      |
++-------------------+--------------+-------------------+-------------------+
+| name              |    string    | Yes               | No                |
++-------------------+--------------+-------------------+-------------------+
+| alias             |    string    | No                | Yes               |
++-------------------+--------------+-------------------+-------------------+
+
+
+Header Parameters
+-----------------
++-----------------+--------------+-------------------+
+|    Parameter    |     Type     |     Required?     |
++-----------------+--------------+-------------------+
+| Authorization   |    string    | Yes               |
++-----------------+--------------+-------------------+
+
+
+Example Request
+---------------
 
 .. highlight:: bash
 
@@ -22,8 +62,9 @@ It's required to inform a valid name. The `alias` attribute is optional. If you 
 
   curl -XPOST -i http://localhost:8000/api/teams -H "Content-Type: application/json" -d '{"name": "Backstage", "alias": "backstage"} ' -H "Authorization: Token EDWZEheeeDnKt0B4IoH8IsOUSnGdumfHmHGQlZDdRbg="
 
-If your request succeed, the response will be:
 
+Example Result:
+---------------
 .. highlight:: bash
 
 ::
@@ -35,6 +76,7 @@ If your request succeed, the response will be:
   Content-Length: 83
 
   {"name":"backstage","users":["alice@example.org"],"owner":"alice@example.org"}
+
 
 If you do not include a valid token in the header, an error will be returned:
 
@@ -70,12 +112,46 @@ Retrieving all teams for the signed user
 ----------------------------------------
 
 Once you're logged in, it is possible to retrieve all the teams. Backstage takes advantage of the token to identify the user and find the teams.
+
+Resource URL
+------------
+.. highlight:: bash
+
+::
+
+  http://localhost:8000/api/teams
+
+
+Resource Information
+--------------------
+
++---------------------------+----------+
+| Response formats          |   JSON   |
++---------------------------+----------+
+| Requires authentication?  |    Yes   |
++---------------------------+----------+
+
+Header Parameters
+-----------------
++-----------------+--------------+-------------------+
+|    Parameter    |     Type     |     Required?     |
++-----------------+--------------+-------------------+
+| Authorization   |    string    | Yes               |
++-----------------+--------------+-------------------+
+
+
+Example Request
+---------------
+
 .. highlight:: bash
 
 ::
 
   curl -XGET -i http://localhost:8000/api/teams -H "Authorization: Token t3Ex657ZSlGrJYnb6-K9vJGvdV9Y0BwrCUambA9_NzQ="
 
+
+Example Result:
+---------------
 
 .. highlight:: bash
 
@@ -109,12 +185,43 @@ If the user does not belong to any team, an empty list will be returned:
 Retrieving team info
 --------------------
 
+Resource URL
+------------
+.. highlight:: bash
+
+::
+
+  http://localhost:8000/api/teams/<team-alias>
+
+Resource Information
+--------------------
+
++---------------------------+----------+
+| Response formats          |   JSON   |
++---------------------------+----------+
+| Requires authentication?  |    Yes   |
++---------------------------+----------+
+
+Header Parameters
+-----------------
++-----------------+--------------+-------------------+
+|    Parameter    |     Type     |     Required?     |
++-----------------+--------------+-------------------+
+| Authorization   |    string    | Yes               |
++-----------------+--------------+-------------------+
+
+Example Request
+---------------
+
 .. highlight:: bash
 
 ::
 
   curl -XGET -i http://localhost:8000/api/teams/backstage -H "Authorization: Token 6rrKX79WwwEnECZMmeYLm8tzSWZmN_mLT7XiFPN14Og="
 
+
+Example Result:
+---------------
 
 .. highlight:: bash
 
@@ -169,11 +276,35 @@ If the team exists, but the user does not belong to it, an error will be returne
 Adding users in the team
 ------------------------
 
+Resource URL
+------------
+.. highlight:: bash
+
+::
+
+  http://localhost:8000/api/teams/backstage/users
+
+Header Parameters
+-----------------
++-----------------+--------------+-------------------+
+|    Parameter    |     Type     |     Required?     |
++-----------------+--------------+-------------------+
+| Authorization   |    string    | Yes               |
++-----------------+--------------+-------------------+
+
+
+Example Request
+---------------
+
 .. highlight:: bash
 
 ::
 
   curl -XPOST -i http://localhost:8000/api/teams/backstage/users -H "Content-Type: application/json" -d '{"users": ["bob@example.org"]}' -H "Authorization: Token 6rrKX79WwwEnECZMmeYLm8tzSWZmN_mLT7XiFPN14Og"
+
+
+Example Result:
+---------------
 
 .. highlight:: bash
 
@@ -206,6 +337,34 @@ If the user does not belong to the team, an error wil be returned:
 Removing users from team
 ------------------------
 
+Resource URL
+------------
+.. highlight:: bash
+
+::
+
+  http://localhost:8000/api/teams/backstage/users
+
+Resource Information
+--------------------
+
++---------------------------+----------+
+| Response formats          |   JSON   |
++---------------------------+----------+
+| Requires authentication?  |    Yes   |
++---------------------------+----------+
+
+Header Parameters
+-----------------
++-----------------+--------------+-------------------+
+|    Parameter    |     Type     |     Required?     |
++-----------------+--------------+-------------------+
+| Authorization   |    string    | Yes               |
++-----------------+--------------+-------------------+
+
+
+Example Request
+---------------
 .. highlight:: bash
 
 ::
@@ -213,6 +372,8 @@ Removing users from team
   curl -XDELETE -i http://localhost:8000/api/teams/backstage/users -H "Content-Type: application/json" -d '{"users": ["bob@example.org"]}' -H "Authorization: Token vdpazZHBWZCufs-fFaX8teC7Wx1ID5KGTEXRdo3b9vk="
 
 
+Example Result:
+---------------
 .. highlight:: bash
 
 ::
@@ -259,12 +420,47 @@ Only members have permission to have another member from the team. If the user d
 Deleting a team
 ---------------
 
+
+Resource URL
+------------
+.. highlight:: bash
+
+::
+
+  http://localhost:8000/api/teams/<team-alias>
+
+
+Resource Information
+--------------------
+
++---------------------------+----------+
+| Response formats          |   JSON   |
++---------------------------+----------+
+| Requires authentication?  |    Yes   |
++---------------------------+----------+
+
+
+Header Parameters
+-----------------
++-----------------+--------------+-------------------+
+|    Parameter    |     Type     |     Required?     |
++-----------------+--------------+-------------------+
+| Authorization   |    string    | Yes               |
++-----------------+--------------+-------------------+
+
+
+Example Request
+---------------
+
 .. highlight:: bash
 
 ::
 
   curl -XDELETE -i http://localhost:8000/api/teams/backstage -H "Authorization: Token 1HnbxXIYMJzECiE-lpH0uIaailRdDurz2JL_5kgtMVc="
 
+
+Example Result:
+---------------
 
 .. highlight:: bash
 
