@@ -29,4 +29,4 @@ It's required to inform a valid name. The `alias` attribute is optional. If you 
   Date: Fri, 05 Dec 2014 19:44:39 GMT
   Content-Length: 309
 
-  {"subdomain":"backstage","created_at":"2014-12-05T17:44:39.462-02:00","updated_at":"2014-12-05T17:44:39.462-02:00","allow_keyless_use":true,"description":"test this","disabled":false,"documentation":"http://www.example.org/doc","endpoint":"http://github.com/backstage","owner":"nathnb@gmail.com","timeout":10}
+  {"subdomain":"backstage","created_at":"2014-12-05T17:44:39.462-02:00","updated_at":"2014-12-05T17:44:39.462-02:00","allow_keyless_use":true,"description":"test this","disabled":false,"documentation":"http://www.example.org/doc","endpoint":"http://github.com/backstage","owner":"alice@example.org","timeout":10}

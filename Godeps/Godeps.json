@@ -11,11 +11,6 @@
 			"Rev": "88f995681294397936c136182f54e1f6891db323"
 		},
 		{
-			"ImportPath": "code.google.com/p/go.crypto/blowfish",
-			"Comment": "null-231",
-			"Rev": "88f995681294397936c136182f54e1f6891db323"
-		},
-		{
 			"ImportPath": "github.com/fatih/structs",
 			"Rev": "cff54a688549a095900d74a02d02b1120bee96e7"
 		},
@@ -49,6 +44,10 @@
 			"ImportPath": "github.com/zenazn/goji",
 			"Comment": "v0.8.1-10-g285133e",
 			"Rev": "285133e626ca70d5bcf7c57d2fb63328dc21b364"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/blowfish",
+			"Rev": "c89e5683853da5ed97731b507dcd8cda2b11afaf"
 		},
 		{
 			"ImportPath": "gopkg.in/check.v1",

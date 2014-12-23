@@ -13,4 +13,4 @@ It is an open source project that consists of several modules: a restful api, a 
 
 Backstage Client
 ================
-`https://godoc.org/github.com/backstage/backstage-client/backstage`
+There's a `command line <https://github.com/backstage/backstage-client>`_ solution for interacting with Backstage Servers. The documentation can be found at: `<https://godoc.org/github.com/backstage/backstage-client/backstage>`_.
