@@ -8,4 +8,9 @@ Several apis require a similar set of features on the backend, such as: authenti
 
 Why Backstage?
 ==============
-bla bla bla
+It is an open source project that consists of several modules: a restful api, a gateway and a cli interface. In addition to being highly scalable and easily extensible through middleware/filters. All services that are distributed through the gateway have the assurance that the incoming requests have been properly authenticated and/or authorized. In addition, you can create filters that manipulate the request, either adding or removing headers, for example.
+
+
+Backstage Client
+================
+`https://godoc.org/github.com/backstage/backstage-client/backstage`
