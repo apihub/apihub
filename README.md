@@ -25,3 +25,10 @@ Several apis require a similar set of features on the backend, such as: authenti
 
 - Documentation: http://backstage.readthedocs.org/en/latest/
 - How to Contribute: http://backstage.readthedocs.org/en/latest/
+
+##Contributing
+Please refer to the documentation: http://backstage.readthedocs.org/en/latest/contributing/index.html
+
+##License
+
+Distributed under the New BSD License. See LICENSE file for further details.
