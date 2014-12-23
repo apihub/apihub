@@ -46,8 +46,10 @@ func (storage *Storage) Services() *storage.Collection {
 
 func (storage *Storage) Users() *storage.Collection {
 	emailIndex := mgo.Index{Key: []string{"email"}, Unique: true, Background: false}
+	usernameIndex := mgo.Index{Key: []string{"username"}, Unique: true, Background: false}
 	collection := storage.Collection("users")
 	collection.EnsureIndex(emailIndex)
+	collection.EnsureIndex(usernameIndex)
 	return collection
 }
 

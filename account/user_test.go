@@ -13,7 +13,7 @@ func (s *S) TestCreateUser(c *C) {
 	c.Assert(err, IsNil)
 }
 
-func (s *S) TestCreateUserWithSameUsername(c *C) {
+func (s *S) TestCreateUserWithSameEmail(c *C) {
 	user := &User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	user.Save()
 	defer user.Delete()
@@ -21,7 +21,19 @@ func (s *S) TestCreateUserWithSameUsername(c *C) {
 	user2 := &User{Name: "Bob", Email: "alice@example.org", Username: "bob", Password: "123456"}
 	err := user2.Save()
 	e := err.(*errors.ValidationError)
-	msg := "Someone already has that email. Could you try another?"
+	msg := "Someone already has that email/username. Could you try another?"
+	c.Assert(e.Message, Equals, msg)
+}
+
+func (s *S) TestCreateUserWithSameUsername(c *C) {
+	user := &User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
+	user.Save()
+	defer user.Delete()
+
+	user2 := &User{Name: "Bob", Email: "bob@example.org", Username: "alice", Password: "123456"}
+	err := user2.Save()
+	e := err.(*errors.ValidationError)
+	msg := "Someone already has that email/username. Could you try another?"
 	c.Assert(e.Message, Equals, msg)
 }
 
