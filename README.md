@@ -27,6 +27,7 @@ Several apis require a similar set of features on the backend, such as: authenti
 - How to Contribute: http://backstage.readthedocs.org/en/latest/
 
 ##Contributing
+
 Please refer to the documentation: http://backstage.readthedocs.org/en/latest/contributing/index.html
 
 ##License
