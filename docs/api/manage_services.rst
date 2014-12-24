@@ -8,12 +8,12 @@ Manage My Services
 
 
 Creating a new service
----------------------------
+----------------------
 It's required to inform a valid name. The `alias` attribute is optional. If you do not inform that, the name value will be used to generate the `alias`. This value is important, because you will always use that when making any operation involving teams.
 
 
 Resource URL
-------------
+============
 .. highlight:: bash
 
 ::
@@ -22,7 +22,7 @@ Resource URL
 
 
 Resource Information
---------------------
+====================
 
 +---------------------------+----------+
 | Response formats          |   JSON   |
@@ -31,7 +31,7 @@ Resource Information
 +---------------------------+----------+
 
 Payload Parameters
-------------------
+==================
 +-------------------+--------------+-------------------+-------------------+
 |    Parameter      |     Type     |     Required?     |      Unique?      |
 +-------------------+--------------+-------------------+-------------------+
@@ -54,7 +54,7 @@ Payload Parameters
 
 
 Header Parameters
------------------
+=================
 +-----------------+--------------+-------------------+
 |    Parameter    |     Type     |     Required?     |
 +-----------------+--------------+-------------------+
@@ -63,7 +63,7 @@ Header Parameters
 
 
 Example Request
----------------
+===============
 
 .. highlight:: bash
 
@@ -72,8 +72,8 @@ Example Request
   curl -XPOST -i http://localhost:8000/api/services -H "Content-Type: application/json" -d '{"subdomain": "backstage", "allow_keyless_use": true, "description": "test this", "disabled": false, "documentation": "http://www.example.org/doc", "endpoint": "http://github.com/backstage", "timeout": 10, , "team": "backstage"}' -H "Authorization: Token r-fRrYtDJ0nMAQ3UvHGCZe6ASTal9LXu_PmdyZyGkTM="
 
 
-Example Result:
----------------
+Example Result
+==============
 .. highlight:: bash
 
 ::

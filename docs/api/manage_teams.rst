@@ -8,7 +8,7 @@ Manage My Teams
 
 
 Creating a new team
----------------------------
+-------------------
 It's required to inform a valid name. The `alias` attribute is optional. If you do not inform that, the name value will be used to generate the `alias`. This value is important, because you will always use that when making any operation involving teams.
 
 .. note::
@@ -16,7 +16,7 @@ It's required to inform a valid name. The `alias` attribute is optional. If you 
   The current user is added to the team automatically as owner.
 
 Resource URL
-------------
+============
 .. highlight:: bash
 
 ::
@@ -25,7 +25,7 @@ Resource URL
 
 
 Resource Information
---------------------
+====================
 
 +---------------------------+----------+
 | Response formats          |   JSON   |
@@ -34,7 +34,7 @@ Resource Information
 +---------------------------+----------+
 
 Payload Parameters
-------------------
+==================
 +-------------------+--------------+-------------------+-------------------+
 |    Parameter      |     Type     |     Required?     |      Unique?      |
 +-------------------+--------------+-------------------+-------------------+
@@ -45,7 +45,7 @@ Payload Parameters
 
 
 Header Parameters
------------------
+=================
 +-----------------+--------------+-------------------+
 |    Parameter    |     Type     |     Required?     |
 +-----------------+--------------+-------------------+
@@ -54,7 +54,7 @@ Header Parameters
 
 
 Example Request
----------------
+===============
 
 .. highlight:: bash
 
@@ -63,8 +63,8 @@ Example Request
   curl -XPOST -i http://localhost:8000/api/teams -H "Content-Type: application/json" -d '{"name": "Backstage", "alias": "backstage"} ' -H "Authorization: Token EDWZEheeeDnKt0B4IoH8IsOUSnGdumfHmHGQlZDdRbg="
 
 
-Example Result:
----------------
+Example Result
+==============
 .. highlight:: bash
 
 ::
@@ -114,7 +114,7 @@ Retrieving all teams for the signed user
 Once you're logged in, it is possible to retrieve all the teams. Backstage takes advantage of the token to identify the user and find the teams.
 
 Resource URL
-------------
+============
 .. highlight:: bash
 
 ::
@@ -123,7 +123,7 @@ Resource URL
 
 
 Resource Information
---------------------
+====================
 
 +---------------------------+----------+
 | Response formats          |   JSON   |
@@ -132,7 +132,7 @@ Resource Information
 +---------------------------+----------+
 
 Header Parameters
------------------
+=================
 +-----------------+--------------+-------------------+
 |    Parameter    |     Type     |     Required?     |
 +-----------------+--------------+-------------------+
@@ -141,7 +141,7 @@ Header Parameters
 
 
 Example Request
----------------
+===============
 
 .. highlight:: bash
 
@@ -150,8 +150,8 @@ Example Request
   curl -XGET -i http://localhost:8000/api/teams -H "Authorization: Token t3Ex657ZSlGrJYnb6-K9vJGvdV9Y0BwrCUambA9_NzQ="
 
 
-Example Result:
----------------
+Example Result
+==============
 
 .. highlight:: bash
 
@@ -186,7 +186,7 @@ Retrieving team info
 --------------------
 
 Resource URL
-------------
+============
 .. highlight:: bash
 
 ::
@@ -194,7 +194,7 @@ Resource URL
   http://localhost:8000/api/teams/<team-alias>
 
 Resource Information
---------------------
+====================
 
 +---------------------------+----------+
 | Response formats          |   JSON   |
@@ -203,7 +203,7 @@ Resource Information
 +---------------------------+----------+
 
 Header Parameters
------------------
+=================
 +-----------------+--------------+-------------------+
 |    Parameter    |     Type     |     Required?     |
 +-----------------+--------------+-------------------+
@@ -211,7 +211,7 @@ Header Parameters
 +-----------------+--------------+-------------------+
 
 Example Request
----------------
+===============
 
 .. highlight:: bash
 
@@ -220,8 +220,8 @@ Example Request
   curl -XGET -i http://localhost:8000/api/teams/backstage -H "Authorization: Token 6rrKX79WwwEnECZMmeYLm8tzSWZmN_mLT7XiFPN14Og="
 
 
-Example Result:
----------------
+Example Result
+==============
 
 .. highlight:: bash
 
@@ -277,7 +277,7 @@ Adding users in the team
 ------------------------
 
 Resource URL
-------------
+============
 .. highlight:: bash
 
 ::
@@ -285,7 +285,7 @@ Resource URL
   http://localhost:8000/api/teams/backstage/users
 
 Header Parameters
------------------
+=================
 +-----------------+--------------+-------------------+
 |    Parameter    |     Type     |     Required?     |
 +-----------------+--------------+-------------------+
@@ -294,7 +294,7 @@ Header Parameters
 
 
 Example Request
----------------
+===============
 
 .. highlight:: bash
 
@@ -303,8 +303,8 @@ Example Request
   curl -XPOST -i http://localhost:8000/api/teams/backstage/users -H "Content-Type: application/json" -d '{"users": ["bob@example.org"]}' -H "Authorization: Token 6rrKX79WwwEnECZMmeYLm8tzSWZmN_mLT7XiFPN14Og"
 
 
-Example Result:
----------------
+Example Result
+==============
 
 .. highlight:: bash
 
@@ -338,7 +338,7 @@ Removing users from team
 ------------------------
 
 Resource URL
-------------
+============
 .. highlight:: bash
 
 ::
@@ -346,7 +346,7 @@ Resource URL
   http://localhost:8000/api/teams/backstage/users
 
 Resource Information
---------------------
+====================
 
 +---------------------------+----------+
 | Response formats          |   JSON   |
@@ -355,7 +355,7 @@ Resource Information
 +---------------------------+----------+
 
 Header Parameters
------------------
+=================
 +-----------------+--------------+-------------------+
 |    Parameter    |     Type     |     Required?     |
 +-----------------+--------------+-------------------+
@@ -364,7 +364,7 @@ Header Parameters
 
 
 Example Request
----------------
+===============
 .. highlight:: bash
 
 ::
@@ -372,8 +372,8 @@ Example Request
   curl -XDELETE -i http://localhost:8000/api/teams/backstage/users -H "Content-Type: application/json" -d '{"users": ["bob@example.org"]}' -H "Authorization: Token vdpazZHBWZCufs-fFaX8teC7Wx1ID5KGTEXRdo3b9vk="
 
 
-Example Result:
----------------
+Example Result
+==============
 .. highlight:: bash
 
 ::
@@ -422,7 +422,7 @@ Deleting a team
 
 
 Resource URL
-------------
+============
 .. highlight:: bash
 
 ::
@@ -431,7 +431,7 @@ Resource URL
 
 
 Resource Information
---------------------
+====================
 
 +---------------------------+----------+
 | Response formats          |   JSON   |
@@ -441,7 +441,7 @@ Resource Information
 
 
 Header Parameters
------------------
+=================
 +-----------------+--------------+-------------------+
 |    Parameter    |     Type     |     Required?     |
 +-----------------+--------------+-------------------+
@@ -450,7 +450,7 @@ Header Parameters
 
 
 Example Request
----------------
+===============
 
 .. highlight:: bash
 
@@ -459,8 +459,8 @@ Example Request
   curl -XDELETE -i http://localhost:8000/api/teams/backstage -H "Authorization: Token 1HnbxXIYMJzECiE-lpH0uIaailRdDurz2JL_5kgtMVc="
 
 
-Example Result:
----------------
+Example Result
+==============
 
 .. highlight:: bash
 

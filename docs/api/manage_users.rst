@@ -7,7 +7,7 @@ Creating a new user account
 To start interacting with Backstage, it's needed to create a user account. Follow below an example, using CURL, of how to create a user account:
 
 Resource URL
-------------
+============
 .. highlight:: bash
 
 ::
@@ -16,7 +16,7 @@ Resource URL
 
 
 Resource Information
---------------------
+====================
 
 +---------------------------+----------+
 | Response formats          |   JSON   |
@@ -25,7 +25,7 @@ Resource Information
 +---------------------------+----------+
 
 Payload Parameters
-------------------
+==================
 +-----------------+--------------+-------------------+-------------------+
 |    Parameter    |     Type     |     Required?     |      Unique?      |
 +-----------------+--------------+-------------------+-------------------+
@@ -40,7 +40,7 @@ Payload Parameters
 
 
 Example Request
----------------
+===============
 .. highlight:: bash
 
 ::
@@ -48,8 +48,8 @@ Example Request
   curl -XPOST -i http://localhost:8000/api/users -H "Content-Type: application/json" -d '{"name": "Alice", "email": "alice@example.org", "username": "alice", "password": "123"}'
 
 
-Example Result:
----------------
+Example Result
+==============
 .. highlight:: bash
 
 ::
@@ -88,7 +88,7 @@ The only way to remove a user account is by using a valid Token. For this, it's 
 
 
 Resource URL
-------------
+============
 .. highlight:: bash
 
 ::
@@ -97,7 +97,7 @@ Resource URL
 
 
 Resource Information
---------------------
+====================
 
 +---------------------------+----------+
 | Response formats          |   JSON   |
@@ -115,7 +115,7 @@ Header Parameters
 
 
 Example Request
----------------
+===============
 .. highlight:: bash
 
 ::
@@ -123,8 +123,8 @@ Example Request
   curl -i -XDELETE http://localhost:8000/api/users -H "Authorization: Token 1-PYXC0NE5OxrryQ4DmZ_C2WOwAlAOc-uyEKcPW0nr8="
 
 
-Example Result:
----------------
+Example Result
+==============
 The API returns the resource itself whenever possible. Even after deleting a user, the response payload will be the user:
 
 .. highlight:: bash
