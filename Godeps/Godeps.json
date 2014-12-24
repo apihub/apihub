@@ -11,6 +11,11 @@
 			"Rev": "88f995681294397936c136182f54e1f6891db323"
 		},
 		{
+			"ImportPath": "code.google.com/p/go.crypto/blowfish",
+			"Comment": "null-231",
+			"Rev": "88f995681294397936c136182f54e1f6891db323"
+		},
+		{
 			"ImportPath": "github.com/fatih/structs",
 			"Rev": "cff54a688549a095900d74a02d02b1120bee96e7"
 		},
@@ -26,6 +31,11 @@
 			"ImportPath": "github.com/howeyc/fsnotify",
 			"Comment": "v0.9.0-11-g6b1ef89",
 			"Rev": "6b1ef893dc11e0447abda6da20a5203481878dda"
+		},
+		{
+			"ImportPath": "github.com/karlseguin/ccache",
+			"Comment": "v1.0.0-1-gc75dcd4",
+			"Rev": "c75dcd4c124552532742a7b795d1890cdd7614dc"
 		},
 		{
 			"ImportPath": "github.com/mrvdot/golang-utils",
@@ -44,10 +54,6 @@
 			"ImportPath": "github.com/zenazn/goji",
 			"Comment": "v0.8.1-10-g285133e",
 			"Rev": "285133e626ca70d5bcf7c57d2fb63328dc21b364"
-		},
-		{
-			"ImportPath": "golang.org/x/crypto/blowfish",
-			"Rev": "c89e5683853da5ed97731b507dcd8cda2b11afaf"
 		},
 		{
 			"ImportPath": "gopkg.in/check.v1",

@@ -18,7 +18,6 @@ type Api struct{}
 
 func (api *Api) Init() {
 	err := config.ReadConfigFile("config.yaml")
-
 	if err != nil {
 		fmt.Printf("Error reading config file: %s\n", err.Error())
 	}

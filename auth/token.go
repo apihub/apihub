@@ -13,6 +13,7 @@ import (
 	. "github.com/backstage/backstage/errors"
 	"github.com/fatih/structs"
 	"github.com/garyburd/redigo/redis"
+	"github.com/karlseguin/ccache"
 )
 
 const (
@@ -20,6 +21,8 @@ const (
 	ExpiresTokenCache = ExpiresInSeconds - 10 // time in seconds to remove from expire time.
 	TokenType         = "Token"
 )
+
+var Cache = ccache.New(ccache.Configure())
 
 type Token interface {
 	GetUserFromToken(auth string) (user *account.User, error error)
@@ -39,14 +42,17 @@ type TokenInfo struct {
 // Given a token, find the user.
 func GetUserFromToken(auth string) (user *account.User, error error) {
 	var (
-		tt string
-		t  string
+		tt       string
+		tokenKey string
 	)
 	a := strings.Split(auth, " ")
 	if len(a) == 2 {
-		tt, t = a[0], a[1]
+		tt, tokenKey = a[0], a[1]
 		if tt == TokenType {
-			u, err := getToken(t)
+			if item := Cache.Get(tokenKey); item != nil {
+				return item.Value().(*account.User), nil
+			}
+			u, err := get(tokenKey)
 			if err != nil {
 				return nil, err
 			}
@@ -58,11 +64,9 @@ func GetUserFromToken(auth string) (user *account.User, error error) {
 				fmt.Print(err)
 				return nil, err
 			}
-			//panic(u)
 			return &user, nil
 		}
 	}
-
 	return nil, ErrInvalidTokenFormat
 }
 
@@ -70,7 +74,11 @@ func GetUserFromToken(auth string) (user *account.User, error error) {
 // This token should be used when calling the HTTP Api.
 // First, try to retrieve an existing token for the user. Return a new one if not found.
 func TokenFor(user *account.User) *TokenInfo {
-	token, err := getToken("token:" + user.Email)
+	tokenKey := "token:" + user.Email
+	if item := Cache.Get(tokenKey); item != nil {
+		return item.Value().(*TokenInfo)
+	}
+	token, err := get(tokenKey)
 	if err != nil {
 		fmt.Print(err.Error())
 	}
@@ -80,10 +88,12 @@ func TokenFor(user *account.User) *TokenInfo {
 		conn, err := db.Conn()
 		if err != nil {
 			fmt.Println(err)
+			return nil
 		}
 		defer conn.Close()
 		t := GenerateToken(user)
-		go conn.Tokens("token:"+user.Email, ExpiresTokenCache, structs.Map(t))
+		Cache.Set(tokenKey, t, time.Minute*10)
+		go conn.Tokens(tokenKey, ExpiresTokenCache, structs.Map(t))
 		return t
 	}
 	return &t
@@ -95,14 +105,16 @@ func RevokeTokensFor(user *account.User) {
 	conn, err := db.Conn()
 	defer conn.Close()
 	ti := "token:" + user.Email
-	token, err := getToken(ti)
+	token, err := get(ti)
 	if err != nil {
 		fmt.Print(err.Error())
 	}
 	var t TokenInfo
 	redis.ScanStruct(token, &t)
 	conn.DeleteToken(t.Token)
+	Cache.Delete(t.Token)
 	conn.DeleteToken(ti)
+	Cache.Delete(ti)
 }
 
 // Generate a token for given user.
@@ -124,11 +136,12 @@ func GenerateToken(user *account.User) *TokenInfo {
 		fmt.Println(err)
 	}
 	defer conn.Close()
+	Cache.Set(token.Token, user, time.Minute*10)
 	conn.Tokens(token.Token, token.Expires, structs.Map(user))
 	return token
 }
 
-func getToken(token string) ([]interface{}, error) {
+func get(token string) ([]interface{}, error) {
 	conn, err := db.Conn()
 	if err != nil {
 		fmt.Println(err)
