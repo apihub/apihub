@@ -8,8 +8,9 @@ endef
 
 help:
 	@echo '    doc ...................... generates a new doc version'
-	@echo '    run-api .................. runs api server'
 	@echo '    race ..................... runs race condition tests'
+	@echo '    run-api .................. runs api server'
+	@echo '    run ...................... runs project'
 	@echo '    save-deps ................ generates the Godeps folder'
 	@echo '    setup .................... sets up the environment'
 	@echo '    test ..................... runs tests'
@@ -17,12 +18,15 @@ help:
 doc:
 	@cd docs && make clean && make html SPHINXOPTS="-W"
 
-run-api:
-	go run ./api/cmd/httpserver.go
-
 race:
 	go test $(GO_EXTRAFLAGS) -race -i ./...
 	go test $(GO_EXTRAFLAGS) -race ./...
+
+run-api:
+	go run ./api/cmd/httpserver.go
+
+run:
+	foreman start -f Procfile.local
 
 save-deps:
 	$(GOPATH)/bin/godep save ./...
