@@ -1,6 +1,10 @@
 package db
 
 import (
+	"fmt"
+	"time"
+
+	"github.com/garyburd/redigo/redis"
 	"github.com/tsuru/config"
 	"github.com/tsuru/tsuru/db/storage"
 	"gopkg.in/mgo.v2"
@@ -64,10 +68,33 @@ func (storage *Storage) Tokens(key string, expires int, data map[string]interfac
 	addHCache(key, expires, data)
 }
 
-func (storage *Storage) GetTokenValue(key string) ([]interface{}, error) {
-	return getHCache(key)
+func (storage *Storage) GetTokenValue(key string, t interface{}) error {
+	var (
+		data []interface{}
+		err  error
+	)
+
+	if item := Cache.Get(key); item != nil {
+		if !item.Expired() {
+			data = item.Value().([]interface{})
+		}
+	}
+	if len(data) == 0 {
+		data, err = getHCache(key)
+		if err != nil {
+			return err
+		}
+	}
+
+	if err = redis.ScanStruct(data, t); err != nil {
+		fmt.Print(err)
+		return err
+	}
+	Cache.Set(key, data, time.Duration(10)*time.Minute)
+	return nil
 }
 
 func (storage *Storage) DeleteToken(key string) (interface{}, error) {
+	Cache.Delete(key)
 	return delCache(key)
 }

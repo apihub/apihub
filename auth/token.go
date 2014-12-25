@@ -12,8 +12,6 @@ import (
 	"github.com/backstage/backstage/db"
 	. "github.com/backstage/backstage/errors"
 	"github.com/fatih/structs"
-	"github.com/garyburd/redigo/redis"
-	"github.com/karlseguin/ccache"
 )
 
 const (
@@ -21,8 +19,6 @@ const (
 	ExpiresTokenCache = ExpiresInSeconds - 10 // time in seconds to remove from expire time.
 	TokenType         = "Token"
 )
-
-var Cache = ccache.New(ccache.Configure())
 
 type Token interface {
 	GetUserFromToken(auth string) (user *account.User, error error)
@@ -49,20 +45,13 @@ func GetUserFromToken(auth string) (user *account.User, error error) {
 	if len(a) == 2 {
 		tt, tokenKey = a[0], a[1]
 		if tt == TokenType {
-			if item := Cache.Get(tokenKey); item != nil {
-				return item.Value().(*account.User), nil
-			}
-			u, err := get(tokenKey)
+			var user account.User
+			err := get(tokenKey, &user)
 			if err != nil {
 				return nil, err
 			}
-			if len(u) == 0 {
+			if user.Email == "" {
 				return nil, ErrTokenNotFound
-			}
-			var user account.User
-			if err := redis.ScanStruct(u, &user); err != nil {
-				fmt.Print(err)
-				return nil, err
 			}
 			return &user, nil
 		}
@@ -75,15 +64,11 @@ func GetUserFromToken(auth string) (user *account.User, error error) {
 // First, try to retrieve an existing token for the user. Return a new one if not found.
 func TokenFor(user *account.User) *TokenInfo {
 	tokenKey := "token:" + user.Email
-	if item := Cache.Get(tokenKey); item != nil {
-		return item.Value().(*TokenInfo)
-	}
-	token, err := get(tokenKey)
+	var t TokenInfo
+	err := get(tokenKey, &t)
 	if err != nil {
 		fmt.Print(err.Error())
 	}
-	var t TokenInfo
-	redis.ScanStruct(token, &t)
 	if t.Token == "" {
 		conn, err := db.Conn()
 		if err != nil {
@@ -92,7 +77,6 @@ func TokenFor(user *account.User) *TokenInfo {
 		}
 		defer conn.Close()
 		t := GenerateToken(user)
-		Cache.Set(tokenKey, t, time.Minute*10)
 		go conn.Tokens(tokenKey, ExpiresTokenCache, structs.Map(t))
 		return t
 	}
@@ -105,16 +89,13 @@ func RevokeTokensFor(user *account.User) {
 	conn, err := db.Conn()
 	defer conn.Close()
 	ti := "token:" + user.Email
-	token, err := get(ti)
+	var t TokenInfo
+	err = get(ti, &t)
 	if err != nil {
 		fmt.Print(err.Error())
 	}
-	var t TokenInfo
-	redis.ScanStruct(token, &t)
 	conn.DeleteToken(t.Token)
-	Cache.Delete(t.Token)
 	conn.DeleteToken(ti)
-	Cache.Delete(ti)
 }
 
 // Generate a token for given user.
@@ -136,16 +117,15 @@ func GenerateToken(user *account.User) *TokenInfo {
 		fmt.Println(err)
 	}
 	defer conn.Close()
-	Cache.Set(token.Token, user, time.Minute*10)
 	conn.Tokens(token.Token, token.Expires, structs.Map(user))
 	return token
 }
 
-func get(token string) ([]interface{}, error) {
+func get(token string, t interface{}) error {
 	conn, err := db.Conn()
 	if err != nil {
 		fmt.Println(err)
 	}
 	defer conn.Close()
-	return conn.GetTokenValue(token)
+	return conn.GetTokenValue(token, t)
 }
