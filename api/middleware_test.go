@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 
 	"github.com/backstage/backstage/auth"
-	"github.com/backstage/backstage/errors"
 	"github.com/zenazn/goji/web"
 	. "gopkg.in/check.v1"
 )
@@ -73,7 +72,7 @@ func (s *S) TestNotFoundHandler(c *C) {
 
 	NotFoundHandler(w, req)
 	c.Assert(w.Code, Equals, http.StatusNotFound)
-	body := &errors.HTTPError{}
+	body := &HTTPResponse{}
 	json.Unmarshal(w.Body.Bytes(), body)
 	c.Assert(body.Message, Equals, "The resource requested does not exist.")
 }

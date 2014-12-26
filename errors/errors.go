@@ -34,14 +34,3 @@ type ForbiddenError struct {
 func (err *ForbiddenError) Error() string {
 	return err.Message
 }
-
-// The HTTPError type is a http representation of error.
-type HTTPError struct {
-	StatusCode int    `json:"status_code"`
-	Message    string `json:"message"`
-	Url        string `json:"url"`
-}
-
-func (err *HTTPError) Error() string {
-	return err.Message
-}
