@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/backstage/backstage/account"
+	. "github.com/backstage/backstage/errors"
 	"github.com/zenazn/goji/web"
 )
 

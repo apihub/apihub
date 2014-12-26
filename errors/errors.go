@@ -10,6 +10,10 @@ var (
 	ErrTeamNotFound           = errors.New("Team not found.")
 	ErrServiceNotFound        = errors.New("Service not found.")
 	ErrTokenNotFound          = errors.New("Token not found.")
+
+	ErrAuthenticationFailed = errors.New("Authentication failed.")
+	ErrBadRequest           = errors.New("The request was invalid or cannot be served.")
+	ErrLoginRequired        = errors.New("Invalid or expired token. Please log in with your Backstage credentials.")
 )
 
 // The ValidationError type indicates that any validation has failed.
