@@ -28,7 +28,7 @@ type Token interface {
 }
 
 type TokenInfo struct {
-	Token     string `json:"token"`
+	Token     string `json:"access_token"`
 	Type      string `json:"token_type"`
 	Expires   int    `json:"expires"`
 	CreatedAt string `bson:"created_at" json:"created_at"`
