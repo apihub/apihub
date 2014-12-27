@@ -6,6 +6,11 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "code.google.com/p/go-uuid/uuid",
+			"Comment": "null-12",
+			"Rev": "7dda39b2e7d5e265014674c5af696ba4186679e9"
+		},
+		{
 			"ImportPath": "code.google.com/p/go.crypto/bcrypt",
 			"Comment": "null-231",
 			"Rev": "88f995681294397936c136182f54e1f6891db323"
@@ -14,6 +19,10 @@
 			"ImportPath": "code.google.com/p/go.crypto/blowfish",
 			"Comment": "null-231",
 			"Rev": "88f995681294397936c136182f54e1f6891db323"
+		},
+		{
+			"ImportPath": "github.com/RangelReale/osin",
+			"Rev": "2895b6e47185c62c3192fb07f03ad7db8cf0d2b5"
 		},
 		{
 			"ImportPath": "github.com/fatih/structs",
