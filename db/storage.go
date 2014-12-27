@@ -64,7 +64,31 @@ func (storage *Storage) Teams() *storage.Collection {
 	return collection
 }
 
+func (storage *Storage) Clients() *storage.Collection {
+	idIndex := mgo.Index{Key: []string{"id"}, Unique: true, Background: true}
+	collection := storage.Collection("clients")
+	collection.EnsureIndex(idIndex)
+	return collection
+}
+
+func (storage *Storage) Authorizations() *storage.Collection {
+	codeIndex := mgo.Index{Key: []string{"code"}}
+	collection := storage.Collection("authorizations")
+	collection.EnsureIndex(codeIndex)
+	return collection
+}
+
+func (storage *Storage) Accesses() *storage.Collection {
+	accessIndex := mgo.Index{Key: []string{"accesstoken"}}
+	redirectIndex := mgo.Index{Key: []string{"redirecturi"}}
+	collection := storage.Collection("accesses")
+	collection.EnsureIndex(accessIndex)
+	collection.EnsureIndex(redirectIndex)
+	return collection
+}
+
 func (storage *Storage) Tokens(key string, expires int, data map[string]interface{}) {
+	Cache.Set(key, nil, time.Duration(expires-10)*time.Minute)
 	addHCache(key, expires, data)
 }
 
@@ -74,7 +98,7 @@ func (storage *Storage) GetTokenValue(key string, t interface{}) error {
 		err  error
 	)
 
-	if item := Cache.Get(key); item != nil {
+	if item := Cache.Get(key); item != nil && item.Value() != nil {
 		if !item.Expired() {
 			data = item.Value().([]interface{})
 		}
@@ -90,7 +114,7 @@ func (storage *Storage) GetTokenValue(key string, t interface{}) error {
 		fmt.Print(err)
 		return err
 	}
-	Cache.Set(key, data, time.Duration(10)*time.Minute)
+	Cache.Replace(key, data)
 	return nil
 }
 

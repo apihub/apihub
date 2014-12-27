@@ -26,11 +26,12 @@ var service *account.Service
 func Test(t *testing.T) { TestingT(t) }
 
 type S struct {
-	Api      *Api
-	env      map[string]interface{}
-	handler  http.HandlerFunc
-	recorder *httptest.ResponseRecorder
-	router   *web.Mux
+	Api          *Api
+	env          map[string]interface{}
+	handler      http.HandlerFunc
+	recorder     *httptest.ResponseRecorder
+	router       *web.Mux
+	oAuthStorage *OAuthMongoStorage
 }
 
 func (s *S) SetUpSuite(c *C) {
@@ -48,6 +49,7 @@ func (s *S) SetUpTest(c *C) {
 	s.env = map[string]interface{}{}
 	s.router = web.New()
 	s.handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
+	s.oAuthStorage = &OAuthMongoStorage{}
 
 	alice = &account.User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	bob = &account.User{Name: "Bob", Email: "bob@example.org", Username: "bob", Password: "123456"}
