@@ -2,7 +2,6 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -74,17 +73,11 @@ func (api *Api) Route(handler interface{}, route string) interface{} {
 		methodInterface := methodValue.Interface()
 		method := methodInterface.(func(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse)
 		response := method(&c, w, r)
-		body := response.Message
-
 		w.WriteHeader(response.StatusCode)
 		if _, exists := c.Env["Content-Type"]; exists {
 			w.Header().Set("Content-Type", c.Env["Content-Type"].(string))
 		}
-		if response.StatusCode >= http.StatusBadRequest {
-			payload, _ := json.Marshal(response)
-			body = string(payload)
-		}
-		io.WriteString(w, body)
+		io.WriteString(w, response.Output())
 	}
 	return fn
 }

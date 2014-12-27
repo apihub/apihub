@@ -14,6 +14,6 @@ var _ = Suite(&S{})
 func Test(t *testing.T) { TestingT(t) }
 
 func (s *S) TestValidationError(c *C) {
-	err := ValidationError{Message: "Something went wrong."}
+	err := ValidationError{Payload: "Something went wrong."}
 	c.Assert(err.Error(), Equals, "Something went wrong.")
 }

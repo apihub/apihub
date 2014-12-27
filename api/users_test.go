@@ -29,7 +29,7 @@ func (s *S) TestCreateUser(c *C) {
 	c.Assert(s.recorder.Body.String(), Equals, `{"name":"Alice","email":"alice@example.org","username":"alice"}`)
 }
 
-func (s *S) TestCreateUserWithInvalidMessageFormat(c *C) {
+func (s *S) TestCreateUserWithInvalidPayloadFormat(c *C) {
 	payload := `"name": "Alice"`
 	b := strings.NewReader(payload)
 
@@ -40,7 +40,7 @@ func (s *S) TestCreateUserWithInvalidMessageFormat(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"The request was invalid or cannot be served."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"The request was invalid or cannot be served."}`)
 }
 
 func (s *S) TestCreateUserWithMissingRequiredFields(c *C) {
@@ -54,7 +54,7 @@ func (s *S) TestCreateUserWithMissingRequiredFields(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"Name/Email/Username/Password cannot be empty."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"Name/Email/Username/Password cannot be empty."}`)
 }
 
 func (s *S) TestDeleteUser(c *C) {
@@ -79,7 +79,7 @@ func (s *S) TestDeleteUserWithNotSignedUser(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"Invalid or expired token. Please log in with your Backstage credentials."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
 }
 
 func (s *S) TestLoginUser(c *C) {
@@ -110,7 +110,7 @@ func (s *S) TestLoginUserWithBadCredentials(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"Authentication failed."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"Authentication failed."}`)
 }
 
 func (s *S) TestLoginUserWithMalformedRequest(c *C) {
@@ -126,5 +126,5 @@ func (s *S) TestLoginUserWithMalformedRequest(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"The request was invalid or cannot be served."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"The request was invalid or cannot be served."}`)
 }

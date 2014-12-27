@@ -32,15 +32,13 @@ func (user *User) Save() error {
 	defer conn.Close()
 
 	if user.Name == "" || user.Email == "" || user.Username == "" || user.Password == "" {
-		message := "Name/Email/Username/Password cannot be empty."
-		return &errors.ValidationError{Message: message}
+		return &errors.ValidationError{Payload: "Name/Email/Username/Password cannot be empty."}
 	}
 
 	user.HashPassword()
 	err = conn.Users().Insert(user)
 	if mgo.IsDup(err) {
-		message := "Someone already has that email/username. Could you try another?"
-		return &errors.ValidationError{Message: message}
+		return &errors.ValidationError{Payload: "Someone already has that email/username. Could you try another?"}
 	}
 	return err
 }
@@ -59,8 +57,7 @@ func (user *User) Delete() error {
 
 	err = user.remove()
 	if err == mgo.ErrNotFound {
-		message := "User not found."
-		return &errors.ValidationError{Message: message}
+		return &errors.ValidationError{Payload: "User not found."}
 	}
 	return err
 }
@@ -127,7 +124,7 @@ func FindUserByEmail(email string) (*User, error) {
 	var user User
 	err = conn.Users().Find(bson.M{"email": email}).One(&user)
 	if err == mgo.ErrNotFound {
-		return nil, &errors.ValidationError{Message: "User not found"}
+		return nil, &errors.ValidationError{Payload: "User not found"}
 	}
 	return &user, nil
 }

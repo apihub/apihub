@@ -34,8 +34,7 @@ func (team *Team) Save(owner *User) error {
 	defer conn.Close()
 
 	if team.Name == "" {
-		message := "Name cannot be empty."
-		return &errors.ValidationError{Message: message}
+		return &errors.ValidationError{Payload: "Name cannot be empty."}
 	}
 
 	team.Users = []string{owner.Email}
@@ -47,8 +46,7 @@ func (team *Team) Save(owner *User) error {
 	}
 	err = conn.Teams().Insert(team)
 	if mgo.IsDup(err) {
-		message := "Someone already has that team alias. Could you try another?"
-		return &errors.ValidationError{Message: message}
+		return &errors.ValidationError{Payload: "Someone already has that team alias. Could you try another?"}
 	}
 
 	return nil
@@ -62,7 +60,7 @@ func (team *Team) Save(owner *User) error {
 func DeleteTeamByAlias(alias string, user *User) (*Team, error) {
 	team, err := FindTeamByAlias(alias, user)
 	if err != nil || team.Owner != user.Email {
-		return nil, &errors.ForbiddenError{Message: errors.ErrOnlyOwnerHasPermission.Error()}
+		return nil, &errors.ForbiddenError{Payload: errors.ErrOnlyOwnerHasPermission.Error()}
 	}
 	team.Services, err = FindServicesByTeam(alias)
 	if err != nil {
@@ -80,8 +78,7 @@ func (team *Team) delete() error {
 
 	err = conn.Teams().RemoveId(team.Id)
 	if err == mgo.ErrNotFound {
-		message := "Team not found."
-		return &errors.ValidationError{Message: message}
+		return &errors.ValidationError{Payload: "Team not found."}
 	}
 
 	_, err = conn.Services().RemoveAll(bson.M{"team": team.Alias})
@@ -139,8 +136,7 @@ func (team *Team) RemoveUsers(emails []string) error {
 	)
 	for _, email := range emails {
 		if team.Owner == email {
-			message := "It is not possible to remove the owner from the team."
-			errOwnerNotRemoved = &errors.ValidationError{Message: message}
+			errOwnerNotRemoved = &errors.ValidationError{Payload: "It is not possible to remove the owner from the team."}
 			continue
 		}
 
@@ -177,8 +173,7 @@ func DeleteTeamByName(name string) error {
 
 	err = conn.Teams().Remove(bson.M{"name": name})
 	if err == mgo.ErrNotFound {
-		message := "Team not found."
-		return &errors.ValidationError{Message: message}
+		return &errors.ValidationError{Payload: "Team not found."}
 	}
 
 	return nil
@@ -195,8 +190,7 @@ func FindTeamByName(name string) (*Team, error) {
 	var team Team
 	err = conn.Teams().Find(bson.M{"name": name}).One(&team)
 	if err == mgo.ErrNotFound {
-		message := "Team not found."
-		return nil, &errors.ValidationError{Message: message}
+		return nil, &errors.ValidationError{Payload: "Team not found."}
 	}
 	team.Services, err = FindServicesByTeam(team.Alias)
 	if err != nil {
@@ -216,7 +210,7 @@ func FindTeamByAlias(alias string, user *User) (*Team, error) {
 	}
 	_, err = team.ContainsUser(user)
 	if err != nil {
-		return nil, &errors.ForbiddenError{Message: err.Error()}
+		return nil, &errors.ForbiddenError{Payload: err.Error()}
 	}
 	team.Services, err = FindServicesByTeam(alias)
 	if err != nil {
@@ -235,8 +229,7 @@ func findTeamByAlias(alias string) (*Team, error) {
 	var team Team
 	err = conn.Teams().Find(bson.M{"alias": alias}).One(&team)
 	if err == mgo.ErrNotFound {
-		message := "Team not found."
-		return nil, &errors.ValidationError{Message: message}
+		return nil, &errors.ValidationError{Payload: "Team not found."}
 	}
 
 	return &team, nil
@@ -252,7 +245,7 @@ func FindTeamById(id string) (*Team, error) {
 	}
 	defer conn.Close()
 
-	var errNotFound = &errors.ValidationError{Message: "Team not found."}
+	var errNotFound = &errors.ValidationError{Payload: "Team not found."}
 	if !bson.IsObjectIdHex(id) {
 		return nil, errNotFound
 	}

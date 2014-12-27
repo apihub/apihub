@@ -33,26 +33,26 @@ func (api *ApiHandler) parseBody(body io.ReadCloser, r interface{}) error {
 	return nil
 }
 
-func BadRequest(message string) *HTTPResponse {
-	return &HTTPResponse{StatusCode: http.StatusBadRequest, Message: message}
+func Created(payload string) *HTTPResponse {
+	return &HTTPResponse{StatusCode: http.StatusCreated, Payload: payload}
 }
 
-func Created(message string) *HTTPResponse {
-	return &HTTPResponse{StatusCode: http.StatusCreated, Message: message}
+func OK(payload string) *HTTPResponse {
+	return &HTTPResponse{StatusCode: http.StatusOK, Payload: payload}
 }
 
-func OK(message string) *HTTPResponse {
-	return &HTTPResponse{StatusCode: http.StatusOK, Message: message}
+func BadRequest(errorType, errorDescription string) *HTTPResponse {
+	return &HTTPResponse{StatusCode: http.StatusBadRequest, ErrorType: errorType, ErrorDescription: errorDescription}
 }
 
-func Forbidden(message string) *HTTPResponse {
-	return &HTTPResponse{StatusCode: http.StatusForbidden, Message: message}
+func Forbidden(errorType, errorDescription string) *HTTPResponse {
+	return &HTTPResponse{StatusCode: http.StatusForbidden, ErrorType: errorType, ErrorDescription: errorDescription}
 }
 
-func NotFound(message string) *HTTPResponse {
-	return &HTTPResponse{StatusCode: http.StatusNotFound, Message: message}
+func NotFound(payload string) *HTTPResponse {
+	return &HTTPResponse{StatusCode: http.StatusNotFound, ErrorType: E_NOT_FOUND, Payload: payload}
 }
 
-func Unauthorized(message string) *HTTPResponse {
-	return &HTTPResponse{StatusCode: http.StatusUnauthorized, Message: message}
+func Unauthorized(payload string) *HTTPResponse {
+	return &HTTPResponse{StatusCode: http.StatusUnauthorized, ErrorType: E_UNAUTHORIZED_REQUEST, Payload: payload}
 }

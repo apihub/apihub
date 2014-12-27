@@ -18,11 +18,11 @@ func (handler *UsersHandler) CreateUser(c *web.C, w http.ResponseWriter, r *http
 	user := &User{}
 	err := handler.parseBody(r.Body, user)
 	if err != nil {
-		return BadRequest(err.Error())
+		return BadRequest(E_BAD_REQUEST, err.Error())
 	}
 	err = user.Save()
 	if err != nil {
-		return BadRequest(err.Error())
+		return BadRequest(E_BAD_REQUEST, err.Error())
 	}
 	return Created(user.ToString())
 }
@@ -30,7 +30,7 @@ func (handler *UsersHandler) CreateUser(c *web.C, w http.ResponseWriter, r *http
 func (handler *UsersHandler) DeleteUser(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	user, err := GetCurrentUser(c)
 	if err != nil {
-		return BadRequest(err.Error())
+		return BadRequest(E_BAD_REQUEST, err.Error())
 	}
 	auth.RevokeTokensFor(user)
 	user.Delete()
@@ -41,11 +41,11 @@ func (handler *UsersHandler) Login(c *web.C, w http.ResponseWriter, r *http.Requ
 	user := &User{}
 	err := handler.parseBody(r.Body, user)
 	if err != nil {
-		return BadRequest(err.Error())
+		return BadRequest(E_BAD_REQUEST, err.Error())
 	}
 	token, err := Login(user)
 	if err != nil {
-		return BadRequest(ErrAuthenticationFailed.Error())
+		return BadRequest(E_BAD_REQUEST, ErrAuthenticationFailed.Error())
 	}
 	payload, _ := json.Marshal(token)
 	return OK(string(payload))

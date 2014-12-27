@@ -39,12 +39,10 @@ func (service *Service) Save(owner *User, team *Team) error {
 	defer conn.Close()
 
 	if service.Subdomain == "" {
-		message := "Subdomain cannot be empty."
-		return &errors.ValidationError{Message: message}
+		return &errors.ValidationError{Payload: "Subdomain cannot be empty."}
 	}
 	if service.Endpoint == "" {
-		message := "Endpoint cannot be empty."
-		return &errors.ValidationError{Message: message}
+		return &errors.ValidationError{Payload: "Endpoint cannot be empty."}
 	}
 
 	service.Subdomain = strings.ToLower(service.Subdomain)
@@ -53,8 +51,7 @@ func (service *Service) Save(owner *User, team *Team) error {
 
 	err = conn.Services().Insert(service)
 	if mgo.IsDup(err) {
-		message := "There is another service with this subdomain."
-		return &errors.ValidationError{Message: message}
+		return &errors.ValidationError{Payload: "There is another service with this subdomain."}
 	}
 	return err
 }
@@ -69,11 +66,10 @@ func (service *Service) Delete() error {
 
 	err = conn.Services().Remove(service)
 	if err == mgo.ErrNotFound {
-		message := "Document not found."
-		return &errors.ValidationError{Message: message}
+		return &errors.ValidationError{Payload: "Service not found."}
 	}
 	if err != nil {
-		return &errors.ValidationError{Message: err.Error()}
+		return &errors.ValidationError{Payload: err.Error()}
 	}
 	return err
 }
@@ -101,8 +97,7 @@ func FindServiceBySubdomain(subdomain string) (*Service, error) {
 	var service Service
 	err = conn.Services().FindId(subdomain).One(&service)
 	if err == mgo.ErrNotFound {
-		message := "Service not found."
-		return nil, &errors.ValidationError{Message: message}
+		return nil, &errors.ValidationError{Payload: "Service not found."}
 	}
 
 	return &service, nil
@@ -118,8 +113,7 @@ func DeleteServiceBySubdomain(subdomain string) error {
 
 	err = conn.Services().Remove(bson.M{"_id": subdomain})
 	if err == mgo.ErrNotFound {
-		message := "Service not found."
-		return &errors.ValidationError{Message: message}
+		return &errors.ValidationError{Payload: "Service not found."}
 	}
 
 	return nil

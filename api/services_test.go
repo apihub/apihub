@@ -42,7 +42,7 @@ func (s *S) TestCreateServiceWhenUserIsNotSignedIn(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"Invalid or expired token. Please log in with your Backstage credentials."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
 }
 
 func (s *S) TestCreateServiceWhenTeamDoesNotExist(c *C) {
@@ -63,10 +63,10 @@ func (s *S) TestCreateServiceWhenTeamDoesNotExist(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"Team not found."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"Team not found."}`)
 }
 
-func (s *S) TestCreateServiceWithInvalidMessageFormat(c *C) {
+func (s *S) TestCreateServiceWithInvalidPayloadFormat(c *C) {
 	owner.Save()
 	team.Save(owner)
 	defer account.DeleteTeamByAlias(team.Alias, owner)
@@ -83,7 +83,7 @@ func (s *S) TestCreateServiceWithInvalidMessageFormat(c *C) {
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":400,"message":"The request was invalid or cannot be served."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"The request was invalid or cannot be served."}`)
 }
 
 func (s *S) TestDeleteService(c *C) {
@@ -122,7 +122,7 @@ func (s *S) TestDeleteServiceWhenUserIsNotOwner(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 403)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":403,"message":"Service not found."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"access_denied","error_description":"Service not found."}`)
 }
 
 func (s *S) TestDeleteServiceIsNotFound(c *C) {
@@ -137,7 +137,7 @@ func (s *S) TestDeleteServiceIsNotFound(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 403)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":403,"message":"Service not found."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"access_denied","error_description":"Service not found."}`)
 }
 
 func (s *S) TestGetServiceInfo(c *C) {
@@ -169,7 +169,7 @@ func (s *S) TestGetServiceInfoWhenServiceIsNotFound(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 403)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":403,"message":"Service not found."}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"access_denied","error_description":"Service not found."}`)
 }
 
 func (s *S) TestGetServiceInfoWhenIsNotInTeam(c *C) {
@@ -189,5 +189,5 @@ func (s *S) TestGetServiceInfoWhenIsNotInTeam(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, 403)
-	c.Assert(s.recorder.Body.String(), Equals, `{"status_code":403,"message":"You do not belong to this team!"}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"access_denied","error_description":"You do not belong to this team!"}`)
 }

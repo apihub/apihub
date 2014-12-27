@@ -66,8 +66,7 @@ func (s *S) TestCannotCreateServiceWhenSubdomainAlreadyExists(c *C) {
 
 	e, ok := err.(*errors.ValidationError)
 	c.Assert(ok, Equals, true)
-	message := "There is another service with this subdomain."
-	c.Assert(e.Message, Equals, message)
+	c.Assert(e.Payload, Equals, "There is another service with this subdomain.")
 }
 
 func (s *S) TestCannotCreateServiceAServiceWithoutRequiredFields(c *C) {
@@ -76,14 +75,12 @@ func (s *S) TestCannotCreateServiceAServiceWithoutRequiredFields(c *C) {
 	service := &Service{Subdomain: "backstage"}
 	err := service.Save(owner, team)
 	e := err.(*errors.ValidationError)
-	message := "Endpoint cannot be empty."
-	c.Assert(e.Message, Equals, message)
+	c.Assert(e.Payload, Equals, "Endpoint cannot be empty.")
 
 	service = &Service{}
 	err = service.Save(owner, team)
 	e = err.(*errors.ValidationError)
-	message = "Subdomain cannot be empty."
-	c.Assert(e.Message, Equals, message)
+	c.Assert(e.Payload, Equals, "Subdomain cannot be empty.")
 }
 
 func (s *S) TestDeleteServiceANonExistingService(c *C) {
@@ -95,8 +92,7 @@ func (s *S) TestDeleteServiceANonExistingService(c *C) {
 
 	e, ok := err.(*errors.ValidationError)
 	c.Assert(ok, Equals, true)
-	message := "Document not found."
-	c.Assert(e.Message, Equals, message)
+	c.Assert(e.Payload, Equals, "Service not found.")
 }
 
 func (s *S) TestDeleteServiceAnExistingService(c *C) {
@@ -137,8 +133,7 @@ func (s *S) TestFindServiceBySubdomainWithInvalidName(c *C) {
 	_, err := FindServiceBySubdomain("Non Existing Service")
 	c.Assert(err, NotNil)
 	e := err.(*errors.ValidationError)
-	message := "Service not found."
-	c.Assert(e.Message, Equals, message)
+	c.Assert(e.Payload, Equals, "Service not found.")
 }
 
 func (s *S) TestDeleteServiceBySubdomain(c *C) {
@@ -159,8 +154,7 @@ func (s *S) TestDeleteServiceBySubdomainWithInvalidSubdomain(c *C) {
 	err := DeleteServiceBySubdomain("Non existing service")
 	c.Assert(err, NotNil)
 	e := err.(*errors.ValidationError)
-	message := "Service not found."
-	c.Assert(e.Message, Equals, message)
+	c.Assert(e.Payload, Equals, "Service not found.")
 }
 
 func (s *S) TestFindServicesByTeam(c *C) {

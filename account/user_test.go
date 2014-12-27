@@ -22,7 +22,7 @@ func (s *S) TestCreateUserWithSameEmail(c *C) {
 	err := user2.Save()
 	e := err.(*errors.ValidationError)
 	msg := "Someone already has that email/username. Could you try another?"
-	c.Assert(e.Message, Equals, msg)
+	c.Assert(e.Payload, Equals, msg)
 }
 
 func (s *S) TestCreateUserWithSameUsername(c *C) {
@@ -34,7 +34,7 @@ func (s *S) TestCreateUserWithSameUsername(c *C) {
 	err := user2.Save()
 	e := err.(*errors.ValidationError)
 	msg := "Someone already has that email/username. Could you try another?"
-	c.Assert(e.Message, Equals, msg)
+	c.Assert(e.Payload, Equals, msg)
 }
 
 func (s *S) TestCreateUserWithoutRequiredFields(c *C) {
@@ -42,7 +42,7 @@ func (s *S) TestCreateUserWithoutRequiredFields(c *C) {
 	err := user.Save()
 	e := err.(*errors.ValidationError)
 	msg := "Name/Email/Username/Password cannot be empty."
-	c.Assert(e.Message, Equals, msg)
+	c.Assert(e.Payload, Equals, msg)
 }
 
 func (s *S) TestCreateUserShouldMaskThePassword(c *C) {
@@ -87,7 +87,7 @@ func (s *S) TestFindUserWithInvalidUsername(c *C) {
 	_, err := FindUserByEmail("bob@example.org")
 	e := err.(*errors.ValidationError)
 	msg := "User not found"
-	c.Assert(e.Message, Equals, msg)
+	c.Assert(e.Payload, Equals, msg)
 }
 
 func (s *S) TestGetTeams(c *C) {
