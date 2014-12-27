@@ -65,7 +65,7 @@ func (storage *Storage) Teams() *storage.Collection {
 }
 
 func (storage *Storage) Clients() *storage.Collection {
-	idIndex := mgo.Index{Key: []string{"id"}, Unique: true, Background: true}
+	idIndex := mgo.Index{Key: []string{"id"}, Unique: true, Background: false}
 	collection := storage.Collection("clients")
 	collection.EnsureIndex(idIndex)
 	return collection
