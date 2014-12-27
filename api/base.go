@@ -45,14 +45,14 @@ func BadRequest(errorType, errorDescription string) *HTTPResponse {
 	return &HTTPResponse{StatusCode: http.StatusBadRequest, ErrorType: errorType, ErrorDescription: errorDescription}
 }
 
-func Forbidden(errorType, errorDescription string) *HTTPResponse {
-	return &HTTPResponse{StatusCode: http.StatusForbidden, ErrorType: errorType, ErrorDescription: errorDescription}
+func Forbidden(errorDescription string) *HTTPResponse {
+	return &HTTPResponse{StatusCode: http.StatusForbidden, ErrorType: E_FORBIDDEN_REQUEST, ErrorDescription: errorDescription}
 }
 
-func NotFound(payload string) *HTTPResponse {
-	return &HTTPResponse{StatusCode: http.StatusNotFound, ErrorType: E_NOT_FOUND, Payload: payload}
+func NotFound(errorDescription string) *HTTPResponse {
+	return &HTTPResponse{StatusCode: http.StatusNotFound, ErrorType: E_NOT_FOUND, ErrorDescription: errorDescription}
 }
 
-func Unauthorized(payload string) *HTTPResponse {
-	return &HTTPResponse{StatusCode: http.StatusUnauthorized, ErrorType: E_UNAUTHORIZED_REQUEST, Payload: payload}
+func Unauthorized(errorDescription string) *HTTPResponse {
+	return &HTTPResponse{StatusCode: http.StatusUnauthorized, ErrorType: E_UNAUTHORIZED_REQUEST, ErrorDescription: errorDescription}
 }

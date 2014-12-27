@@ -41,7 +41,7 @@ func (handler *TeamsHandler) DeleteTeam(c *web.C, w http.ResponseWriter, r *http
 	if err != nil {
 		switch err.(type) {
 		case *ForbiddenError:
-			return Forbidden(E_FORBIDDEN_REQUEST, err.Error())
+			return Forbidden(err.Error())
 		default:
 			return BadRequest(E_BAD_REQUEST, err.Error())
 		}
@@ -70,7 +70,7 @@ func (handler *TeamsHandler) GetTeamInfo(c *web.C, w http.ResponseWriter, r *htt
 	if err != nil {
 		switch err.(type) {
 		case *ForbiddenError:
-			return Forbidden(E_FORBIDDEN_REQUEST, err.Error())
+			return Forbidden(err.Error())
 		default:
 			return BadRequest(E_BAD_REQUEST, err.Error())
 		}
@@ -89,7 +89,7 @@ func (handler *TeamsHandler) AddUsersToTeam(c *web.C, w http.ResponseWriter, r *
 	if err != nil {
 		switch err.(type) {
 		case *ForbiddenError:
-			return Forbidden(E_FORBIDDEN_REQUEST, err.Error())
+			return Forbidden(err.Error())
 		default:
 			return BadRequest(E_BAD_REQUEST, err.Error())
 		}
@@ -117,7 +117,7 @@ func (handler *TeamsHandler) RemoveUsersFromTeam(c *web.C, w http.ResponseWriter
 	if err != nil {
 		switch err.(type) {
 		case *ForbiddenError:
-			return Forbidden(E_FORBIDDEN_REQUEST, err.Error())
+			return Forbidden(err.Error())
 		default:
 			return BadRequest(E_BAD_REQUEST, err.Error())
 		}
@@ -130,7 +130,7 @@ func (handler *TeamsHandler) RemoveUsersFromTeam(c *web.C, w http.ResponseWriter
 	}
 	err = team.RemoveUsers(t.Users)
 	if err != nil {
-		return Forbidden(E_FORBIDDEN_REQUEST, err.Error())
+		return Forbidden(err.Error())
 	}
 	return OK(team.ToString())
 }

@@ -6,7 +6,7 @@ type HTTPResponse struct {
 	StatusCode       int    `json:"-"`
 	ErrorType        string `json:"error,omitempty"`
 	ErrorDescription string `json:"error_description,omitempty"`
-	Payload          string `json:"message,omitempty"`
+	Payload          string `json:"payload,omitempty"`
 }
 
 func (h *HTTPResponse) Output() string {

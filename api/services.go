@@ -32,7 +32,7 @@ func (handler *ServicesHandler) CreateService(c *web.C, w http.ResponseWriter, r
 	if err != nil {
 		switch err.(type) {
 		case *ForbiddenError:
-			return Forbidden(E_FORBIDDEN_REQUEST, err.Error())
+			return Forbidden(err.Error())
 		default:
 			return BadRequest(E_BAD_REQUEST, err.Error())
 		}
@@ -58,7 +58,7 @@ func (handler *ServicesHandler) DeleteService(c *web.C, w http.ResponseWriter, r
 
 	service, err := FindServiceBySubdomain(c.URLParams["subdomain"])
 	if err != nil || service.Owner != currentUser.Email {
-		return Forbidden(E_FORBIDDEN_REQUEST, ErrServiceNotFound.Error())
+		return Forbidden(ErrServiceNotFound.Error())
 	}
 	err = service.Delete()
 	if err != nil {
@@ -77,14 +77,14 @@ func (handler *ServicesHandler) GetServiceInfo(c *web.C, w http.ResponseWriter, 
 
 	service, err := FindServiceBySubdomain(c.URLParams["subdomain"])
 	if err != nil {
-		return Forbidden(E_FORBIDDEN_REQUEST, ErrServiceNotFound.Error())
+		return Forbidden(ErrServiceNotFound.Error())
 	}
 
 	_, err = FindTeamByAlias(service.Team, currentUser)
 	if err != nil {
 		switch err.(type) {
 		case *ForbiddenError:
-			return Forbidden(E_FORBIDDEN_REQUEST, err.Error())
+			return Forbidden(err.Error())
 		default:
 			return BadRequest(E_BAD_REQUEST, err.Error())
 		}
