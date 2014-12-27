@@ -18,5 +18,4 @@ func (h *HTTPResponse) Output() string {
 		return string(r)
 	}
 	return h.Payload
-
 }

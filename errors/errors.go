@@ -4,18 +4,10 @@ package errors
 import "errors"
 
 const (
-	E_BAD_REQUEST           	 		 string = "bad_request"
-	E_UNAUTHORIZED_REQUEST              = "unauthorized_access"
-	E_FORBIDDEN_REQUEST                string = "access_denied"
-	E_NOT_FOUND          string = "not_found"
-
-	E_UNSUPPORTED_RESPONSE_TYPE    string = "unsupported_response_type"
-	E_INVALID_SCOPE                string = "invalid_scope"
-	E_SERVER_ERROR                 string = "server_error"
-	E_TEMPORARILY_UNAVAILABLE      string = "temporarily_unavailable"
-	E_UNSUPPORTED_GRANT_TYPE       string = "unsupported_grant_type"
-	E_INVALID_GRANT                string = "invalid_grant"
-	E_INVALID_CLIENT               string = "invalid_client"
+	E_BAD_REQUEST          string = "bad_request"
+	E_UNAUTHORIZED_REQUEST string = "unauthorized_access"
+	E_FORBIDDEN_REQUEST    string = "access_denied"
+	E_NOT_FOUND            string = "not_found"
 )
 
 var (
