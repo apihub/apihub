@@ -45,6 +45,38 @@ func (s *S) TestDeleteClientWhenClientDoesNotExist(c *C) {
 	c.Assert(e.Payload, Equals, "Client not found.")
 }
 
+func (s *S) TestFindClientById(c *C) {
+	owner := &User{Email: "owner@example.org"}
+	team := &Team{Name: "Team", Alias: "team"}
+	client := &Client{
+		Id:   "backstage",
+		Name: "backstage",
+		Team: team.Alias,
+	}
+
+	defer client.Delete()
+	client.Save(owner, team)
+	se, err := FindClientById(client.Id)
+	panic(err)
+	c.Assert(se.Name, Equals, client.Name)
+	c.Assert(err, IsNil)
+}
+
+func (s *S) TestFindClientByIdWithInvalidId(c *C) {
+	owner := &User{Email: "owner@example.org"}
+	team := &Team{Name: "Team", Alias: "team"}
+	client := &Client{
+		Id:   "backstage",
+		Name: "backstage",
+		Team: team.Alias,
+	}
+
+	defer client.Delete()
+	client.Save(owner, team)
+	_, err := FindClientById("invalid-id")
+	c.Assert(err, NotNil)
+}
+
 func (s *S) TestFindClientByIdAndTeam(c *C) {
 	owner := &User{Email: "owner@example.org"}
 	team := &Team{Name: "Team", Alias: "team"}
@@ -56,8 +88,9 @@ func (s *S) TestFindClientByIdAndTeam(c *C) {
 
 	defer client.Delete()
 	client.Save(owner, team)
-	se, _ := FindClientByIdAndTeam(client.Id, team.Alias)
+	se, err := FindClientByIdAndTeam(client.Id, team.Alias)
 	c.Assert(se.Name, Equals, client.Name)
+	c.Assert(err, IsNil)
 }
 
 func (s *S) TestFindClientByIdAndTeamWithInvalidName(c *C) {

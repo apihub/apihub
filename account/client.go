@@ -12,7 +12,7 @@ import (
 // The Client type is an encapsulation of a client details.
 // It's used but oauth server to grant access token.
 type Client struct {
-	Id          string `bson:"_id" json:"id"`
+	Id          string `json:"id"`
 	Secret      string `json:"secret"`
 	Name        string `json:"name"`
 	RedirectUri string `json:"redirect_uri"`
@@ -68,6 +68,24 @@ func (client *Client) Delete() error {
 	return err
 }
 
+// Try to find a client by its id.
+// If the client is not found, return an error. Return the client otherwise.
+func FindClientById(id string) (*Client, error) {
+	conn, err := db.Conn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	var client Client
+	err = conn.Clients().Find(bson.M{"id": id}).One(&client)
+	if err == mgo.ErrNotFound {
+		return nil, &errors.ValidationError{Payload: "Client not found."}
+	}
+
+	return &client, nil
+}
+
 // Try to find a client by its id and team.
 // If the client is not found, return an error. Return the client otherwise.
 func FindClientByIdAndTeam(id, team string) (*Client, error) {
@@ -78,7 +96,7 @@ func FindClientByIdAndTeam(id, team string) (*Client, error) {
 	defer conn.Close()
 
 	var client Client
-	err = conn.Clients().Find(bson.M{"_id": id, "team": team}).One(&client)
+	err = conn.Clients().Find(bson.M{"id": id, "team": team}).One(&client)
 	if err == mgo.ErrNotFound {
 		return nil, &errors.ValidationError{Payload: "Client not found."}
 	}
@@ -94,7 +112,7 @@ func DeleteClientByIdAndTeam(id, team string) error {
 	}
 	defer conn.Close()
 
-	err = conn.Clients().Remove(bson.M{"_id": id, "team": team})
+	err = conn.Clients().Remove(bson.M{"id": id, "team": team})
 	if err == mgo.ErrNotFound {
 		return &errors.ValidationError{Payload: "Client not found."}
 		return nil

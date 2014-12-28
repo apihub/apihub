@@ -7,6 +7,7 @@ import (
 
 	"github.com/RangelReale/osin"
 	. "github.com/backstage/backstage/account"
+	. "github.com/backstage/backstage/errors"
 	"github.com/zenazn/goji/web"
 )
 
@@ -46,10 +47,15 @@ func HandleLoginPage(ar *osin.AuthorizeRequest, w http.ResponseWriter, r *http.R
 			return u
 		}
 	}
+	clientIdentification := ar.Client.GetId()
+	client, err := FindClientById(ar.Client.GetId())
+	if err == nil && client.Name != ""{
+		clientIdentification = client.Name
+	}
 
 	w.Write([]byte("<html><body>"))
 
-	w.Write([]byte(fmt.Sprintf("LOGIN %s (use test/test)<br/>", ar.Client.GetId())))
+	w.Write([]byte(fmt.Sprintf("LOGIN %s (use test/test)<br/>", clientIdentification)))
 	w.Write([]byte(fmt.Sprintf("<form action=\"/authorize?response_type=%s&client_id=%s&state=%s&redirect_uri=%s\" method=\"POST\">",
 		ar.Type, ar.Client.GetId(), ar.State, url.QueryEscape(ar.RedirectUri))))
 
@@ -79,11 +85,14 @@ func (handler *OAuthHandler) Authorize(c *web.C, w http.ResponseWriter, r *http.
 		ar.Authorized = true
 		api.oAuthServer.FinishAuthorizeRequest(resp, r, ar)
 	}
+	//That's a hack to avoid redirection when redirect_uri does not match. Have opened an issue: RangelReale/osin/issues/41.
 	if resp.IsError && resp.InternalError != nil {
 		fmt.Printf("ERROR: %s\n", resp.InternalError)
+		return BadRequest(E_BAD_REQUEST, resp.Output["error_description"].(string))
+	} else {
+		osin.OutputJSON(resp, w, r)
+		return nil
 	}
-	osin.OutputJSON(resp, w, r)
-	return nil
 }
 
 func (handler *OAuthHandler) Info(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {

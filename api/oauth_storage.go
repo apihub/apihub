@@ -103,7 +103,7 @@ func (s *OAuthMongoStorage) GetClient(id string) (osin.Client, error) {
 	}
 	defer conn.Close()
 	client := new(osin.DefaultClient)
-	err = conn.Clients().FindId(id).One(&client)
+	err = conn.Clients().Find(bson.M{"id": id}).One(&client)
 	if err != nil {
 		return nil, err
 	}
