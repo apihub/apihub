@@ -10,11 +10,6 @@ var (
 	owner *User
 )
 
-func (s *S) SetUpTest(c *C) {
-	team = &Team{Name: "Team", Alias: "Alias"}
-	owner = &User{Name: "Owner", Username: "owner", Email: "owner@example.org", Password: "123456"}
-}
-
 func (s *S) TestCreateTeam(c *C) {
 	err := team.Save(owner)
 	defer DeleteTeamByName("Team")
