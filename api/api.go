@@ -37,7 +37,6 @@ func (api *Api) Init() {
 		AllowGetAccessRequest:     false,
 	}
 	api.oAuthServer = osin.NewServer(sconfig, storage)
-	api.DrawRoutes()
 }
 
 // Register all the routes to be used by the API.
