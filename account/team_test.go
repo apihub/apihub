@@ -47,7 +47,7 @@ func (s *S) TestDeleteTeam(c *C) {
 	c.Assert(len(g.Users), Equals, 1)
 	DeleteTeamByAlias(team.Alias, owner)
 	_, err := FindTeamByName(teamName)
-	c.Assert(err, Not(IsNil))
+	c.Assert(err, NotNil)
 }
 
 func (s *S) TestAddUsersWithInvalidUser(c *C) {
@@ -121,7 +121,7 @@ func (s *S) TestRemoveUsersWhenTheUserIsOwner(c *C) {
 	team.AddUsers([]string{"mary@example.org", "bob@example.org"})
 
 	err = team.RemoveUsers([]string{owner.Email, "bob@example.org"})
-	c.Assert(err, Not(IsNil))
+	c.Assert(err, NotNil)
 	e := err.(*errors.ValidationError)
 	c.Assert(e.Payload, Equals, "It is not possible to remove the owner from the team.")
 	g, _ := FindTeamByName("Team")
@@ -216,7 +216,7 @@ func (s *S) TestContainsUser(c *C) {
 	_, err := g.ContainsUser(owner)
 	c.Assert(err, IsNil)
 	_, err = g.ContainsUser(bob)
-	c.Assert(err, Not(IsNil))
+	c.Assert(err, NotNil)
 }
 
 func (s *S) TestTeamToString(c *C) {

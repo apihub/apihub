@@ -14,7 +14,7 @@ func (s *S) TestGetCurrentUserWithoutUser(c *C) {
 	webContext := &web.C{Env: env}
 	api := &ApiHandler{}
 	user, err := api.getCurrentUser(webContext)
-	c.Assert(err, Not(IsNil))
+	c.Assert(err, NotNil)
 	c.Assert(user, IsNil)
 }
 
@@ -24,7 +24,7 @@ func (s *S) TestGetCurrentUserWhenUserDoesNotExist(c *C) {
 	webContext := &web.C{Env: env}
 	api := &ApiHandler{}
 	user, err := api.getCurrentUser(webContext)
-	c.Assert(err, Not(IsNil))
+	c.Assert(err, NotNil)
 	c.Assert(user, IsNil)
 }
 
@@ -54,6 +54,6 @@ func (s *S) TestParseBodyWithInvalidInterface(c *C) {
 	var result map[string]string
 	body := ioutil.NopCloser(bytes.NewBufferString(`"name": "Alice"`))
 	err := api.parseBody(body, &result)
-	c.Assert(err, Not(IsNil))
+	c.Assert(err, NotNil)
 	c.Assert(err.Error(), Equals, "The request was invalid or cannot be served.")
 }

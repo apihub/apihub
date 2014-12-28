@@ -78,7 +78,7 @@ func (s *S) TestRemoveAuthorize(c *C) {
 
 func (s *S) TestRemoveAuthorizeWithNonExistingCode(c *C) {
 	err := s.oAuthStorage.RemoveAuthorize("non-existing-code")
-	c.Assert(err, Not(IsNil))
+	c.Assert(err, NotNil)
 }
 
 func (s *S) TestSaveAccess(c *C) {
@@ -105,7 +105,7 @@ func (s *S) TestLoadAccess(c *C) {
 
 func (s *S) TestLoadAccessWithNonExistingAccessToken(c *C) {
 	_, err := s.oAuthStorage.LoadAccess("non-existing-access-token")
-	c.Assert(err, Not(IsNil))
+	c.Assert(err, NotNil)
 }
 
 func (s *S) TestRemoveAccess(c *C) {
@@ -117,7 +117,7 @@ func (s *S) TestRemoveAccess(c *C) {
 
 func (s *S) TestRemoveAccessWithNonExistingAccessToken(c *C) {
 	err := s.oAuthStorage.RemoveAccess("non-existing-access-token")
-	c.Assert(err, Not(IsNil))
+	c.Assert(err, NotNil)
 }
 
 func (s *S) TestLoadRefresh(c *C) {
@@ -138,7 +138,7 @@ func (s *S) TestLoadRefresh(c *C) {
 
 func (s *S) TestLoadRefreshTokenWithNonExistingAccessToken(c *C) {
 	_, err := s.oAuthStorage.LoadRefresh("non-existing-refresh-token")
-	c.Assert(err, Not(IsNil))
+	c.Assert(err, NotNil)
 }
 
 func (s *S) TestRemoveRefresh(c *C) {
@@ -150,5 +150,5 @@ func (s *S) TestRemoveRefresh(c *C) {
 
 func (s *S) TestRemoveRefreshTokenWithNonExistingAccessToken(c *C) {
 	err := s.oAuthStorage.RemoveRefresh("non-existing-refresh-token")
-	c.Assert(err, Not(IsNil))
+	c.Assert(err, NotNil)
 }

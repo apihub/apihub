@@ -53,5 +53,5 @@ func (s *S) TestRevokeTokensFor(c *C) {
 	c.Assert(err, IsNil)
 	RevokeTokensFor(user)
 	_, err = GetUserFromToken(tokenInfo.Type + " " + tokenInfo.Token)
-	c.Assert(err, Not(IsNil))
+	c.Assert(err, NotNil)
 }
