@@ -43,7 +43,7 @@ func (handler *UsersHandler) Login(c *web.C, w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		return BadRequest(E_BAD_REQUEST, err.Error())
 	}
-	token, err := Login(user)
+	token, err := LoginAndGetToken(user)
 	if err != nil {
 		return BadRequest(E_BAD_REQUEST, ErrAuthenticationFailed.Error())
 	}

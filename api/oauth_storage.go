@@ -11,15 +11,7 @@ import (
 type OAuthMongoStorage struct{}
 
 func NewOAuthMongoStorage() *OAuthMongoStorage {
-	r := &OAuthMongoStorage{}
-
-	client := &osin.DefaultClient{
-		Id:          "1234",
-		Secret:      "aabbccdd",
-		RedirectUri: "http://localhost:8000/appauth",
-	}
-	r.SetClient("1234", client)
-	return r
+	return &OAuthMongoStorage{}
 }
 
 type AuthorizeData struct {

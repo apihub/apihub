@@ -2,6 +2,7 @@
 package api
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"net/http"
@@ -24,6 +25,7 @@ func (api *Api) Init() {
 		fmt.Printf("Error reading config file: %s\n", err.Error())
 	}
 	storage := NewOAuthMongoStorage()
+
 	sconfig := &osin.ServerConfig{
 		AuthorizationExpiration:   250,
 		AccessExpiration:          3600,
@@ -35,6 +37,7 @@ func (api *Api) Init() {
 		AllowGetAccessRequest:     false,
 	}
 	api.oAuthServer = osin.NewServer(sconfig, storage)
+	api.DrawRoutes()
 }
 
 // Register all the routes to be used by the API.
@@ -59,7 +62,7 @@ func (api *Api) DrawRoutes() {
 
 	//OAuth 2.0 routes
 	goji.Post("/token", api.Route(oauthHandler, "Token"))
-	goji.Get("/info", api.Route(oauthHandler, "Info"))
+	goji.Get("/me", api.Route(oauthHandler, "Info"))
 	goji.Get("/authorize", api.Route(oauthHandler, "Authorize"))
 	goji.Post("/authorize", api.Route(oauthHandler, "Authorize"))
 	goji.Use(ErrorMiddleware)
@@ -106,4 +109,9 @@ func (api *Api) Route(handler interface{}, route string) interface{} {
 		}
 	}
 	return fn
+}
+
+func (api *Api) Run(port string) {
+	flag.Set("bind", port)
+	goji.Serve()
 }

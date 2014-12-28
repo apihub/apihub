@@ -12,16 +12,17 @@ import (
 	. "gopkg.in/check.v1"
 )
 
+var oAuthHandler *OAuthHandler
+var servicesHandler *ServicesHandler
 var teamsHandler *TeamsHandler
 var usersHandler *UsersHandler
-var servicesHandler *ServicesHandler
 
 var alice *account.User
 var bob *account.User
 var mary *account.User
 var owner *account.User
-var team *account.Team
 var service *account.Service
+var team *account.Team
 
 func Test(t *testing.T) { TestingT(t) }
 
@@ -44,6 +45,7 @@ func (s *S) SetUpTest(c *C) {
 	teamsHandler = &TeamsHandler{}
 	usersHandler = &UsersHandler{}
 	servicesHandler = &ServicesHandler{}
+	oAuthHandler = &OAuthHandler{}
 
 	s.recorder = httptest.NewRecorder()
 	s.env = map[string]interface{}{}
@@ -56,10 +58,7 @@ func (s *S) SetUpTest(c *C) {
 	mary = &account.User{Name: "Mary", Email: "mary@example.org", Username: "mary", Password: "123456"}
 	owner = &account.User{Name: "Owner", Email: "owner@example.org", Username: "owner", Password: "123456"}
 	team = &account.Team{Name: "Team", Alias: "team"}
-	service = &account.Service{
-		Endpoint:  "http://example.org/api",
-		Subdomain: "backstage",
-	}
+	service = &account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage"}
 }
 
 func (s *S) TearDownSuite(c *C) {
