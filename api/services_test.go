@@ -27,7 +27,7 @@ func (s *S) TestCreateService(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	expected := `{"subdomain":"backstage","allow_keyless_use":true,"description":"Useful desc.","disabled":false,"documentation":"http://www.example.org/doc","endpoint":"http://github.com/backstage","owner":"owner@example.org","team":"team","timeout":10}`
-	c.Assert(s.recorder.Code, Equals, 201)
+	c.Assert(s.recorder.Code, Equals, http.StatusCreated)
 	c.Assert(s.recorder.Body.String(), Equals, expected)
 }
 
@@ -41,7 +41,7 @@ func (s *S) TestCreateServiceWhenUserIsNotSignedIn(c *C) {
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
-	c.Assert(s.recorder.Code, Equals, 400)
+	c.Assert(s.recorder.Code, Equals, http.StatusBadRequest)
 	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
 }
 
@@ -50,7 +50,6 @@ func (s *S) TestCreateServiceWhenTeamDoesNotExist(c *C) {
 	team.Save(owner)
 	defer account.DeleteTeamByAlias(team.Alias, owner)
 	defer owner.Delete()
-	defer account.DeleteServiceBySubdomain("backstage")
 
 	payload := `{"team": "invalid-team", "subdomain": "backstage", "allow_keyless_use": true, "description": "Useful desc.", "disabled": false, "documentation": "http://www.example.org/doc", "endpoint": "http://github.com/backstage", "timeout": 10}`
 	b := strings.NewReader(payload)
@@ -62,7 +61,7 @@ func (s *S) TestCreateServiceWhenTeamDoesNotExist(c *C) {
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
-	c.Assert(s.recorder.Code, Equals, 400)
+	c.Assert(s.recorder.Code, Equals, http.StatusBadRequest)
 	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"Team not found."}`)
 }
 
@@ -71,7 +70,6 @@ func (s *S) TestCreateServiceWithInvalidPayloadFormat(c *C) {
 	team.Save(owner)
 	defer account.DeleteTeamByAlias(team.Alias, owner)
 	defer owner.Delete()
-	defer account.DeleteServiceBySubdomain("backstage")
 
 	payload := `"subdomain": "backstage"`
 	b := strings.NewReader(payload)
@@ -100,7 +98,7 @@ func (s *S) TestDeleteService(c *C) {
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
-	c.Assert(s.recorder.Code, Equals, 200)
+	c.Assert(s.recorder.Code, Equals, http.StatusOK)
 	c.Assert(s.recorder.Body.String(), Equals, `{"subdomain":"backstage","allow_keyless_use":false,"description":"","disabled":false,"documentation":"","endpoint":"http://example.org/api","owner":"owner@example.org","team":"team","timeout":0}`)
 }
 
@@ -114,30 +112,28 @@ func (s *S) TestDeleteServiceWhenUserIsNotOwner(c *C) {
 	defer owner.Delete()
 	defer service.Delete()
 
-	s.router.Delete("/api/teams/:alias", s.Api.Route(teamsHandler, "DeleteTeam"))
 	s.router.Delete("/api/services/:subdomain", s.Api.Route(servicesHandler, "DeleteService"))
 	req, _ := http.NewRequest("DELETE", "/api/services/"+service.Subdomain, nil)
 	s.env[CurrentUser] = alice
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
-	c.Assert(s.recorder.Code, Equals, 403)
-	c.Assert(s.recorder.Body.String(), Equals, `{"error":"access_denied","error_description":"Service not found."}`)
+	c.Assert(s.recorder.Code, Equals, http.StatusNotFound)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"not_found","error_description":"Service not found."}`)
 }
 
 func (s *S) TestDeleteServiceIsNotFound(c *C) {
 	bob.Save()
 	defer bob.Delete()
 
-	s.router.Delete("/api/teams/:alias", s.Api.Route(teamsHandler, "DeleteTeam"))
 	s.router.Delete("/api/services/:subdomain", s.Api.Route(servicesHandler, "DeleteService"))
-	req, _ := http.NewRequest("DELETE", "/api/services/"+service.Subdomain, nil)
+	req, _ := http.NewRequest("DELETE", "/api/services/invalid-service", nil)
 	s.env[CurrentUser] = bob
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
-	c.Assert(s.recorder.Code, Equals, 403)
-	c.Assert(s.recorder.Body.String(), Equals, `{"error":"access_denied","error_description":"Service not found."}`)
+	c.Assert(s.recorder.Code, Equals, http.StatusNotFound)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"not_found","error_description":"Service not found."}`)
 }
 
 func (s *S) TestGetServiceInfo(c *C) {
@@ -154,7 +150,7 @@ func (s *S) TestGetServiceInfo(c *C) {
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
-	c.Assert(s.recorder.Code, Equals, 200)
+	c.Assert(s.recorder.Code, Equals, http.StatusOK)
 	c.Assert(s.recorder.Body.String(), Equals, `{"subdomain":"backstage","allow_keyless_use":false,"description":"","disabled":false,"documentation":"","endpoint":"http://example.org/api","owner":"owner@example.org","team":"team","timeout":0}`)
 }
 
@@ -168,8 +164,8 @@ func (s *S) TestGetServiceInfoWhenServiceIsNotFound(c *C) {
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
-	c.Assert(s.recorder.Code, Equals, 403)
-	c.Assert(s.recorder.Body.String(), Equals, `{"error":"access_denied","error_description":"Service not found."}`)
+	c.Assert(s.recorder.Code, Equals, http.StatusNotFound)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"not_found","error_description":"Service not found."}`)
 }
 
 func (s *S) TestGetServiceInfoWhenIsNotInTeam(c *C) {
@@ -188,6 +184,6 @@ func (s *S) TestGetServiceInfoWhenIsNotInTeam(c *C) {
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
-	c.Assert(s.recorder.Code, Equals, 403)
+	c.Assert(s.recorder.Code, Equals, http.StatusForbidden)
 	c.Assert(s.recorder.Body.String(), Equals, `{"error":"access_denied","error_description":"You do not belong to this team!"}`)
 }

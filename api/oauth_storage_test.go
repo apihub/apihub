@@ -1,51 +1,26 @@
 package api
 
 import (
-	"github.com/RangelReale/osin"
 	"github.com/backstage/backstage/db"
 	. "gopkg.in/check.v1"
-	"gopkg.in/mgo.v2/bson"
 )
-
-var client *osin.DefaultClient = &osin.DefaultClient{
-	Id:          "test-1234",
-	Secret:      "super-secret-string",
-	RedirectUri: "http://www.example.org/auth",
-}
-
-var authorizeData *osin.AuthorizeData = &osin.AuthorizeData{
-	Client:      client,
-	Code:        "test-123456789",
-	ExpiresIn:   3600,
-	CreatedAt:   bson.Now(),
-	RedirectUri: "http://www.example.org/auth",
-}
-
-var accessData *osin.AccessData = &osin.AccessData{
-	Client:        client,
-	AuthorizeData: authorizeData,
-	AccessToken:   "test-123456",
-	RefreshToken:  "test-refresh-7890",
-	ExpiresIn:     3600,
-	CreatedAt:     bson.Now(),
-}
 
 func (s *S) TestGetClient(c *C) {
 	conn, _ := db.Conn()
 	defer conn.Close()
-	err := s.oAuthStorage.SetClient(client.Id, client)
-	defer conn.Clients().RemoveId(client.Id)
+	err := s.oAuthStorage.SetClient(osinClient.Id, osinClient)
+	defer conn.Clients().RemoveId(osinClient.Id)
 	c.Assert(err, IsNil)
-	cli, err := s.oAuthStorage.GetClient(client.Id)
+	cli, err := s.oAuthStorage.GetClient(osinClient.Id)
 	c.Assert(err, IsNil)
-	c.Assert(cli, DeepEquals, client)
+	c.Assert(cli, DeepEquals, osinClient)
 }
 
 func (s *S) TestSetClient(c *C) {
 	conn, _ := db.Conn()
 	defer conn.Close()
-	err := s.oAuthStorage.SetClient(client.Id, client)
-	defer conn.Clients().RemoveId(client.Id)
+	err := s.oAuthStorage.SetClient(osinClient.Id, osinClient)
+	defer conn.Clients().RemoveId(osinClient.Id)
 	c.Assert(err, IsNil)
 }
 
@@ -58,8 +33,8 @@ func (s *S) TestSaveAuthorize(c *C) {
 func (s *S) TestLoadAuthorize(c *C) {
 	conn, _ := db.Conn()
 	defer conn.Close()
-	err := s.oAuthStorage.SetClient(client.Id, client)
-	defer conn.Clients().RemoveId(client.Id)
+	err := s.oAuthStorage.SetClient(osinClient.Id, osinClient)
+	defer conn.Clients().RemoveId(osinClient.Id)
 	c.Assert(err, IsNil)
 	defer s.oAuthStorage.RemoveAuthorize(authorizeData.Code)
 	err = s.oAuthStorage.SaveAuthorize(authorizeData)
@@ -90,8 +65,8 @@ func (s *S) TestSaveAccess(c *C) {
 func (s *S) TestLoadAccess(c *C) {
 	conn, _ := db.Conn()
 	defer conn.Close()
-	err := s.oAuthStorage.SetClient(client.Id, client)
-	defer conn.Clients().RemoveId(client.Id)
+	err := s.oAuthStorage.SetClient(osinClient.Id, osinClient)
+	defer conn.Clients().RemoveId(osinClient.Id)
 	c.Assert(err, IsNil)
 	defer s.oAuthStorage.RemoveAccess(accessData.AccessToken)
 	err = s.oAuthStorage.SaveAccess(accessData)
@@ -123,8 +98,8 @@ func (s *S) TestRemoveAccessWithNonExistingAccessToken(c *C) {
 func (s *S) TestLoadRefresh(c *C) {
 	conn, _ := db.Conn()
 	defer conn.Close()
-	err := s.oAuthStorage.SetClient(client.Id, client)
-	defer conn.Clients().RemoveId(client.Id)
+	err := s.oAuthStorage.SetClient(osinClient.Id, osinClient)
+	defer conn.Clients().RemoveId(osinClient.Id)
 	c.Assert(err, IsNil)
 	defer s.oAuthStorage.RemoveAccess(accessData.AccessToken)
 	err = s.oAuthStorage.SaveAccess(accessData)

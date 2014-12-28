@@ -5,24 +5,51 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/RangelReale/osin"
 	"github.com/backstage/backstage/account"
 	"github.com/backstage/backstage/db"
 	"github.com/tsuru/config"
 	"github.com/zenazn/goji/web"
 	. "gopkg.in/check.v1"
+	"gopkg.in/mgo.v2/bson"
 )
 
 var oAuthHandler *OAuthHandler
 var servicesHandler *ServicesHandler
 var teamsHandler *TeamsHandler
 var usersHandler *UsersHandler
+var clientsHandler *ClientsHandler
 
 var alice *account.User
 var bob *account.User
 var mary *account.User
 var owner *account.User
 var service *account.Service
+var client *account.Client
 var team *account.Team
+
+var osinClient *osin.DefaultClient = &osin.DefaultClient{
+	Id:          "test-1234",
+	Secret:      "super-secret-string",
+	RedirectUri: "http://www.example.org/auth",
+}
+
+var authorizeData *osin.AuthorizeData = &osin.AuthorizeData{
+	Client:      osinClient,
+	Code:        "test-123456789",
+	ExpiresIn:   3600,
+	CreatedAt:   bson.Now(),
+	RedirectUri: "http://www.example.org/auth",
+}
+
+var accessData *osin.AccessData = &osin.AccessData{
+	Client:        osinClient,
+	AuthorizeData: authorizeData,
+	AccessToken:   "test-123456",
+	RefreshToken:  "test-refresh-7890",
+	ExpiresIn:     3600,
+	CreatedAt:     bson.Now(),
+}
 
 func Test(t *testing.T) { TestingT(t) }
 
@@ -45,6 +72,7 @@ func (s *S) SetUpTest(c *C) {
 	teamsHandler = &TeamsHandler{}
 	usersHandler = &UsersHandler{}
 	servicesHandler = &ServicesHandler{}
+	clientsHandler = &ClientsHandler{}
 	oAuthHandler = &OAuthHandler{}
 
 	s.recorder = httptest.NewRecorder()
@@ -59,6 +87,7 @@ func (s *S) SetUpTest(c *C) {
 	owner = &account.User{Name: "Owner", Email: "owner@example.org", Username: "owner", Password: "123456"}
 	team = &account.Team{Name: "Team", Alias: "team"}
 	service = &account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage"}
+	client = &account.Client{Id: "backstage", Secret: "SuperSecret", Name: "Backstage", RedirectUri: "http://example.org/auth"}
 }
 
 func (s *S) TearDownSuite(c *C) {

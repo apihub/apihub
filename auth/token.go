@@ -2,8 +2,6 @@
 package auth
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"fmt"
 	"strings"
 	"time"
@@ -11,6 +9,7 @@ import (
 	"github.com/backstage/backstage/account"
 	"github.com/backstage/backstage/db"
 	. "github.com/backstage/backstage/errors"
+	"github.com/backstage/backstage/util"
 	"github.com/fatih/structs"
 )
 
@@ -100,14 +99,9 @@ func RevokeTokensFor(user *account.User) {
 
 // Generate a token for given user.
 func GenerateToken(user *account.User) *TokenInfo {
-	rb := make([]byte, 32)
-	_, err := rand.Read(rb)
-	if err != nil {
-		fmt.Println(err)
-	}
-
+	tok := util.GenerateRandomStr(32)
 	token := &TokenInfo{
-		Token:     base64.URLEncoding.EncodeToString(rb),
+		Token:     tok,
 		Expires:   ExpiresInSeconds,
 		CreatedAt: time.Now().In(time.UTC).Format("2006-01-02T15:04:05Z07:00"),
 		Type:      "Token",

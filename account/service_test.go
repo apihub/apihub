@@ -1,8 +1,8 @@
 package account
 
 import (
-	. "gopkg.in/check.v1"
 	"github.com/backstage/backstage/errors"
+	. "gopkg.in/check.v1"
 )
 
 func (s *S) TestCreateServiceNewService(c *C) {

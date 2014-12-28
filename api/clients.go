@@ -9,26 +9,22 @@ import (
 	"github.com/zenazn/goji/web"
 )
 
-type ServicesHandler struct {
+type ClientsHandler struct {
 	ApiHandler
 }
 
-func (handler *ServicesHandler) Index(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
-	return OK("Hello World")
-}
-
-func (handler *ServicesHandler) CreateService(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+func (handler *ClientsHandler) CreateClient(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
 		return BadRequest(E_BAD_REQUEST, err.Error())
 	}
-	service := &Service{}
-	err = handler.parseBody(r.Body, service)
+	client := &Client{}
+	err = handler.parseBody(r.Body, client)
 	if err != nil {
 		return BadRequest(E_BAD_REQUEST, err.Error())
 	}
 
-	team, err := FindTeamByAlias(service.Team, currentUser)
+	team, err := FindTeamByAlias(client.Team, currentUser)
 	if err != nil {
 		switch err.(type) {
 		case *ForbiddenError:
@@ -38,49 +34,49 @@ func (handler *ServicesHandler) CreateService(c *web.C, w http.ResponseWriter, r
 		}
 	}
 
-	err = service.Save(currentUser, team)
+	err = client.Save(currentUser, team)
 	if err != nil {
 		return BadRequest(E_BAD_REQUEST, err.Error())
 	}
-	service, err = FindServiceBySubdomain(service.Subdomain)
+	client, err = FindClientByIdAndTeam(client.Id, client.Team)
 	if err != nil {
 		return BadRequest(E_BAD_REQUEST, err.Error())
 	}
-	payload, _ := json.Marshal(service)
+	payload, _ := json.Marshal(client)
 	return Created(string(payload))
 }
 
-func (handler *ServicesHandler) DeleteService(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+func (handler *ClientsHandler) DeleteClient(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
 		return BadRequest(E_BAD_REQUEST, err.Error())
 	}
 
-	service, err := FindServiceBySubdomain(c.URLParams["subdomain"])
-	if err != nil || service.Owner != currentUser.Email {
-		return NotFound(ErrServiceNotFound.Error())
+	client, err := FindClientByIdAndTeam(c.URLParams["id"], c.URLParams["team"])
+	if err != nil || client.Owner != currentUser.Email {
+		return NotFound(ErrClientNotFoundOnTeam.Error())
 	}
-	err = service.Delete()
+	err = client.Delete()
 	if err != nil {
 		return BadRequest(E_BAD_REQUEST, err.Error())
 	}
 
-	payload, _ := json.Marshal(service)
+	payload, _ := json.Marshal(client)
 	return OK(string(payload))
 }
 
-func (handler *ServicesHandler) GetServiceInfo(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+func (handler *ClientsHandler) GetClientInfo(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
 		return BadRequest(E_BAD_REQUEST, err.Error())
 	}
 
-	service, err := FindServiceBySubdomain(c.URLParams["subdomain"])
+	client, err := FindClientByIdAndTeam(c.URLParams["id"], c.URLParams["team"])
 	if err != nil {
-		return NotFound(ErrServiceNotFound.Error())
+		return NotFound(ErrClientNotFoundOnTeam.Error())
 	}
 
-	_, err = FindTeamByAlias(service.Team, currentUser)
+	_, err = FindTeamByAlias(client.Team, currentUser)
 	if err != nil {
 		switch err.(type) {
 		case *ForbiddenError:
@@ -90,6 +86,6 @@ func (handler *ServicesHandler) GetServiceInfo(c *web.C, w http.ResponseWriter, 
 		}
 	}
 
-	result, _ := json.Marshal(service)
+	result, _ := json.Marshal(client)
 	return OK(string(result))
 }

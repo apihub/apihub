@@ -50,6 +50,7 @@ func (api *Api) DrawRoutes() {
 
 	// Handlers
 	servicesHandler := &ServicesHandler{}
+	clientsHandler := &ClientsHandler{}
 	debugHandler := &DebugHandler{}
 	usersHandler := &UsersHandler{}
 	teamsHandler := &TeamsHandler{}
@@ -86,6 +87,10 @@ func (api *Api) DrawRoutes() {
 	privateRoutes.Post("/services", api.Route(servicesHandler, "CreateService"))
 	privateRoutes.Delete("/services/:subdomain", api.Route(servicesHandler, "DeleteService"))
 	privateRoutes.Get("/services/:subdomain", api.Route(servicesHandler, "GetServiceInfo"))
+
+	privateRoutes.Post("/clients", api.Route(clientsHandler, "CreateClient"))
+	privateRoutes.Delete("/clients/:id/:team", api.Route(clientsHandler, "DeleteClient"))
+	privateRoutes.Get("/clients/:id/:team", api.Route(clientsHandler, "GetClientInfo"))
 }
 
 // Create a router based on given handler and method.

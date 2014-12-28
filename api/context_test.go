@@ -17,7 +17,7 @@ func (s *S) TestAddGetRequestError(c *C) {
 
 	m.Get("/helloworld", func(c web.C, w http.ResponseWriter, r *http.Request) {
 		AddRequestError(&c, &HTTPResponse{StatusCode: http.StatusUnauthorized,
-			ErrorType: errors.E_UNAUTHORIZED_REQUEST,
+			ErrorType:        errors.E_UNAUTHORIZED_REQUEST,
 			ErrorDescription: "You do not have access to this resource."})
 
 		key, _ := GetRequestError(&c)

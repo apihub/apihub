@@ -16,6 +16,8 @@ var (
 	ErrInvalidTokenFormat     = errors.New("Invalid token format.")
 	ErrTeamNotFound           = errors.New("Team not found.")
 	ErrServiceNotFound        = errors.New("Service not found.")
+	ErrClientNotFound         = errors.New("Client not found.")
+	ErrClientNotFoundOnTeam   = errors.New("Client not found on this team.")
 	ErrTokenNotFound          = errors.New("Token not found.")
 	ErrAuthenticationFailed   = errors.New("Authentication failed.")
 	ErrBadRequest             = errors.New("The request was invalid or cannot be served.")

@@ -14,8 +14,8 @@ import (
 func (s *S) TestTokenForAuthorizationCode(c *C) {
 	conn, _ := db.Conn()
 	defer conn.Close()
-	s.oAuthStorage.SetClient(client.Id, client)
-	defer conn.Clients().RemoveId(client.Id)
+	s.oAuthStorage.SetClient(osinClient.Id, osinClient)
+	defer conn.Clients().RemoveId(osinClient.Id)
 
 	defer s.oAuthStorage.RemoveAuthorize(authorizeData.Code)
 	err := s.oAuthStorage.SaveAuthorize(authorizeData)
@@ -23,8 +23,8 @@ func (s *S) TestTokenForAuthorizationCode(c *C) {
 	s.Api.Init()
 	s.env["Api"] = s.Api
 	s.router.Post("/token", s.Api.Route(oAuthHandler, "Token"))
-	req, _ := http.NewRequest("POST", fmt.Sprintf("/token?grant_type=authorization_code&client_id=%s&redirect_uri=%s&code=%s", client.Id, url.QueryEscape(client.RedirectUri), authorizeData.Code), strings.NewReader(""))
-	req.SetBasicAuth(client.Id, client.Secret)
+	req, _ := http.NewRequest("POST", fmt.Sprintf("/token?grant_type=authorization_code&client_id=%s&redirect_uri=%s&code=%s", osinClient.Id, url.QueryEscape(osinClient.RedirectUri), authorizeData.Code), strings.NewReader(""))
+	req.SetBasicAuth(osinClient.Id, osinClient.Secret)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -36,8 +36,8 @@ func (s *S) TestTokenForAuthorizationCode(c *C) {
 func (s *S) TestTokenForRefreshToken(c *C) {
 	conn, _ := db.Conn()
 	defer conn.Close()
-	s.oAuthStorage.SetClient(client.Id, client)
-	defer conn.Clients().RemoveId(client.Id)
+	s.oAuthStorage.SetClient(osinClient.Id, osinClient)
+	defer conn.Clients().RemoveId(osinClient.Id)
 
 	defer s.oAuthStorage.RemoveAccess(accessData.AccessToken)
 	err := s.oAuthStorage.SaveAccess(accessData)
@@ -45,8 +45,8 @@ func (s *S) TestTokenForRefreshToken(c *C) {
 	s.Api.Init()
 	s.env["Api"] = s.Api
 	s.router.Post("/token", s.Api.Route(oAuthHandler, "Token"))
-	req, _ := http.NewRequest("POST", fmt.Sprintf("/token?grant_type=refresh_token&client_id=%s&redirect_uri=%s&refresh_token=%s", client.Id, url.QueryEscape(client.RedirectUri), accessData.RefreshToken), strings.NewReader(""))
-	req.SetBasicAuth(client.Id, client.Secret)
+	req, _ := http.NewRequest("POST", fmt.Sprintf("/token?grant_type=refresh_token&client_id=%s&redirect_uri=%s&refresh_token=%s", osinClient.Id, url.QueryEscape(osinClient.RedirectUri), accessData.RefreshToken), strings.NewReader(""))
+	req.SetBasicAuth(osinClient.Id, osinClient.Secret)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -58,15 +58,15 @@ func (s *S) TestTokenForRefreshToken(c *C) {
 func (s *S) TestTokenForClientCredentials(c *C) {
 	conn, _ := db.Conn()
 	defer conn.Close()
-	s.oAuthStorage.SetClient(client.Id, client)
-	defer conn.Clients().RemoveId(client.Id)
+	s.oAuthStorage.SetClient(osinClient.Id, osinClient)
+	defer conn.Clients().RemoveId(osinClient.Id)
 
 	s.Api.Init()
 	s.env["Api"] = s.Api
 	b := strings.NewReader("grant_type=client_credentials")
 	s.router.Post("/token", s.Api.Route(oAuthHandler, "Token"))
 	req, _ := http.NewRequest("POST", "/token", b)
-	req.SetBasicAuth(client.Id, client.Secret)
+	req.SetBasicAuth(osinClient.Id, osinClient.Secret)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -107,8 +107,8 @@ func (s *S) TestTokenForClientCredentialsWithInvalidCredentials(c *C) {
 func (s *S) TestTokenForUnsupporteGrantType(c *C) {
 	conn, _ := db.Conn()
 	defer conn.Close()
-	s.oAuthStorage.SetClient(client.Id, client)
-	defer conn.Clients().RemoveId(client.Id)
+	s.oAuthStorage.SetClient(osinClient.Id, osinClient)
+	defer conn.Clients().RemoveId(osinClient.Id)
 
 	defer s.oAuthStorage.RemoveAuthorize(authorizeData.Code)
 	err := s.oAuthStorage.SaveAuthorize(authorizeData)
@@ -116,8 +116,8 @@ func (s *S) TestTokenForUnsupporteGrantType(c *C) {
 	s.Api.Init()
 	s.env["Api"] = s.Api
 	s.router.Post("/token", s.Api.Route(oAuthHandler, "Token"))
-	req, _ := http.NewRequest("POST", fmt.Sprintf("/token?grant_type=code&client_id=%s&redirect_uri=%s&code=%s", client.Id, url.QueryEscape(client.RedirectUri), authorizeData.Code), strings.NewReader(""))
-	req.SetBasicAuth(client.Id, client.Secret)
+	req, _ := http.NewRequest("POST", fmt.Sprintf("/token?grant_type=code&client_id=%s&redirect_uri=%s&code=%s", osinClient.Id, url.QueryEscape(osinClient.RedirectUri), authorizeData.Code), strings.NewReader(""))
+	req.SetBasicAuth(osinClient.Id, osinClient.Secret)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -129,8 +129,8 @@ func (s *S) TestTokenForUnsupporteGrantType(c *C) {
 func (s *S) TestInfoFromAccessTokenForClientCredentials(c *C) {
 	conn, _ := db.Conn()
 	defer conn.Close()
-	s.oAuthStorage.SetClient(client.Id, client)
-	defer conn.Clients().RemoveId(client.Id)
+	s.oAuthStorage.SetClient(osinClient.Id, osinClient)
+	defer conn.Clients().RemoveId(osinClient.Id)
 
 	defer s.oAuthStorage.RemoveAccess(accessData.AccessToken)
 	err := s.oAuthStorage.SaveAccess(accessData)
@@ -139,7 +139,7 @@ func (s *S) TestInfoFromAccessTokenForClientCredentials(c *C) {
 	s.env["Api"] = s.Api
 	s.router.Get("/me", s.Api.Route(oAuthHandler, "Info"))
 	req, _ := http.NewRequest("GET", fmt.Sprintf("/me?code=%s", accessData.AccessToken), nil)
-	req.SetBasicAuth(client.Id, client.Secret)
+	req.SetBasicAuth(osinClient.Id, osinClient.Secret)
 	req.Header.Set("Content-Type", "application/json")
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -156,7 +156,7 @@ func (s *S) TestInfoFromAccessTokenForInvalidToken(c *C) {
 	s.env["Api"] = s.Api
 	s.router.Get("/me", s.Api.Route(oAuthHandler, "Info"))
 	req, _ := http.NewRequest("GET", "/me?code=invalid-token", nil)
-	req.SetBasicAuth(client.Id, client.Secret)
+	req.SetBasicAuth(osinClient.Id, osinClient.Secret)
 	req.Header.Set("Content-Type", "application/json")
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -170,14 +170,14 @@ func (s *S) TestAuthorizeWithValidCredentials(c *C) {
 	defer conn.Close()
 	alice.Save()
 	defer alice.Delete()
-	s.oAuthStorage.SetClient(client.Id, client)
-	defer conn.Clients().RemoveId(client.Id)
+	s.oAuthStorage.SetClient(osinClient.Id, osinClient)
+	defer conn.Clients().RemoveId(osinClient.Id)
 
 	s.Api.Init()
 	s.env["Api"] = s.Api
 	s.router.Post("/authorize", s.Api.Route(oAuthHandler, "Authorize"))
-	req, _ := http.NewRequest("POST", fmt.Sprintf("/authorize?response_type=code&client_id=%s&redirect_uri=%s", client.Id, url.QueryEscape(client.RedirectUri)), strings.NewReader(fmt.Sprintf("email=%s&password=123456", alice.Email)))
-	req.SetBasicAuth(client.Id, client.Secret)
+	req, _ := http.NewRequest("POST", fmt.Sprintf("/authorize?response_type=code&client_id=%s&redirect_uri=%s", osinClient.Id, url.QueryEscape(osinClient.RedirectUri)), strings.NewReader(fmt.Sprintf("email=%s&password=123456", alice.Email)))
+	req.SetBasicAuth(osinClient.Id, osinClient.Secret)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
