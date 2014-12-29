@@ -11,6 +11,7 @@ import (
 )
 
 func (s *S) TestAuthorizationMiddlewareWithValidToken(c *C) {
+	s.router.Use(ErrorMiddleware)
 	s.router.Use(AuthorizationMiddleware)
 	err := alice.Save()
 	defer alice.Delete()
@@ -27,9 +28,11 @@ func (s *S) TestAuthorizationMiddlewareWithValidToken(c *C) {
 	s.router.ServeHTTPC(cc, s.recorder, req)
 	_, ok := GetRequestError(&cc)
 	c.Assert(ok, Equals, false)
+	c.Assert(s.recorder.Body.String(), Equals, "")
 }
 
 func (s *S) TestAuthorizationMiddlewareWithInvalidToken(c *C) {
+	s.router.Use(ErrorMiddleware)
 	s.router.Use(AuthorizationMiddleware)
 	s.router.Get("/", s.handler)
 	req, _ := http.NewRequest("GET", "/", nil)
@@ -40,9 +43,11 @@ func (s *S) TestAuthorizationMiddlewareWithInvalidToken(c *C) {
 	c.Assert(erro.StatusCode, Equals, http.StatusUnauthorized)
 	c.Assert(erro.ErrorDescription, Equals, "Request refused or access is not allowed.")
 	c.Assert(erro.ErrorType, Equals, "unauthorized_access")
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"unauthorized_access","error_description":"Request refused or access is not allowed."}`)
 }
 
 func (s *S) TestAuthorizationMiddlewareWithMissingToken(c *C) {
+	s.router.Use(ErrorMiddleware)
 	s.router.Use(AuthorizationMiddleware)
 	s.router.Get("/", s.handler)
 	req, _ := http.NewRequest("GET", "/", nil)
@@ -52,9 +57,11 @@ func (s *S) TestAuthorizationMiddlewareWithMissingToken(c *C) {
 	c.Assert(erro.StatusCode, Equals, http.StatusUnauthorized)
 	c.Assert(erro.ErrorDescription, Equals, "Request refused or access is not allowed.")
 	c.Assert(erro.ErrorType, Equals, "unauthorized_access")
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"unauthorized_access","error_description":"Request refused or access is not allowed."}`)
 }
 
 func (s *S) TestRequestIdMiddleware(c *C) {
+	s.router.Use(ErrorMiddleware)
 	s.router.Use(RequestIdMiddleware)
 	s.router.Get("/", s.handler)
 
