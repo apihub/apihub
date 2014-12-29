@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"reflect"
+	"path/filepath"
 
 	"github.com/RangelReale/osin"
 	"github.com/tsuru/config"
@@ -54,6 +55,13 @@ func (api *Api) DrawRoutes() {
 	usersHandler := &UsersHandler{}
 	teamsHandler := &TeamsHandler{}
 	oauthHandler := &OAuthHandler{}
+
+	//Assets
+	staticFilesLocation, err := filepath.Abs("api/views")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	goji.Handle("/assets/*", http.FileServer(http.Dir(staticFilesLocation)))
 
 	// Public Routes
 	goji.Get("/", api.Route(servicesHandler, "Index"))

@@ -2,8 +2,10 @@ package api
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"net/url"
+	"path/filepath"
 
 	"github.com/RangelReale/osin"
 	. "github.com/backstage/backstage/account"
@@ -13,6 +15,14 @@ import (
 
 type OAuthHandler struct {
 	ApiHandler
+}
+
+type PageForm struct {
+	Action string
+	Client *Client
+	InvalidCredentials bool
+	Data map[string]interface{}
+	Method string
 }
 
 func (handler *OAuthHandler) Token(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
@@ -40,33 +50,29 @@ func (handler *OAuthHandler) Token(c *web.C, w http.ResponseWriter, r *http.Requ
 
 func HandleLoginPage(ar *osin.AuthorizeRequest, w http.ResponseWriter, r *http.Request) *User {
 	r.ParseForm()
+	p := &PageForm{
+		Action: fmt.Sprintf("/authorize?response_type=%s&client_id=%s&state=%s&redirect_uri=%s",ar.Type, ar.Client.GetId(), ar.State, url.QueryEscape(ar.RedirectUri)),
+		Method: "POST",
+		Data: map[string]interface{}{"client": "tesssst"},
+	}
+	if client, err := FindClientById(ar.Client.GetId()); err == nil {
+		p.Client = client
+	}
 
 	if r.Method == "POST" {
 		user := &User{Email: r.Form.Get("email"), Password: r.Form.Get("password")}
 		if u, err := Login(user); err == nil {
 			return u
 		}
-	}
-	clientIdentification := ar.Client.GetId()
-	client, err := FindClientById(ar.Client.GetId())
-	if err == nil && client.Name != ""{
-		clientIdentification = client.Name
+		p.InvalidCredentials = true
 	}
 
-	w.Write([]byte("<html><body>"))
-
-	w.Write([]byte(fmt.Sprintf("LOGIN %s (use test/test)<br/>", clientIdentification)))
-	w.Write([]byte(fmt.Sprintf("<form action=\"/authorize?response_type=%s&client_id=%s&state=%s&redirect_uri=%s\" method=\"POST\">",
-		ar.Type, ar.Client.GetId(), ar.State, url.QueryEscape(ar.RedirectUri))))
-
-	w.Write([]byte("Email: <input type=\"text\" name=\"email\" /><br/>"))
-	w.Write([]byte("Password: <input type=\"password\" name=\"password\" /><br/>"))
-	w.Write([]byte("<input type=\"submit\"/>"))
-
-	w.Write([]byte("</form>"))
-
-	w.Write([]byte("</body></html>"))
-
+	dir, err := filepath.Abs("api/views/login.html")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	t, _ := template.ParseFiles(dir)
+  t.Execute(w, p)
 	return nil
 }
 
