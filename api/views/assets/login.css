@@ -7,7 +7,8 @@ html,body{
   margin:0
 }
 body{
-  font-family:"Proxima Nova", "Helvetiva Neue", Helvetica, Arial, sans-serif;color:#555555;
+  font-family:"Proxima Nova", "Helvetiva Neue", Helvetica, Arial, sans-serif;
+  color:#555555;
   font-size:13px;
 }
 h2,p{
@@ -15,7 +16,7 @@ h2,p{
   padding:0;
 }
 .content{
-  width:342px;
+  width:300px;
   margin:auto;
   margin-top:50px;
 }
@@ -42,7 +43,7 @@ h2,p{
 }
 .form input[type=text],.form input[type=email],.form input[type=password]{
   width:100%;
-  border:2px solid #d7d7d7;
+  border:1px solid #d7d7d7;
   height:40px;
   line-height:14px;
   padding:0 10px;
