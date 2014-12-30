@@ -8,6 +8,7 @@ const (
 	E_UNAUTHORIZED_REQUEST string = "unauthorized_access"
 	E_FORBIDDEN_REQUEST    string = "access_denied"
 	E_NOT_FOUND            string = "not_found"
+	E_SERVICE_UNAVAILABLE  string = "service_unavailable"
 )
 
 var (
