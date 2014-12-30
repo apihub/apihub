@@ -22,7 +22,9 @@ func (handler *ServicesHandler) CreateService(c *web.C, w http.ResponseWriter, r
 	if err != nil {
 		return BadRequest(E_BAD_REQUEST, err.Error())
 	}
-	service := &Service{}
+	service := &Service{
+		Team: c.URLParams["team"],
+	}
 	err = handler.parseBody(r.Body, service)
 	if err != nil {
 		return BadRequest(E_BAD_REQUEST, err.Error())
