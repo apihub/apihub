@@ -44,8 +44,9 @@ func (client *Client) Save(owner *User, team *Team) error {
 
 	client.Owner = owner.Email
 	client.Team = team.Alias
-	if err = conn.Clients().Insert(client); err != nil {
-		return &errors.ValidationError{Payload: err.Error()}
+	err = conn.Clients().Insert(client)
+	if mgo.IsDup(err) {
+		return &errors.ValidationError{Payload: "There is another client with this name."}
 	}
 	return err
 }
