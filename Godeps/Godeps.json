@@ -6,6 +6,11 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "bitbucket.org/kardianos/osext",
+			"Comment": "null-15",
+			"Rev": "44140c5fc69ecf1102c5ef451d73cd98ef59b178"
+		},
+		{
 			"ImportPath": "code.google.com/p/go-uuid/uuid",
 			"Comment": "null-12",
 			"Rev": "7dda39b2e7d5e265014674c5af696ba4186679e9"
@@ -23,6 +28,15 @@
 		{
 			"ImportPath": "github.com/RangelReale/osin",
 			"Rev": "2895b6e47185c62c3192fb07f03ad7db8cf0d2b5"
+		},
+		{
+			"ImportPath": "github.com/ccding/go-config-reader/config",
+			"Rev": "8b6c2b50197f20da3b1c5944c274c173634dc056"
+		},
+		{
+			"ImportPath": "github.com/ccding/go-logging/logging",
+			"Comment": "v0.1-17-g031be99",
+			"Rev": "031be9955e9f0adf222458687d81a9b6d65cfe3c"
 		},
 		{
 			"ImportPath": "github.com/fatih/structs",
