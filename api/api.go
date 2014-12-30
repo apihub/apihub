@@ -115,13 +115,14 @@ func (api *Api) drawDefaultRoutes() {
 	privateRoutes.Post("/teams/:alias/users", api.Route(teamsHandler, "AddUsersToTeam"))
 	privateRoutes.Delete("/teams/:alias/users", api.Route(teamsHandler, "RemoveUsersFromTeam"))
 
+	privateRoutes.Post("/teams/:team/clients", api.Route(clientsHandler, "CreateClient"))
+	privateRoutes.Get("/teams/:team/clients/:id", api.Route(clientsHandler, "GetClientInfo"))
+	privateRoutes.Delete("/teams/:team/clients/:id", api.Route(clientsHandler, "DeleteClient"))
+
 	privateRoutes.Post("/services", api.Route(servicesHandler, "CreateService"))
 	privateRoutes.Delete("/services/:subdomain", api.Route(servicesHandler, "DeleteService"))
 	privateRoutes.Get("/services/:subdomain", api.Route(servicesHandler, "GetServiceInfo"))
 
-	privateRoutes.Post("/clients", api.Route(clientsHandler, "CreateClient"))
-	privateRoutes.Delete("/clients/:id/:team", api.Route(clientsHandler, "DeleteClient"))
-	privateRoutes.Get("/clients/:id/:team", api.Route(clientsHandler, "GetClientInfo"))
 	Logger.Info("Private routes registered.")
 }
 

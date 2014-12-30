@@ -18,7 +18,9 @@ func (handler *ClientsHandler) CreateClient(c *web.C, w http.ResponseWriter, r *
 	if err != nil {
 		return BadRequest(E_BAD_REQUEST, err.Error())
 	}
-	client := &Client{}
+	client := &Client{
+		Team: c.URLParams["team"],
+	}
 	err = handler.parseBody(r.Body, client)
 	if err != nil {
 		return BadRequest(E_BAD_REQUEST, err.Error())

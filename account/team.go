@@ -20,6 +20,7 @@ type Team struct {
 	Users    []string      `json:"users"`
 	Owner    string        `json:"owner"`
 	Services []*Service    `json:"services,omitempty"`
+	Clients  []*Client     `json:"clients,omitempty"`
 }
 
 // Save creates a new team.
@@ -63,6 +64,10 @@ func DeleteTeamByAlias(alias string, user *User) (*Team, error) {
 		return nil, &errors.ForbiddenError{Payload: errors.ErrOnlyOwnerHasPermission.Error()}
 	}
 	team.Services, err = FindServicesByTeam(alias)
+	if err != nil {
+		return nil, err
+	}
+	team.Clients, err = FindClientsByTeam(alias)
 	if err != nil {
 		return nil, err
 	}
@@ -196,11 +201,15 @@ func FindTeamByName(name string) (*Team, error) {
 	if err != nil {
 		return nil, err
 	}
+	team.Clients, err = FindClientsByTeam(team.Alias)
+	if err != nil {
+		return nil, err
+	}
 
 	return &team, nil
 }
 
-// Find the team info and all the services for a given team alias.
+// Find the team info, clients and all the services for a given team alias.
 // It returns the team info if the user belongs to the team.
 // Return an error otherwise.
 func FindTeamByAlias(alias string, user *User) (*Team, error) {
@@ -213,6 +222,10 @@ func FindTeamByAlias(alias string, user *User) (*Team, error) {
 		return nil, &errors.ForbiddenError{Payload: err.Error()}
 	}
 	team.Services, err = FindServicesByTeam(alias)
+	if err != nil {
+		return nil, err
+	}
+	team.Clients, err = FindClientsByTeam(alias)
 	if err != nil {
 		return nil, err
 	}
@@ -235,7 +248,7 @@ func findTeamByAlias(alias string) (*Team, error) {
 	return &team, nil
 }
 
-// Find the team info and all the services for a given team id.
+// Find the team info, clients and all the services for a given team id.
 // Unlike the `FindTeamByAlias` method, it does not check if the
 // user belong to the team.
 func FindTeamById(id string) (*Team, error) {
@@ -257,6 +270,10 @@ func FindTeamById(id string) (*Team, error) {
 	}
 
 	team.Services, err = FindServicesByTeam(team.Alias)
+	if err != nil {
+		return nil, err
+	}
+	team.Clients, err = FindClientsByTeam(team.Alias)
 	if err != nil {
 		return nil, err
 	}

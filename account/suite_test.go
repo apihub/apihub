@@ -9,6 +9,13 @@ import (
 	"github.com/backstage/backstage/db"
 )
 
+var (
+	team  *Team
+	owner *User
+	service *Service
+	client *Client
+)
+
 type S struct{}
 
 var _ = Suite(&S{})
@@ -33,4 +40,6 @@ func (s *S) TearDownSuite(c *C) {
 func (s *S) SetUpTest(c *C) {
 	team = &Team{Name: "Team", Alias: "Alias"}
 	owner = &User{Name: "Owner", Username: "owner", Email: "owner@example.org", Password: "123456"}
+	service = &Service{Endpoint: "http://example.org/api", Subdomain: "backstage"}
+	client = &Client{Id: "backstage", Secret: "SuperSecret", Name: "Backstage", RedirectUri: "http://example.org/auth"}
 }

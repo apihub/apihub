@@ -5,11 +5,6 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-var (
-	team  *Team
-	owner *User
-)
-
 func (s *S) TestCreateTeam(c *C) {
 	err := team.Save(owner)
 	defer DeleteTeamByName("Team")
@@ -181,6 +176,54 @@ func (s *S) TestFindTeamByAliasWithInvalidName(c *C) {
 	_, err := FindTeamByAlias("Non Existing Team", owner)
 	c.Assert(err, NotNil)
 	c.Assert(err.Error(), Equals, "Team not found.")
+}
+
+func (s *S) TestFindTeamByAliasWithServicesAndClients(c *C) {
+	owner.Save()
+	team.Save(owner)
+	service.Save(owner, team)
+	client.Save(owner, team)
+	defer DeleteTeamByAlias(team.Alias, owner)
+	defer owner.Delete()
+	defer service.Delete()
+	defer client.Delete()
+
+	t, _ := FindTeamByAlias(team.Alias, owner)
+	c.Assert(t.Name, Equals, "Team")
+	c.Assert(t.Services[0], DeepEquals, service)
+	c.Assert(t.Clients[0], DeepEquals, client)
+}
+
+func (s *S) TestFindTeamByNameWithServicesAndClients(c *C) {
+	owner.Save()
+	team.Save(owner)
+	service.Save(owner, team)
+	client.Save(owner, team)
+	defer DeleteTeamByAlias(team.Alias, owner)
+	defer owner.Delete()
+	defer service.Delete()
+	defer client.Delete()
+
+	t, _ := FindTeamByName(team.Name)
+	c.Assert(t.Name, Equals, "Team")
+	c.Assert(t.Services[0], DeepEquals, service)
+	c.Assert(t.Clients[0], DeepEquals, client)
+}
+
+func (s *S) TestFindTeamByIdWithServicesAndClients(c *C) {
+	owner.Save()
+	team.Save(owner)
+	service.Save(owner, team)
+	client.Save(owner, team)
+	defer DeleteTeamByAlias(team.Alias, owner)
+	defer owner.Delete()
+	defer service.Delete()
+	defer client.Delete()
+
+	team, _ = FindTeamByName(team.Name)
+	t, _ := FindTeamById(team.Id.Hex())
+	c.Assert(t.Services[0], DeepEquals, service)
+	c.Assert(t.Clients[0], DeepEquals, client)
 }
 
 func (s *S) TestGetTeamUsers(c *C) {
