@@ -10,6 +10,7 @@ import (
 	"github.com/RangelReale/osin"
 	. "github.com/backstage/backstage/account"
 	. "github.com/backstage/backstage/errors"
+	. "github.com/backstage/backstage/log"
 	"github.com/zenazn/goji/web"
 )
 
@@ -18,11 +19,11 @@ type OAuthHandler struct {
 }
 
 type PageForm struct {
-	Action string
-	Client *Client
+	Action             string
+	Client             *Client
 	InvalidCredentials bool
-	Data map[string]interface{}
-	Method string
+	Data               map[string]interface{}
+	Method             string
 }
 
 func (handler *OAuthHandler) Token(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
@@ -51,12 +52,11 @@ func (handler *OAuthHandler) Token(c *web.C, w http.ResponseWriter, r *http.Requ
 func HandleLoginPage(ar *osin.AuthorizeRequest, w http.ResponseWriter, r *http.Request) *User {
 	r.ParseForm()
 	p := &PageForm{
-		Action: fmt.Sprintf("/authorize?response_type=%s&client_id=%s&state=%s&redirect_uri=%s",ar.Type, ar.Client.GetId(), ar.State, url.QueryEscape(ar.RedirectUri)),
+		Action: fmt.Sprintf("/authorize?response_type=%s&client_id=%s&state=%s&redirect_uri=%s", ar.Type, ar.Client.GetId(), ar.State, url.QueryEscape(ar.RedirectUri)),
 		Method: "POST",
-		Data: map[string]interface{}{"client": "tesssst"},
 	}
 	if client, err := FindClientById(ar.Client.GetId()); err == nil {
-		p.Client = client
+		p.Data = map[string]interface{}{"client": client.Name}
 	}
 
 	if r.Method == "POST" {
@@ -69,10 +69,10 @@ func HandleLoginPage(ar *osin.AuthorizeRequest, w http.ResponseWriter, r *http.R
 
 	dir, err := filepath.Abs("api/views/login.html")
 	if err != nil {
-		fmt.Println(err.Error())
+		Logger.Error(err.Error())
 	}
 	t, _ := template.ParseFiles(dir)
-  t.Execute(w, p)
+	t.Execute(w, p)
 	return nil
 }
 
@@ -93,7 +93,7 @@ func (handler *OAuthHandler) Authorize(c *web.C, w http.ResponseWriter, r *http.
 	}
 	//That's a hack to avoid redirection when redirect_uri does not match. Have opened an issue: RangelReale/osin/issues/41.
 	if resp.IsError && resp.InternalError != nil {
-		fmt.Printf("ERROR: %s\n", resp.InternalError)
+		Logger.Warn("Could not find client: %s.", resp.InternalError)
 		return BadRequest(E_BAD_REQUEST, resp.Output["error_description"].(string))
 	} else {
 		osin.OutputJSON(resp, w, r)

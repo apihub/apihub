@@ -8,6 +8,7 @@ import (
 
 	. "github.com/backstage/backstage/account"
 	. "github.com/backstage/backstage/errors"
+	. "github.com/backstage/backstage/log"
 	"github.com/zenazn/goji/web"
 )
 
@@ -28,6 +29,7 @@ func (api *ApiHandler) parseBody(body io.ReadCloser, r interface{}) error {
 		return err
 	}
 	if err = json.Unmarshal(b, &r); err != nil {
+		Logger.Info("Invalid payload: %s. Original Error: '%s'.", b, err.Error())
 		return ErrBadRequest
 	}
 	return nil

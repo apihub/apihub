@@ -23,7 +23,7 @@ race:
 	go test $(GO_EXTRAFLAGS) -race ./...
 
 run-api:
-	go run ./api/cmd/httpserver.go
+	go run ./examples/api_server.go
 
 run:
 	foreman start -f Procfile.local

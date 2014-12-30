@@ -1,3 +1,3 @@
-api: go run ./api/cmd/httpserver.go
+api: go run ./examples/api_server.go
 mongodb: mongod --config /usr/local/etc/mongod.conf
 redis: redis-server

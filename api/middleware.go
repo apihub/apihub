@@ -8,7 +8,7 @@ import (
 
 	"github.com/backstage/backstage/auth"
 	"github.com/zenazn/goji/web"
-	. "github.com/zenazn/goji/web/middleware"
+	"github.com/zenazn/goji/web/middleware"
 )
 
 func AuthorizationMiddleware(c *web.C, h http.Handler) http.Handler {
@@ -43,7 +43,7 @@ func ErrorMiddleware(c *web.C, h http.Handler) http.Handler {
 
 func RequestIdMiddleware(c *web.C, h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		reqId := GetReqID(*c)
+		reqId := middleware.GetReqID(*c)
 		w.Header().Set("Request-Id", reqId)
 		h.ServeHTTP(w, r)
 	}

@@ -3,32 +3,44 @@ package api
 
 import (
 	"flag"
-	"fmt"
 	"io"
 	"net/http"
-	"reflect"
 	"path/filepath"
+	"reflect"
 
 	"github.com/RangelReale/osin"
+	. "github.com/backstage/backstage/log"
 	"github.com/tsuru/config"
 	"github.com/zenazn/goji"
 	"github.com/zenazn/goji/web"
 	"github.com/zenazn/goji/web/middleware"
 )
 
+const API_DEFAULT_PORT string = ":8000"
+
 type Api struct {
 	oAuthServer *osin.Server
+	Config      string
+	Port        string
 }
 
-func (api *Api) Init() {
-	err := config.ReadConfigFile("config.yaml")
+func (api *Api) init() {
+	Logger.Info("Show time: Starting Backstage API.")
+	if api.Port == "" {
+		api.Port = API_DEFAULT_PORT
+	}
+
+	err := config.ReadConfigFile(api.Config)
 	if err != nil {
-		fmt.Printf("Error reading config file: %s\n", err.Error())
+		Logger.Error("Error reading config file: %s", err.Error())
 	}
 	storage := NewOAuthMongoStorage()
+	api.LoadOauthServer(storage)
+}
 
+func (api *Api) LoadOauthServer(storage osin.Storage) {
 	sconfig := &osin.ServerConfig{
-		AuthorizationExpiration:   250,
+		AuthorizationExpiration:   300,
 		AccessExpiration:          3600,
 		TokenType:                 "Bearer",
 		AllowedAuthorizeTypes:     osin.AllowedAuthorizeType{osin.CODE, osin.TOKEN},
@@ -40,11 +52,21 @@ func (api *Api) Init() {
 	api.oAuthServer = osin.NewServer(sconfig, storage)
 }
 
+// Logger() allows to replace the log mechanism.
+func (api *Api) Logger(logger Log) {
+	Logger = logger
+}
+
+// Log() returns the current Log mechanism.
+func (api *Api) Log() Log {
+	return Logger
+}
+
 // Register all the routes to be used by the API.
 // There are two kind of routes: public and private.
 // "Public routes" don't need to receive a valid http authorization token.
 // On the other hand, "Private routes" expects to receive a valid http authorization token.
-func (api *Api) DrawRoutes() {
+func (api *Api) drawDefaultRoutes() {
 	goji.Use(RequestIdMiddleware)
 	goji.NotFound(NotFoundHandler)
 
@@ -59,7 +81,7 @@ func (api *Api) DrawRoutes() {
 	//Assets
 	staticFilesLocation, err := filepath.Abs("api/views")
 	if err != nil {
-		fmt.Println(err.Error())
+		Logger.Error(err.Error())
 	}
 	goji.Handle("/assets/*", http.FileServer(http.Dir(staticFilesLocation)))
 
@@ -67,12 +89,14 @@ func (api *Api) DrawRoutes() {
 	goji.Get("/", api.Route(servicesHandler, "Index"))
 	goji.Post("/api/users", api.Route(usersHandler, "CreateUser"))
 	goji.Post("/api/login", api.Route(usersHandler, "Login"))
+	Logger.Info("Public routes registered.")
 
 	//OAuth 2.0 routes
 	goji.Post("/token", api.Route(oauthHandler, "Token"))
 	goji.Get("/me", api.Route(oauthHandler, "Info"))
 	goji.Get("/authorize", api.Route(oauthHandler, "Authorize"))
 	goji.Post("/authorize", api.Route(oauthHandler, "Authorize"))
+	Logger.Info("OAuth routes registered.")
 	goji.Use(ErrorMiddleware)
 
 	// Private Routes
@@ -98,6 +122,7 @@ func (api *Api) DrawRoutes() {
 	privateRoutes.Post("/clients", api.Route(clientsHandler, "CreateClient"))
 	privateRoutes.Delete("/clients/:id/:team", api.Route(clientsHandler, "DeleteClient"))
 	privateRoutes.Get("/clients/:id/:team", api.Route(clientsHandler, "GetClientInfo"))
+	Logger.Info("Private routes registered.")
 }
 
 // Create a router based on given handler and method.
@@ -118,12 +143,15 @@ func (api *Api) Route(handler interface{}, route string) interface{} {
 				w.Header().Set("Content-Type", "application/json")
 			}
 			io.WriteString(w, response.Output())
+			Logger.Debug("Headers: %#v. Output: %s", w.Header(), response.Output())
 		}
 	}
 	return fn
 }
 
-func (api *Api) Run(port string) {
-	flag.Set("bind", port)
+func (api *Api) Start() {
+	api.init()
+	api.drawDefaultRoutes()
+	flag.Set("bind", api.Port)
 	goji.Serve()
 }

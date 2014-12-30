@@ -20,7 +20,7 @@ func (s *S) TestTokenForAuthorizationCode(c *C) {
 	defer s.oAuthStorage.RemoveAuthorize(authorizeData.Code)
 	err := s.oAuthStorage.SaveAuthorize(authorizeData)
 	c.Assert(err, IsNil)
-	s.Api.Init()
+	s.Api.LoadOauthServer(s.oAuthStorage)
 	s.env["Api"] = s.Api
 	s.router.Post("/token", s.Api.Route(oAuthHandler, "Token"))
 	req, _ := http.NewRequest("POST", fmt.Sprintf("/token?grant_type=authorization_code&client_id=%s&redirect_uri=%s&code=%s", osinClient.Id, url.QueryEscape(osinClient.RedirectUri), authorizeData.Code), strings.NewReader(""))
@@ -42,7 +42,7 @@ func (s *S) TestTokenForRefreshToken(c *C) {
 	defer s.oAuthStorage.RemoveAccess(accessData.AccessToken)
 	err := s.oAuthStorage.SaveAccess(accessData)
 	c.Assert(err, IsNil)
-	s.Api.Init()
+	s.Api.LoadOauthServer(s.oAuthStorage)
 	s.env["Api"] = s.Api
 	s.router.Post("/token", s.Api.Route(oAuthHandler, "Token"))
 	req, _ := http.NewRequest("POST", fmt.Sprintf("/token?grant_type=refresh_token&client_id=%s&redirect_uri=%s&refresh_token=%s", osinClient.Id, url.QueryEscape(osinClient.RedirectUri), accessData.RefreshToken), strings.NewReader(""))
@@ -61,7 +61,7 @@ func (s *S) TestTokenForClientCredentials(c *C) {
 	s.oAuthStorage.SetClient(osinClient.Id, osinClient)
 	defer conn.Clients().RemoveId(osinClient.Id)
 
-	s.Api.Init()
+	s.Api.LoadOauthServer(s.oAuthStorage)
 	s.env["Api"] = s.Api
 	b := strings.NewReader("grant_type=client_credentials")
 	s.router.Post("/token", s.Api.Route(oAuthHandler, "Token"))
@@ -76,7 +76,7 @@ func (s *S) TestTokenForClientCredentials(c *C) {
 }
 
 func (s *S) TestTokenForClientCredentialsWithoutBasicAuth(c *C) {
-	s.Api.Init()
+	s.Api.LoadOauthServer(s.oAuthStorage)
 	s.env["Api"] = s.Api
 	b := strings.NewReader("grant_type=client_credentials")
 	s.router.Post("/token", s.Api.Route(oAuthHandler, "Token"))
@@ -90,7 +90,7 @@ func (s *S) TestTokenForClientCredentialsWithoutBasicAuth(c *C) {
 }
 
 func (s *S) TestTokenForClientCredentialsWithInvalidCredentials(c *C) {
-	s.Api.Init()
+	s.Api.LoadOauthServer(s.oAuthStorage)
 	s.env["Api"] = s.Api
 	b := strings.NewReader("grant_type=client_credentials")
 	s.router.Post("/token", s.Api.Route(oAuthHandler, "Token"))
@@ -113,7 +113,7 @@ func (s *S) TestTokenForUnsupporteGrantType(c *C) {
 	defer s.oAuthStorage.RemoveAuthorize(authorizeData.Code)
 	err := s.oAuthStorage.SaveAuthorize(authorizeData)
 	c.Assert(err, IsNil)
-	s.Api.Init()
+	s.Api.LoadOauthServer(s.oAuthStorage)
 	s.env["Api"] = s.Api
 	s.router.Post("/token", s.Api.Route(oAuthHandler, "Token"))
 	req, _ := http.NewRequest("POST", fmt.Sprintf("/token?grant_type=code&client_id=%s&redirect_uri=%s&code=%s", osinClient.Id, url.QueryEscape(osinClient.RedirectUri), authorizeData.Code), strings.NewReader(""))
@@ -135,7 +135,7 @@ func (s *S) TestInfoFromAccessTokenForClientCredentials(c *C) {
 	defer s.oAuthStorage.RemoveAccess(accessData.AccessToken)
 	err := s.oAuthStorage.SaveAccess(accessData)
 	c.Assert(err, IsNil)
-	s.Api.Init()
+	s.Api.LoadOauthServer(s.oAuthStorage)
 	s.env["Api"] = s.Api
 	s.router.Get("/me", s.Api.Route(oAuthHandler, "Info"))
 	req, _ := http.NewRequest("GET", fmt.Sprintf("/me?code=%s", accessData.AccessToken), nil)
@@ -152,7 +152,7 @@ func (s *S) TestInfoFromAccessTokenForInvalidToken(c *C) {
 	conn, _ := db.Conn()
 	defer conn.Close()
 
-	s.Api.Init()
+	s.Api.LoadOauthServer(s.oAuthStorage)
 	s.env["Api"] = s.Api
 	s.router.Get("/me", s.Api.Route(oAuthHandler, "Info"))
 	req, _ := http.NewRequest("GET", "/me?code=invalid-token", nil)
@@ -173,7 +173,7 @@ func (s *S) TestAuthorizeWithValidCredentials(c *C) {
 	s.oAuthStorage.SetClient(osinClient.Id, osinClient)
 	defer conn.Clients().RemoveId(osinClient.Id)
 
-	s.Api.Init()
+	s.Api.LoadOauthServer(s.oAuthStorage)
 	s.env["Api"] = s.Api
 	s.router.Post("/authorize", s.Api.Route(oAuthHandler, "Authorize"))
 	req, _ := http.NewRequest("POST", fmt.Sprintf("/authorize?response_type=code&client_id=%s&redirect_uri=%s", osinClient.Id, url.QueryEscape(osinClient.RedirectUri)), strings.NewReader(fmt.Sprintf("email=%s&password=123456", alice.Email)))
