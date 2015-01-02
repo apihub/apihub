@@ -74,7 +74,7 @@ On the other hand, if there's a validation error, for example: someone else alre
   Date: Sat, 06 Dec 2014 01:28:39 GMT
   Content-Length: 90
 
-  {"status_code":400,"payload":"Someone already has that email/username. Could you try another?."
+  {"error":"bad_request","payload":"Someone already has that email/username. Could you try another?."
 
 
 Deleting a user account
@@ -151,4 +151,4 @@ If trying to delete an account with a invalid token, the result will be the foll
   Date: Tue, 23 Dec 2014 17:13:49 GMT
   Content-Length: 73
 
-  {"status_code":401,"message":"Request refused or access is not allowed."}
+  {"error":"unauthorized_access","error_description":"Request refused or access is not allowed."}

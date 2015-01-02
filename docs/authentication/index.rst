@@ -55,4 +55,4 @@ Otherwise, if the credentials do not match, an error will be returned:
   Date: Sat, 06 Dec 2014 01:29:20 GMT
   Content-Length: 61
 
-  {"status_code":400,"message":"Invalid Username or Password."}
+  {"error":"bad_request","error_description":"Invalid Username or Password."}

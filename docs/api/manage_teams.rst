@@ -90,7 +90,7 @@ If you do not include a valid token in the header, an error will be returned:
   Date: Sat, 06 Dec 2014 01:32:14 GMT
   Content-Length: 54
 
-  {"status_code":401,"message":"Request refused or access is not allowed."}
+  {"error":"unauthorized_access","error_description":"Request refused or access is not allowed."}
 
 
 If someone else is using the provided name, an error will be returned:
@@ -105,7 +105,7 @@ If someone else is using the provided name, an error will be returned:
   Date: Sat, 06 Dec 2014 01:33:37 GMT
   Content-Length: 90
 
-  {"status_code":400,"message":"Someone already has that team name/alias. Could you try another?"}
+  {"error":"bad_request","error_description":"Someone already has that team name/alias. Could you try another?"}
 
 
 Retrieving all teams for the signed user
@@ -255,7 +255,7 @@ When trying to retrieve the info for a non-existing team, an error will be retur
   Date: Sat, 06 Dec 2014 01:40:22 GMT
   Content-Length: 47
 
-  {"status_code":400,"message":"Team not found."}
+  {"error":"bad_request","error_description":"Team not found."}
 
 
 If the team exists, but the user does not belong to it, an error will be returned:
@@ -270,7 +270,7 @@ If the team exists, but the user does not belong to it, an error will be returne
   Date: Sat, 06 Dec 2014 01:42:04 GMT
   Content-Length: 63
 
-  {"status_code":403,"message":"You do not belong to this team!"}
+  {"error":"access_denied","error_description":"You do not belong to this team!"}
 
 
 Adding users in the team
@@ -331,7 +331,7 @@ If the user does not belong to the team, an error wil be returned:
   Date: Sat, 06 Dec 2014 01:43:32 GMT
   Content-Length: 63
 
-  {"status_code":403,"message":"You do not belong to this team!"}
+  {"error":"access_denied","error_description":"You do not belong to this team!"}
 
 
 Removing users from team
@@ -399,7 +399,7 @@ The owner is a special member of the team. And, nobody has permission to remove 
   Date: Sat, 06 Dec 2014 01:48:59 GMT
   Content-Length: 85
 
-  {"status_code":403,"message":"It is not possible to remove the owner from the team."}
+  {"error":"access_denied","error_description":"It is not possible to remove the owner from the team."}
 
 
 Only members have permission to have another member from the team. If the user does not belong to that, an error will be returned.
@@ -414,7 +414,7 @@ Only members have permission to have another member from the team. If the user d
   Date: Sat, 06 Dec 2014 01:48:09 GMT
   Content-Length: 63
 
-  {"status_code":403,"payload":"You do not belong to this team!"}
+  {"error":"access_denied","payload":"You do not belong to this team!"}
 
 
 Deleting a team
@@ -487,4 +487,4 @@ If the team does not exist, a not found will be returned:
   Date: Sat, 06 Dec 2014 01:55:33 GMT
   Content-Length: 71
 
-  {"status_code":403,"message":"Team not found or you're not the owner."}
+  {"error":"access_denied","error_description":"Team not found or you're not the owner."}
