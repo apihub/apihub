@@ -18,7 +18,7 @@ Resource URL
 
 ::
 
-  http://localhost:8000/api/services
+  http://localhost:8000/api/teams/:team/services
 
 
 Resource Information
@@ -29,6 +29,7 @@ Resource Information
 +---------------------------+----------+
 | Requires authentication?  |    Yes   |
 +---------------------------+----------+
+
 
 Payload Parameters
 ==================
@@ -49,8 +50,6 @@ Payload Parameters
 +-------------------+--------------+-------------------+-------------------+
 | timeout           |    integer   | No                | No                |
 +-------------------+--------------+-------------------+-------------------+
-| team              |  Team alias  | Yes               | No                |
-+-------------------+--------------+-------------------+-------------------+
 
 
 Header Parameters
@@ -69,7 +68,7 @@ Example Request
 
 ::
 
-  curl -XPOST -i http://localhost:8000/api/services -H "Content-Type: application/json" -d '{"subdomain": "backstage", "allow_keyless_use": true, "description": "test this", "disabled": false, "documentation": "http://www.example.org/doc", "endpoint": "http://github.com/backstage", "timeout": 10, , "team": "backstage"}' -H "Authorization: Token r-fRrYtDJ0nMAQ3UvHGCZe6ASTal9LXu_PmdyZyGkTM="
+  curl -XPOST -i http://localhost:8000/api/teams/backstage/services -H "Content-Type: application/json" -d '{"subdomain": "backstage", "allow_keyless_use": true, "description": "test this", "disabled": false, "documentation": "http://www.example.org/doc", "endpoint": "http://github.com/backstage", "timeout": 10}' -H "Authorization: Token r-fRrYtDJ0nMAQ3UvHGCZe6ASTal9LXu_PmdyZyGkTM="
 
 
 Example Result
@@ -84,7 +83,7 @@ Example Result
   Date: Fri, 05 Dec 2014 19:44:39 GMT
   Content-Length: 309
 
-  {"subdomain":"backstage","created_at":"2014-12-05T17:44:39.462-02:00","updated_at":"2014-12-05T17:44:39.462-02:00","allow_keyless_use":true,"description":"test this","disabled":false,"documentation":"http://www.example.org/doc","endpoint":"http://github.com/backstage","owner":"alice@example.org","timeout":10}
+  {"subdomain":"backstage","created_at":"2014-12-05T17:44:39.462-02:00","updated_at":"2014-12-05T17:44:39.462-02:00","allow_keyless_use":true,"description":"test this","disabled":false,"documentation":"http://www.example.org/doc","endpoint":"http://github.com/backstage","owner":"alice@example.org","timeout":10,"team": "backstage"}
 
 If any required field is missing, the result will be represented by `400 Bad Request`:
 
@@ -98,11 +97,11 @@ If any required field is missing, the result will be represented by `400 Bad Req
   Date: Tue, 23 Dec 2014 17:29:43 GMT
   Content-Length: 47
 
-  {"status_code":400,"message":"Team not found."}
+  {"error":"bad_request","error_description":"Team not found."}
   or
-  {"status_code":400,"message":"Subdomain cannot be empty."}
+  {"error":"bad_request","error_description":"Subdomain cannot be empty."}
   or
-  {"status_code":400,"message":"Endpoint cannot be empty."}
+  {"error":"bad_request","error_description":"Endpoint cannot be empty."}
 
 
 Or, when trying to create a service for a service where you do not belong to, you'll get a `403 Forbidden`:
@@ -117,4 +116,4 @@ Or, when trying to create a service for a service where you do not belong to, yo
   Date: Tue, 23 Dec 2014 17:31:09 GMT
   Content-Length: 63
 
-  {"status_code":403,"message":"You do not belong to this team!"}
+  {"error":"access_denied","error_description":"You do not belong to this team!"}
