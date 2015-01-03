@@ -10,10 +10,10 @@ import (
 )
 
 var (
-	team  *Team
-	owner *User
+	team    *Team
+	owner   *User
 	service *Service
-	client *Client
+	client  *Client
 )
 
 type S struct{}

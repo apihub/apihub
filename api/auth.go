@@ -3,8 +3,8 @@ package api
 import (
 	"code.google.com/p/go.crypto/bcrypt"
 	. "github.com/backstage/backstage/account"
-	. "github.com/backstage/backstage/log"
 	"github.com/backstage/backstage/auth"
+	. "github.com/backstage/backstage/log"
 )
 
 func Login(u *User) (*User, error) {

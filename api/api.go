@@ -22,17 +22,17 @@ const API_DEFAULT_PORT string = ":8000"
 
 type Config struct {
 	FilePath string
-	Port        string
+	Port     string
 }
 
 type Api struct {
 	privateRoutes *web.Mux
-	oAuthServer *osin.Server
-	Config      *Config
+	oAuthServer   *osin.Server
+	Config        *Config
 }
 
-func NewApi(cfg *Config) *Api{
-	var api = &Api{ Config: cfg }
+func NewApi(cfg *Config) *Api {
+	var api = &Api{Config: cfg}
 	api.init()
 	return api
 }

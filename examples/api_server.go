@@ -16,11 +16,10 @@ func (handler *HiHandler) Index(c *web.C, w http.ResponseWriter, r *http.Request
 	return OK("Hi from custom route!")
 }
 
-
 func main() {
 	var config = &Config{
 		FilePath: "config.yaml",
-		Port: ":8000",
+		Port:     ":8000",
 	}
 
 	var api = NewApi(config)

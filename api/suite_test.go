@@ -68,7 +68,7 @@ func (s *S) SetUpSuite(c *C) {
 }
 
 func (s *S) SetUpTest(c *C) {
-	s.Api = &Api{ Config: &Config{} }
+	s.Api = &Api{Config: &Config{}}
 	teamsHandler = &TeamsHandler{}
 	usersHandler = &UsersHandler{}
 	servicesHandler = &ServicesHandler{}

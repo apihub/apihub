@@ -20,7 +20,7 @@ func (s *S) TestCreateClient(c *C) {
 	b := strings.NewReader(payload)
 
 	s.router.Post("/api/teams/:team/clients", s.Api.route(clientsHandler, "CreateClient"))
-	req, _ := http.NewRequest("POST", "/api/teams/"+ team.Alias +"/clients", b)
+	req, _ := http.NewRequest("POST", "/api/teams/"+team.Alias+"/clients", b)
 	req.Header.Set("Content-Type", "application/json")
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
@@ -41,7 +41,7 @@ func (s *S) TestCreateClientWithIdAndSecret(c *C) {
 	b := strings.NewReader(payload)
 
 	s.router.Post("/api/teams/:team/clients", s.Api.route(clientsHandler, "CreateClient"))
-	req, _ := http.NewRequest("POST", "/api/teams/"+ team.Alias +"/clients", b)
+	req, _ := http.NewRequest("POST", "/api/teams/"+team.Alias+"/clients", b)
 	req.Header.Set("Content-Type", "application/json")
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
@@ -56,7 +56,7 @@ func (s *S) TestCreateClientWhenUserIsNotSignedIn(c *C) {
 	b := strings.NewReader(payload)
 
 	s.router.Post("/api/teams/:team/clients", s.Api.route(clientsHandler, "CreateClient"))
-	req, _ := http.NewRequest("POST", "/api/teams/"+ team.Alias +"/clients", b)
+	req, _ := http.NewRequest("POST", "/api/teams/"+team.Alias+"/clients", b)
 	req.Header.Set("Content-Type", "application/json")
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -95,7 +95,7 @@ func (s *S) TestCreateClientWithInvalidPayloadFormat(c *C) {
 	b := strings.NewReader(payload)
 
 	s.router.Post("/api/teams/:team/clients", s.Api.route(clientsHandler, "CreateClient"))
-	req, _ := http.NewRequest("POST", "/api/teams/"+ team.Alias +"/clients", b)
+	req, _ := http.NewRequest("POST", "/api/teams/"+team.Alias+"/clients", b)
 	req.Header.Set("Content-Type", "application/json")
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
