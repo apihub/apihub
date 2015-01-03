@@ -11,7 +11,7 @@ Several apis require a similar set of features on the backend, such as: authenti
   git clone https://github.com/backstage/backstage.git
   cd backstage
   make setup
-  make run-api
+  make run-api-sample
 ```
 
 ##Running Tests
@@ -24,7 +24,6 @@ Several apis require a similar set of features on the backend, such as: authenti
 ## Links:
 
 - Documentation: http://backstage.readthedocs.org/en/latest/
-- How to Contribute: http://backstage.readthedocs.org/en/latest/
 
 ##Contributing
 

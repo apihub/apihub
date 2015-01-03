@@ -9,7 +9,7 @@ endef
 help:
 	@echo '    doc ...................... generates a new doc version'
 	@echo '    race ..................... runs race condition tests'
-	@echo '    run-api .................. runs api server'
+	@echo '    run-api-sample ........... runs api sample server'
 	@echo '    run ...................... runs project'
 	@echo '    save-deps ................ generates the Godeps folder'
 	@echo '    setup .................... sets up the environment'
@@ -22,8 +22,8 @@ race:
 	go test $(GO_EXTRAFLAGS) -race -i ./...
 	go test $(GO_EXTRAFLAGS) -race ./...
 
-run-api:
-	go run ./examples/api_server.go
+run-api-sample:
+	go run ./examples/*.go
 
 run:
 	foreman start -f Procfile.local
