@@ -117,3 +117,75 @@ Or, when trying to create a service for a service where you do not belong to, yo
   Content-Length: 63
 
   {"error":"access_denied","error_description":"You do not belong to this team!"}
+
+
+Deleting a service
+------------------
+
+
+Resource URL
+============
+.. highlight:: bash
+
+::
+
+  http://localhost:8000/api/teams/:team/services/:subdomain
+
+
+Resource Information
+====================
+
++---------------------------+----------+
+| Response formats          |   JSON   |
++---------------------------+----------+
+| Requires authentication?  |    Yes   |
++---------------------------+----------+
+
+
+Header Parameters
+=================
++-----------------+--------------+-------------------+
+|    Parameter    |     Type     |     Required?     |
++-----------------+--------------+-------------------+
+| Authorization   |    string    | Yes               |
++-----------------+--------------+-------------------+
+
+
+Example Request
+===============
+
+.. highlight:: bash
+
+::
+
+  curl -XDELETE -i http://localhost:8000/api/teams/backstage -H "Authorization: Token 1HnbxXIYMJzECiE-lpH0uIaailRdDurz2JL_5kgtMVc="
+
+
+Example Result
+==============
+
+.. highlight:: bash
+
+::
+
+  HTTP/1.1 200 OK
+  Request-Id: aleal.local/z7R8abxgq9-000009
+  Date: Sat, 03 Jan 2015 10:30:58 GMT
+  Content-Length: 237
+  Content-Type: application/json; charset=utf-8
+
+  {"subdomain":"aasadata5","allow_keyless_use":true,"description":"test this","disabled":false,"documentation":"http://www.example.org/doc","endpoint":"http://github.com/backstage","owner":"ringo@gmail.com","team":"backstage","timeout":10}
+
+If the team does not exist, a not found error will be returned:
+
+.. highlight:: bash
+
+::
+
+  HTTP/1.1 404 Not Found
+  Content-Type: application/json
+  Request-Id: aleal.local/z7R8abxgq9-000007
+  Date: Sat, 03 Jan 2015 10:29:29 GMT
+  Content-Length: 82
+
+  {"error":"not_found","error_description":"The resource requested does not exist."}
