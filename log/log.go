@@ -20,11 +20,22 @@ var levelFlags = map[int32]string{
 }
 
 type Log interface {
+	// Debug logs information that is diagnostically helpful to developers.
 	Debug(format string, args ...interface{})
+
+	// Info logs useful information to log.
 	Info(format string, args ...interface{})
+
+	// Error logs any error which is fatal to the operation.
 	Error(format string, args ...interface{})
+
+	// Warn logs message with severity "warn". Anything that can potentially cause error.
 	Warn(format string, args ...interface{})
+
+	// Disable will prevent the application to log anything.
 	Disable()
+
+	// SetLevel sets the error reporting level.
 	SetLevel(level int32)
 }
 
