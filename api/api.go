@@ -79,23 +79,22 @@ func (api *Api) drawDefaultRoutes() {
 	oauthHandler := &OAuthHandler{}
 
 	//Assets
-	staticFilesLocation, err := filepath.Abs("api/views")
+	assetsFilesLocation, err := filepath.Abs("../api/views")
 	if err != nil {
 		Logger.Error(err.Error())
 	}
-	goji.Handle("/assets/*", http.FileServer(http.Dir(staticFilesLocation)))
+	goji.Handle("/assets/*", http.FileServer(http.Dir(assetsFilesLocation)))
 
 	// Public Routes
-	goji.Get("/", api.Route(servicesHandler, "Index"))
 	goji.Post("/api/users", api.Route(usersHandler, "CreateUser"))
 	goji.Post("/api/login", api.Route(usersHandler, "Login"))
 	Logger.Info("Public routes registered.")
 
 	//OAuth 2.0 routes
-	goji.Post("/token", api.Route(oauthHandler, "Token"))
+	goji.Post("/login/oauth/token", api.Route(oauthHandler, "Token"))
 	goji.Get("/me", api.Route(oauthHandler, "Info"))
-	goji.Get("/authorize", api.Route(oauthHandler, "Authorize"))
-	goji.Post("/authorize", api.Route(oauthHandler, "Authorize"))
+	goji.Get("/login/oauth/authorize", api.Route(oauthHandler, "Authorize"))
+	goji.Post("/login/oauth/authorize", api.Route(oauthHandler, "Authorize"))
 	Logger.Info("OAuth routes registered.")
 	goji.Use(ErrorMiddleware)
 

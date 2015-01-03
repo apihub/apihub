@@ -22,8 +22,8 @@ func (s *S) TestTokenForAuthorizationCode(c *C) {
 	c.Assert(err, IsNil)
 	s.Api.LoadOauthServer(s.oAuthStorage)
 	s.env["Api"] = s.Api
-	s.router.Post("/token", s.Api.Route(oAuthHandler, "Token"))
-	req, _ := http.NewRequest("POST", fmt.Sprintf("/token?grant_type=authorization_code&client_id=%s&redirect_uri=%s&code=%s", osinClient.Id, url.QueryEscape(osinClient.RedirectUri), authorizeData.Code), strings.NewReader(""))
+	s.router.Post("/login/oauth/token", s.Api.Route(oAuthHandler, "Token"))
+	req, _ := http.NewRequest("POST", fmt.Sprintf("/login/oauth/token?grant_type=authorization_code&client_id=%s&redirect_uri=%s&code=%s", osinClient.Id, url.QueryEscape(osinClient.RedirectUri), authorizeData.Code), strings.NewReader(""))
 	req.SetBasicAuth(osinClient.Id, osinClient.Secret)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	webC := web.C{Env: s.env}
@@ -44,8 +44,8 @@ func (s *S) TestTokenForRefreshToken(c *C) {
 	c.Assert(err, IsNil)
 	s.Api.LoadOauthServer(s.oAuthStorage)
 	s.env["Api"] = s.Api
-	s.router.Post("/token", s.Api.Route(oAuthHandler, "Token"))
-	req, _ := http.NewRequest("POST", fmt.Sprintf("/token?grant_type=refresh_token&client_id=%s&redirect_uri=%s&refresh_token=%s", osinClient.Id, url.QueryEscape(osinClient.RedirectUri), accessData.RefreshToken), strings.NewReader(""))
+	s.router.Post("/login/oauth/token", s.Api.Route(oAuthHandler, "Token"))
+	req, _ := http.NewRequest("POST", fmt.Sprintf("/login/oauth/token?grant_type=refresh_token&client_id=%s&redirect_uri=%s&refresh_token=%s", osinClient.Id, url.QueryEscape(osinClient.RedirectUri), accessData.RefreshToken), strings.NewReader(""))
 	req.SetBasicAuth(osinClient.Id, osinClient.Secret)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	webC := web.C{Env: s.env}
@@ -64,8 +64,8 @@ func (s *S) TestTokenForClientCredentials(c *C) {
 	s.Api.LoadOauthServer(s.oAuthStorage)
 	s.env["Api"] = s.Api
 	b := strings.NewReader("grant_type=client_credentials")
-	s.router.Post("/token", s.Api.Route(oAuthHandler, "Token"))
-	req, _ := http.NewRequest("POST", "/token", b)
+	s.router.Post("/login/oauth/token", s.Api.Route(oAuthHandler, "Token"))
+	req, _ := http.NewRequest("POST", "/login/oauth/token", b)
 	req.SetBasicAuth(osinClient.Id, osinClient.Secret)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	webC := web.C{Env: s.env}
@@ -79,8 +79,8 @@ func (s *S) TestTokenForClientCredentialsWithoutBasicAuth(c *C) {
 	s.Api.LoadOauthServer(s.oAuthStorage)
 	s.env["Api"] = s.Api
 	b := strings.NewReader("grant_type=client_credentials")
-	s.router.Post("/token", s.Api.Route(oAuthHandler, "Token"))
-	req, _ := http.NewRequest("POST", "/token", b)
+	s.router.Post("/login/oauth/token", s.Api.Route(oAuthHandler, "Token"))
+	req, _ := http.NewRequest("POST", "/login/oauth/token", b)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -93,8 +93,8 @@ func (s *S) TestTokenForClientCredentialsWithInvalidCredentials(c *C) {
 	s.Api.LoadOauthServer(s.oAuthStorage)
 	s.env["Api"] = s.Api
 	b := strings.NewReader("grant_type=client_credentials")
-	s.router.Post("/token", s.Api.Route(oAuthHandler, "Token"))
-	req, _ := http.NewRequest("POST", "/token", b)
+	s.router.Post("/login/oauth/token", s.Api.Route(oAuthHandler, "Token"))
+	req, _ := http.NewRequest("POST", "/login/oauth/token", b)
 	req.SetBasicAuth("invalid-id", "invalid-secret")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	webC := web.C{Env: s.env}
@@ -115,8 +115,8 @@ func (s *S) TestTokenForUnsupporteGrantType(c *C) {
 	c.Assert(err, IsNil)
 	s.Api.LoadOauthServer(s.oAuthStorage)
 	s.env["Api"] = s.Api
-	s.router.Post("/token", s.Api.Route(oAuthHandler, "Token"))
-	req, _ := http.NewRequest("POST", fmt.Sprintf("/token?grant_type=code&client_id=%s&redirect_uri=%s&code=%s", osinClient.Id, url.QueryEscape(osinClient.RedirectUri), authorizeData.Code), strings.NewReader(""))
+	s.router.Post("/login/oauth/token", s.Api.Route(oAuthHandler, "Token"))
+	req, _ := http.NewRequest("POST", fmt.Sprintf("/login/oauth/token?grant_type=code&client_id=%s&redirect_uri=%s&code=%s", osinClient.Id, url.QueryEscape(osinClient.RedirectUri), authorizeData.Code), strings.NewReader(""))
 	req.SetBasicAuth(osinClient.Id, osinClient.Secret)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	webC := web.C{Env: s.env}
@@ -175,8 +175,8 @@ func (s *S) TestAuthorizeWithValidCredentials(c *C) {
 
 	s.Api.LoadOauthServer(s.oAuthStorage)
 	s.env["Api"] = s.Api
-	s.router.Post("/authorize", s.Api.Route(oAuthHandler, "Authorize"))
-	req, _ := http.NewRequest("POST", fmt.Sprintf("/authorize?response_type=code&client_id=%s&redirect_uri=%s", osinClient.Id, url.QueryEscape(osinClient.RedirectUri)), strings.NewReader(fmt.Sprintf("email=%s&password=123456", alice.Email)))
+	s.router.Post("/login/oauth/authorize", s.Api.Route(oAuthHandler, "Authorize"))
+	req, _ := http.NewRequest("POST", fmt.Sprintf("/login/oauth/authorize?response_type=code&client_id=%s&redirect_uri=%s", osinClient.Id, url.QueryEscape(osinClient.RedirectUri)), strings.NewReader(fmt.Sprintf("email=%s&password=123456", alice.Email)))
 	req.SetBasicAuth(osinClient.Id, osinClient.Secret)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	webC := web.C{Env: s.env}

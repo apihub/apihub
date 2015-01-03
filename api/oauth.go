@@ -52,7 +52,7 @@ func (handler *OAuthHandler) Token(c *web.C, w http.ResponseWriter, r *http.Requ
 func HandleLoginPage(ar *osin.AuthorizeRequest, w http.ResponseWriter, r *http.Request) *User {
 	r.ParseForm()
 	p := &PageForm{
-		Action: fmt.Sprintf("/authorize?response_type=%s&client_id=%s&state=%s&redirect_uri=%s", ar.Type, ar.Client.GetId(), ar.State, url.QueryEscape(ar.RedirectUri)),
+		Action: fmt.Sprintf("/login/oauth/authorize?response_type=%s&client_id=%s&state=%s&redirect_uri=%s", ar.Type, ar.Client.GetId(), ar.State, url.QueryEscape(ar.RedirectUri)),
 		Method: "POST",
 	}
 	if client, err := FindClientById(ar.Client.GetId()); err == nil {
@@ -67,7 +67,7 @@ func HandleLoginPage(ar *osin.AuthorizeRequest, w http.ResponseWriter, r *http.R
 		p.InvalidCredentials = true
 	}
 
-	dir, err := filepath.Abs("api/views/login.html")
+	dir, err := filepath.Abs("../api/views/login.html")
 	if err != nil {
 		Logger.Error(err.Error())
 	}
