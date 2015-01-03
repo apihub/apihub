@@ -13,6 +13,7 @@ import (
 
 func AuthorizationMiddleware(c *web.C, h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 		authorization := r.Header.Get("Authorization")
 		user, err := auth.GetUserFromToken(authorization)
 		if err != nil {
@@ -28,6 +29,7 @@ func AuthorizationMiddleware(c *web.C, h http.Handler) http.Handler {
 
 func ErrorMiddleware(c *web.C, h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 		h.ServeHTTP(w, r)
 		key, ok := GetRequestError(c)
 		if ok {

@@ -19,8 +19,8 @@ type Team struct {
 	Alias    string        `json:"alias"`
 	Users    []string      `json:"users"`
 	Owner    string        `json:"owner"`
-	Services []*Service    `json:"services,omitempty"`
-	Clients  []*Client     `json:"clients,omitempty"`
+	Services []*Service    `bson:"-" json:"services,omitempty"`
+	Clients  []*Client     `bson:"-" json:"clients,omitempty"`
 }
 
 // Save creates a new team.
