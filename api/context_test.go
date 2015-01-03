@@ -53,7 +53,7 @@ func (s *S) TestSetAndGetCurrentUser(c *C) {
 	env := map[string]interface{}{}
 	m.ServeHTTPC(web.C{Env: env}, recorder, req)
 
-	c.Assert(recorder.Code, Equals, 200)
+	c.Assert(recorder.Code, Equals, http.StatusOK)
 }
 
 func (s *S) TestGetCurrentUserWhenNotSignedIn(c *C) {

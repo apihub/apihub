@@ -19,7 +19,7 @@ func (s *S) TestCreateClient(c *C) {
 	payload := `{"name": "Backstage", "redirect_uri": "http://www.example.org/auth"}`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/teams/:team/clients", s.Api.Route(clientsHandler, "CreateClient"))
+	s.router.Post("/api/teams/:team/clients", s.Api.route(clientsHandler, "CreateClient"))
 	req, _ := http.NewRequest("POST", "/api/teams/"+ team.Alias +"/clients", b)
 	req.Header.Set("Content-Type", "application/json")
 	s.env[CurrentUser] = owner
@@ -40,7 +40,7 @@ func (s *S) TestCreateClientWithIdAndSecret(c *C) {
 	payload := `{"id": "awesome id", "secret": "super secret", "name": "Backstage", "redirect_uri": "http://www.example.org/auth"}`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/teams/:team/clients", s.Api.Route(clientsHandler, "CreateClient"))
+	s.router.Post("/api/teams/:team/clients", s.Api.route(clientsHandler, "CreateClient"))
 	req, _ := http.NewRequest("POST", "/api/teams/"+ team.Alias +"/clients", b)
 	req.Header.Set("Content-Type", "application/json")
 	s.env[CurrentUser] = owner
@@ -55,7 +55,7 @@ func (s *S) TestCreateClientWhenUserIsNotSignedIn(c *C) {
 	payload := `{}`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/teams/:team/clients", s.Api.Route(clientsHandler, "CreateClient"))
+	s.router.Post("/api/teams/:team/clients", s.Api.route(clientsHandler, "CreateClient"))
 	req, _ := http.NewRequest("POST", "/api/teams/"+ team.Alias +"/clients", b)
 	req.Header.Set("Content-Type", "application/json")
 	webC := web.C{Env: s.env}
@@ -74,7 +74,7 @@ func (s *S) TestCreateClientWhenTeamDoesNotExist(c *C) {
 	payload := `{"name": "Backstage", "redirect_uri": "http://www.example.org/auth"}`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/teams/:team/clients", s.Api.Route(clientsHandler, "CreateClient"))
+	s.router.Post("/api/teams/:team/clients", s.Api.route(clientsHandler, "CreateClient"))
 	req, _ := http.NewRequest("POST", "/api/teams/invalid-team/clients", b)
 	req.Header.Set("Content-Type", "application/json")
 	s.env[CurrentUser] = owner
@@ -94,7 +94,7 @@ func (s *S) TestCreateClientWithInvalidPayloadFormat(c *C) {
 	payload := `"name": "backstage"`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/teams/:team/clients", s.Api.Route(clientsHandler, "CreateClient"))
+	s.router.Post("/api/teams/:team/clients", s.Api.route(clientsHandler, "CreateClient"))
 	req, _ := http.NewRequest("POST", "/api/teams/"+ team.Alias +"/clients", b)
 	req.Header.Set("Content-Type", "application/json")
 	s.env[CurrentUser] = owner
@@ -112,7 +112,7 @@ func (s *S) TestDeleteClient(c *C) {
 	defer account.DeleteClientByIdAndTeam(client.Id, team.Alias)
 	defer owner.Delete()
 
-	s.router.Delete("/api/teams/:team/clients/:id", s.Api.Route(clientsHandler, "DeleteClient"))
+	s.router.Delete("/api/teams/:team/clients/:id", s.Api.route(clientsHandler, "DeleteClient"))
 	req, _ := http.NewRequest("DELETE", "/api/teams/"+team.Alias+"/clients/"+client.Id, nil)
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
@@ -132,7 +132,7 @@ func (s *S) TestDeleteClientWhenUserIsNotOwner(c *C) {
 	defer alice.Delete()
 	defer owner.Delete()
 
-	s.router.Delete("/api/teams/:team/clients/:id", s.Api.Route(clientsHandler, "DeleteClient"))
+	s.router.Delete("/api/teams/:team/clients/:id", s.Api.route(clientsHandler, "DeleteClient"))
 	req, _ := http.NewRequest("DELETE", "/api/teams/"+team.Alias+"/clients/"+client.Id, nil)
 	s.env[CurrentUser] = alice
 	webC := web.C{Env: s.env}
@@ -146,7 +146,7 @@ func (s *S) TestDeleteClientIsNotFound(c *C) {
 	bob.Save()
 	defer bob.Delete()
 
-	s.router.Delete("/api/teams/:team/clients/:id", s.Api.Route(clientsHandler, "DeleteClient"))
+	s.router.Delete("/api/teams/:team/clients/:id", s.Api.route(clientsHandler, "DeleteClient"))
 	req, _ := http.NewRequest("DELETE", "/api/teams/"+team.Alias+"/clients/invalid-client", nil)
 	s.env[CurrentUser] = bob
 	webC := web.C{Env: s.env}
@@ -164,7 +164,7 @@ func (s *S) TestDeleteClientWhenTeamIsNotFound(c *C) {
 	defer account.DeleteClientByIdAndTeam(client.Id, team.Alias)
 	defer owner.Delete()
 
-	s.router.Delete("/api/teams/:team/clients/:id", s.Api.Route(clientsHandler, "DeleteClient"))
+	s.router.Delete("/api/teams/:team/clients/:id", s.Api.route(clientsHandler, "DeleteClient"))
 	req, _ := http.NewRequest("DELETE", "/api/teams/"+team.Alias+"/clients/invalid-client", nil)
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
@@ -182,7 +182,7 @@ func (s *S) TestGetClientInfo(c *C) {
 	defer account.DeleteClientByIdAndTeam(client.Id, team.Alias)
 	defer owner.Delete()
 
-	s.router.Get("/api/teams/:team/clients/:id", s.Api.Route(clientsHandler, "GetClientInfo"))
+	s.router.Get("/api/teams/:team/clients/:id", s.Api.route(clientsHandler, "GetClientInfo"))
 	req, _ := http.NewRequest("GET", "/api/teams/"+team.Alias+"/clients/"+client.Id, nil)
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
@@ -196,7 +196,7 @@ func (s *S) TestGetClientInfoWhenClientIsNotFound(c *C) {
 	bob.Save()
 	defer bob.Delete()
 
-	s.router.Get("/api/teams/:team/clients/:id", s.Api.Route(clientsHandler, "GetClientInfo"))
+	s.router.Get("/api/teams/:team/clients/:id", s.Api.route(clientsHandler, "GetClientInfo"))
 	req, _ := http.NewRequest("GET", "/api/teams/"+team.Alias+"/clients/invalid-client", nil)
 	s.env[CurrentUser] = bob
 	webC := web.C{Env: s.env}
@@ -216,7 +216,7 @@ func (s *S) TestGetClientInfoWhenIsNotInTeam(c *C) {
 	defer bob.Delete()
 	defer owner.Delete()
 
-	s.router.Get("/api/teams/:team/clients/:id", s.Api.Route(clientsHandler, "GetClientInfo"))
+	s.router.Get("/api/teams/:team/clients/:id", s.Api.route(clientsHandler, "GetClientInfo"))
 	req, _ := http.NewRequest("GET", "/api/teams/"+team.Alias+"/clients/"+client.Id, nil)
 	s.env[CurrentUser] = bob
 	webC := web.C{Env: s.env}

@@ -19,7 +19,7 @@ func (s *S) TestCreateService(c *C) {
 	payload := `{"subdomain": "backstage", "allow_keyless_use": true, "description": "Useful desc.", "disabled": false, "documentation": "http://www.example.org/doc", "endpoint": "http://github.com/backstage", "timeout": 10}`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/teams/:team/services", s.Api.Route(servicesHandler, "CreateService"))
+	s.router.Post("/api/teams/:team/services", s.Api.route(servicesHandler, "CreateService"))
 	req, _ := http.NewRequest("POST", "/api/teams/"+team.Alias+"/services", b)
 	req.Header.Set("Content-Type", "application/json")
 	s.env[CurrentUser] = owner
@@ -35,7 +35,7 @@ func (s *S) TestCreateServiceWhenUserIsNotSignedIn(c *C) {
 	payload := `{}`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/teams/:team/services", s.Api.Route(servicesHandler, "CreateService"))
+	s.router.Post("/api/teams/:team/services", s.Api.route(servicesHandler, "CreateService"))
 	req, _ := http.NewRequest("POST", "/api/teams/"+team.Alias+"/services", b)
 	req.Header.Set("Content-Type", "application/json")
 	webC := web.C{Env: s.env}
@@ -54,7 +54,7 @@ func (s *S) TestCreateServiceWhenTeamDoesNotExist(c *C) {
 	payload := `{"subdomain": "backstage", "allow_keyless_use": true, "description": "Useful desc.", "disabled": false, "documentation": "http://www.example.org/doc", "endpoint": "http://github.com/backstage", "timeout": 10}`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/teams/:team/services", s.Api.Route(servicesHandler, "CreateService"))
+	s.router.Post("/api/teams/:team/services", s.Api.route(servicesHandler, "CreateService"))
 	req, _ := http.NewRequest("POST", "/api/teams/invalid-team/services", b)
 	req.Header.Set("Content-Type", "application/json")
 	s.env[CurrentUser] = owner
@@ -74,7 +74,7 @@ func (s *S) TestCreateServiceWithInvalidPayloadFormat(c *C) {
 	payload := `"subdomain": "backstage"`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/teams/:team/services", s.Api.Route(servicesHandler, "CreateService"))
+	s.router.Post("/api/teams/:team/services", s.Api.route(servicesHandler, "CreateService"))
 	req, _ := http.NewRequest("POST", "/api/teams/invalid-team/services", b)
 	req.Header.Set("Content-Type", "application/json")
 	s.env[CurrentUser] = owner
@@ -92,7 +92,7 @@ func (s *S) TestDeleteService(c *C) {
 	defer owner.Delete()
 	defer service.Delete()
 
-	s.router.Delete("/api/teams/:team/services/:subdomain", s.Api.Route(servicesHandler, "DeleteService"))
+	s.router.Delete("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "DeleteService"))
 	req, _ := http.NewRequest("DELETE", "/api/teams/"+team.Alias+"/services/"+service.Subdomain, nil)
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
@@ -112,7 +112,7 @@ func (s *S) TestDeleteServiceWhenUserIsNotOwner(c *C) {
 	defer owner.Delete()
 	defer service.Delete()
 
-	s.router.Delete("/api/teams/:team/services/:subdomain", s.Api.Route(servicesHandler, "DeleteService"))
+	s.router.Delete("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "DeleteService"))
 	req, _ := http.NewRequest("DELETE", "/api/teams/"+team.Alias+"/services/"+service.Subdomain, nil)
 	s.env[CurrentUser] = alice
 	webC := web.C{Env: s.env}
@@ -126,7 +126,7 @@ func (s *S) TestDeleteServiceIsNotFound(c *C) {
 	bob.Save()
 	defer bob.Delete()
 
-	s.router.Delete("/api/teams/:team/services/:subdomain", s.Api.Route(servicesHandler, "DeleteService"))
+	s.router.Delete("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "DeleteService"))
 	req, _ := http.NewRequest("DELETE", "/api/teams/"+team.Alias+"/services/invalid-service", nil)
 	s.env[CurrentUser] = bob
 	webC := web.C{Env: s.env}
@@ -144,7 +144,7 @@ func (s *S) TestGetServiceInfo(c *C) {
 	defer owner.Delete()
 	defer service.Delete()
 
-	s.router.Get("/api/teams/:team/services/:subdomain", s.Api.Route(servicesHandler, "GetServiceInfo"))
+	s.router.Get("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "GetServiceInfo"))
 	req, _ := http.NewRequest("GET", "/api/teams/"+team.Alias+"/services/"+service.Subdomain, nil)
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
@@ -158,7 +158,7 @@ func (s *S) TestGetServiceInfoWhenServiceIsNotFound(c *C) {
 	bob.Save()
 	defer bob.Delete()
 
-	s.router.Get("/api/teams/:team/services/:subdomain", s.Api.Route(servicesHandler, "GetServiceInfo"))
+	s.router.Get("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "GetServiceInfo"))
 	req, _ := http.NewRequest("GET", "/api/teams/"+team.Alias+"/services/"+service.Subdomain, nil)
 	s.env[CurrentUser] = bob
 	webC := web.C{Env: s.env}
@@ -178,7 +178,7 @@ func (s *S) TestGetServiceInfoWhenIsNotInTeam(c *C) {
 	defer owner.Delete()
 	defer service.Delete()
 
-	s.router.Get("/api/teams/:team/services/:subdomain", s.Api.Route(servicesHandler, "GetServiceInfo"))
+	s.router.Get("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "GetServiceInfo"))
 	req, _ := http.NewRequest("GET", "/api/teams/"+team.Alias+"/services/"+service.Subdomain, nil)
 	s.env[CurrentUser] = bob
 	webC := web.C{Env: s.env}

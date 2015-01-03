@@ -68,7 +68,7 @@ func (s *S) TestRequestIdMiddleware(c *C) {
 	req, _ := http.NewRequest("GET", "/", nil)
 	cc := web.C{Env: map[string]interface{}{}}
 	s.router.ServeHTTPC(cc, s.recorder, req)
-	c.Assert(s.recorder.Code, Equals, 200)
+	c.Assert(s.recorder.Code, Equals, http.StatusOK)
 	c.Assert(s.recorder.HeaderMap["Request-Id"], NotNil)
 }
 
