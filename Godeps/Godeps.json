@@ -17,7 +17,7 @@
 		},
 		{
 			"ImportPath": "github.com/RangelReale/osin",
-			"Rev": "2895b6e47185c62c3192fb07f03ad7db8cf0d2b5"
+			"Rev": "96063281d64a0d8c2d6d1558acae854efb4319f3"
 		},
 		{
 			"ImportPath": "github.com/ccding/go-config-reader/config",
@@ -25,8 +25,8 @@
 		},
 		{
 			"ImportPath": "github.com/ccding/go-logging/logging",
-			"Comment": "v0.1-17-g031be99",
-			"Rev": "031be9955e9f0adf222458687d81a9b6d65cfe3c"
+			"Comment": "v0.1-21-gdf0a178",
+			"Rev": "df0a178061f67ebc85ceac3f8a8d96df1a84f939"
 		},
 		{
 			"ImportPath": "github.com/fatih/structs",
@@ -51,8 +51,8 @@
 		},
 		{
 			"ImportPath": "github.com/karlseguin/ccache",
-			"Comment": "v1.0.0-1-gc75dcd4",
-			"Rev": "c75dcd4c124552532742a7b795d1890cdd7614dc"
+			"Comment": "v1.0.0-3-g6df1e24",
+			"Rev": "6df1e24ae3dec3f6932c4e5e46aa7252ee5f87ca"
 		},
 		{
 			"ImportPath": "github.com/mrvdot/golang-utils",
@@ -68,8 +68,8 @@
 		},
 		{
 			"ImportPath": "github.com/tsuru/tsuru/db/storage",
-			"Comment": "0.8.0-40-g4eaaba6",
-			"Rev": "4eaaba695805889ec326b86e7af468b084c12446"
+			"Comment": "0.10.0-465-g8266b52",
+			"Rev": "8266b5259fd716b83fa929ba4bca7a9f4d4cea62"
 		},
 		{
 			"ImportPath": "github.com/zenazn/goji",
