@@ -35,15 +35,18 @@ func (handler *OAuthHandler) Token(c *web.C, w http.ResponseWriter, r *http.Requ
 		switch ar.Type {
 		case osin.AUTHORIZATION_CODE:
 			ar.Authorized = true
+			Logger.Debug("Grant Type: Authorization Code")
 		case osin.REFRESH_TOKEN:
 			ar.Authorized = true
+			Logger.Debug("Grant Type: Refresh Token")
 		case osin.CLIENT_CREDENTIALS:
 			ar.Authorized = true
+			Logger.Debug("Grant Type: Client Credentials")
 		}
 		api.oAuthServer.FinishAccessRequest(resp, r, ar)
 	}
 	if resp.IsError && resp.InternalError != nil {
-		fmt.Printf("ERROR: %s\n", resp.InternalError)
+		Logger.Error("ERROR: %s\n", resp.InternalError)
 	}
 	osin.OutputJSON(resp, w, r)
 	return nil

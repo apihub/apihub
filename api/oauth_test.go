@@ -139,13 +139,11 @@ func (s *S) TestInfoFromAccessTokenForClientCredentials(c *C) {
 	s.env["Api"] = s.Api
 	s.router.Get("/me", s.Api.route(oAuthHandler, "Info"))
 	req, _ := http.NewRequest("GET", fmt.Sprintf("/me?code=%s", accessData.AccessToken), nil)
-	req.SetBasicAuth(osinClient.Id, osinClient.Secret)
-	req.Header.Set("Content-Type", "application/json")
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
-	c.Assert(s.recorder.Code, Equals, http.StatusOK)
 	c.Assert(strings.TrimRight(s.recorder.Body.String(), "\n"), Matches, `{"access_token":"test-123456","client_id":"test-1234","expires_in":.*?,"refresh_token":"test-refresh-7890","token_type":"Bearer"}`)
+	c.Assert(s.recorder.Code, Equals, http.StatusOK)
 }
 
 func (s *S) TestInfoFromAccessTokenForInvalidToken(c *C) {

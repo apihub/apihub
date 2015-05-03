@@ -26,7 +26,7 @@ func main() {
 	logger := NewCustomLogger()
 	logger.SetLevel(log.DEBUG)
 	api.Logger(logger)
-	// api.Log().Disable()
+	//api.Log().Disable()
 
 	api.AddPrivateRoute("GET", "/hi", &HiHandler{}, "Index")
 
