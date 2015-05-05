@@ -17,7 +17,7 @@ var ERR_TIMEOUT = []byte("The server, while acting as a gateway or proxy, did no
 
 type ReverseProxy struct {
 	service   *Service
-	Proxy     *httputil.ReverseProxy
+	proxy     *httputil.ReverseProxy
 	Transport *http.Transport
 }
 
@@ -70,7 +70,7 @@ func NewReverseProxy(s *Service) *ReverseProxy {
 		Proxy:               http.ProxyFromEnvironment,
 		TLSHandshakeTimeout: 10 * time.Second,
 	}
-	rp.Proxy = &httputil.ReverseProxy{
+	rp.proxy = &httputil.ReverseProxy{
 		Director:  rp.Director,
 		Transport: rp,
 	}

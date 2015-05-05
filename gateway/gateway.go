@@ -108,7 +108,7 @@ func extractSubdomain(host string) string {
 func createHandler(e *Service) http.Handler {
 	if h := e.Forward; h != "" {
 		rp := NewReverseProxy(e)
-		return rp.Proxy
+		return rp.proxy
 	}
 
 	return nil
