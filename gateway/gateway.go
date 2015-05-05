@@ -15,8 +15,9 @@ type Config struct {
 }
 
 type Service struct {
-	Forward   string
+	Endpoint  string
 	Subdomain string
+	Timeout   int
 
 	handler http.Handler
 }
@@ -58,7 +59,7 @@ func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (g *Gateway) loadServices() error {
-	services := map[string]*Service{"tres": &Service{Forward: "http://localhost:3000"}, "cinco": &Service{Forward: "http://localhost:5000"}}
+	services := map[string]*Service{"tres": &Service{Endpoint: "http://localhost:3000"}, "cinco": &Service{Endpoint: "http://localhost:5000"}}
 
 	for _, e := range services {
 		e.handler = createHandler(e)
@@ -106,7 +107,7 @@ func extractSubdomain(host string) string {
 }
 
 func createHandler(e *Service) http.Handler {
-	if h := e.Forward; h != "" {
+	if h := e.Endpoint; h != "" {
 		rp := NewReverseProxy(e)
 		return rp.proxy
 	}
