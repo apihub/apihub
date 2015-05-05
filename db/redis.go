@@ -10,11 +10,15 @@ import (
 
 const DefaultRedisHost = "127.0.0.1:6379"
 
-var redisPool *redis.Pool
+var redisClient *RedisClient
 
-func GetRedisPool() *redis.Pool {
-	if redisPool != nil {
-		return redisPool
+type RedisClient struct {
+	pool redis.Pool
+}
+
+func GetRedisPool() *RedisClient {
+	if redisClient != nil {
+		return redisClient
 	}
 	netloc, _ := config.GetString("redis:host")
 
@@ -25,7 +29,7 @@ func GetRedisPool() *redis.Pool {
 	password, _ := config.GetString("redis:password")
 	redisNumber, _ := config.GetInt("redis:number")
 
-	pool := &redis.Pool{
+	pool := redis.Pool{
 		MaxActive:   2,
 		MaxIdle:     2,
 		IdleTimeout: 0,
@@ -52,13 +56,12 @@ func GetRedisPool() *redis.Pool {
 			return conn, nil
 		},
 	}
-	redisPool = pool
-	return redisPool
+	redisClient = &RedisClient{pool: pool}
+	return redisClient
 }
 
 func GetRedis() redis.Conn {
-	pool := GetRedisPool()
-	return pool.Get()
+	return GetRedisPool().pool.Get()
 }
 
 func delCache(key string) (interface{}, error) {
