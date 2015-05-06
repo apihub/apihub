@@ -56,7 +56,7 @@ func (service *Service) Save(owner *User, team *Team) error {
 	if mgo.IsDup(err) {
 		return &errors.ValidationError{Payload: "There is another service with this subdomain."}
 	}
-	//service.publish()
+	service.publish()
 	return err
 }
 
@@ -75,7 +75,7 @@ func (service *Service) Delete() error {
 	if err != nil {
 		return &errors.ValidationError{Payload: err.Error()}
 	}
-	//service.unpublish()
+	service.unpublish()
 	return err
 }
 
@@ -147,17 +147,13 @@ func (service *Service) publish() {
 		panic(err)
 	}
 	cli := db.NewRedisClient()
-	defer cli.Close()
-	go cli.Publish(CHANNEL_NAME, string(s))
+	go func() {
+		cli.Publish(CHANNEL_NAME, string(s))
+		defer cli.Close()
+	}()
 }
 
 func (service *Service) unpublish() {
 	service.Disabled = true
-	s, err := json.Marshal(service)
-	if err != nil {
-		panic(err)
-	}
-	cli := db.NewRedisClient()
-	defer cli.Close()
-	go cli.Publish(CHANNEL_NAME, string(s))
+	service.publish()
 }
