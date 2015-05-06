@@ -6,32 +6,37 @@ import (
 	"net"
 	"net/http"
 	"strings"
-	"time"
+
+	"github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/db"
 )
+
+const CHANNEL_NAME = "services"
 
 type Config struct {
 	Host string
 	Port string
 }
 
-type Service struct {
-	Endpoint  string
-	Subdomain string
-	Timeout   int
+type ServiceHandler struct {
+	service *account.Service
 
 	handler http.Handler
 }
 
+//TODO: need to refactor this.
 type Gateway struct {
-	Config *Config
+	Config      *Config
+	redisClient *db.RedisClient
 
-	services map[string]*Service
+	services map[string]*ServiceHandler
 }
 
 func NewGateway(config *Config) (*Gateway, error) {
 	g := &Gateway{
-		Config:   config,
-		services: make(map[string]*Service),
+		Config:      config,
+		redisClient: db.NewRedisClient(),
+		services:    make(map[string]*ServiceHandler),
 	}
 	if err := g.loadServices(); err != nil {
 		return nil, err
@@ -59,7 +64,7 @@ func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (g *Gateway) loadServices() error {
-	services := map[string]*Service{"tres": &Service{Endpoint: "http://localhost:3000"}, "cinco": &Service{Endpoint: "http://localhost:5000"}}
+	services := map[string]*ServiceHandler{"tres": &ServiceHandler{service: &account.Service{Endpoint: "http://localhost:3000"}}, "cinco": &ServiceHandler{service: &account.Service{Endpoint: "http://localhost:5000"}}}
 
 	for _, e := range services {
 		e.handler = createHandler(e)
@@ -73,13 +78,9 @@ func (g *Gateway) loadServices() error {
 }
 
 func (g *Gateway) refreshServices() {
+	g.redisClient.Subscribe(CHANNEL_NAME)
 	for {
-		if err := g.loadServices(); err != nil {
-			fmt.Printf("err %+v\n", err)
-		}
-
-		time.Sleep(10 * time.Second)
-		fmt.Println("Services updated")
+		fmt.Printf("cli.Receive %+v\n", g.redisClient.Receive())
 	}
 }
 
@@ -106,8 +107,8 @@ func extractSubdomain(host string) string {
 	return subdomain
 }
 
-func createHandler(e *Service) http.Handler {
-	if h := e.Endpoint; h != "" {
+func createHandler(e *ServiceHandler) http.Handler {
+	if h := e.service.Endpoint; h != "" {
 		rp := NewReverseProxy(e)
 		return rp.proxy
 	}

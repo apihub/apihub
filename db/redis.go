@@ -3,6 +3,8 @@ package db
 
 import (
 	"fmt"
+	"sync"
+	"time"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/tsuru/config"
@@ -10,15 +12,47 @@ import (
 
 const DefaultRedisHost = "127.0.0.1:6379"
 
-var redisClient *RedisClient
+var redisPool *redis.Pool
 
-type RedisClient struct {
-	pool redis.Pool
+// A pub-sub message
+type Message struct {
+	Type    string
+	Channel string
+	Data    string
 }
 
-func GetRedisPool() *RedisClient {
-	if redisClient != nil {
-		return redisClient
+type Client interface {
+	Subscribe(channels ...interface{}) (err error)
+	Unsubscribe(channels ...interface{}) (err error)
+	Publish(channel string, message string)
+	Receive() (message Message)
+}
+
+type RedisClient struct {
+	conn redis.Conn
+	redis.PubSubConn
+	sync.Mutex
+}
+
+func (c *RedisClient) Publish(channel string, message string) {
+	c.Lock()
+	c.conn.Send("PUBLISH", channel, message)
+	c.Unlock()
+}
+
+func (c *RedisClient) Receive() Message {
+	switch message := c.PubSubConn.Receive().(type) {
+	case redis.Message:
+		return Message{"message", message.Channel, string(message.Data)}
+	case redis.Subscription:
+		return Message{message.Kind, message.Channel, string(message.Count)}
+	}
+	return Message{}
+}
+
+func getRedis() *redis.Pool {
+	if redisPool != nil {
+		return redisPool
 	}
 	netloc, _ := config.GetString("redis:host")
 
@@ -29,9 +63,9 @@ func GetRedisPool() *RedisClient {
 	password, _ := config.GetString("redis:password")
 	redisNumber, _ := config.GetInt("redis:number")
 
-	pool := redis.Pool{
-		MaxActive:   2,
-		MaxIdle:     2,
+	pool := &redis.Pool{
+		MaxActive:   1,
+		MaxIdle:     1,
 		IdleTimeout: 0,
 		Wait:        true,
 		Dial: func() (redis.Conn, error) {
@@ -56,16 +90,26 @@ func GetRedisPool() *RedisClient {
 			return conn, nil
 		},
 	}
-	redisClient = &RedisClient{pool: pool}
-	return redisClient
+	redisPool = pool
+	return redisPool
 }
 
-func GetRedis() redis.Conn {
-	return GetRedisPool().pool.Get()
+func NewRedisClient() *RedisClient {
+	conn := getRedis().Get()
+	client := &RedisClient{conn, redis.PubSubConn{conn}, sync.Mutex{}}
+	go func() {
+		for {
+			time.Sleep(200 * time.Millisecond)
+			client.Lock()
+			client.conn.Flush()
+			client.Unlock()
+		}
+	}()
+	return client
 }
 
 func delCache(key string) (interface{}, error) {
-	conn := GetRedis()
+	conn := NewRedisClient().conn
 	defer conn.Close()
 	result, err := conn.Do("DEL", key)
 	if err != nil {
@@ -76,7 +120,7 @@ func delCache(key string) (interface{}, error) {
 }
 
 func getHCache(key string) ([]interface{}, error) {
-	conn := GetRedis()
+	conn := NewRedisClient().conn
 	defer conn.Close()
 	keyValue, err := conn.Do("HGETALL", key)
 	if err != nil {
@@ -87,7 +131,7 @@ func getHCache(key string) ([]interface{}, error) {
 }
 
 func addHCache(key string, expires int, data map[string]interface{}) {
-	conn := GetRedis()
+	conn := NewRedisClient().conn
 	defer conn.Close()
 
 	if _, err := conn.Do("HMSET", redis.Args{key}.AddFlat(data)...); err != nil {

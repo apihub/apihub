@@ -18,13 +18,13 @@ const DEFAULT_TIMEOUT = 10
 var ERR_TIMEOUT = []byte("The server, while acting as a gateway or proxy, did not receive a timely response from the upstream server.")
 
 type ReverseProxy struct {
-	service   *Service
+	handler   *ServiceHandler
 	proxy     *httputil.ReverseProxy
 	Transport *http.Transport
 }
 
 func (rp *ReverseProxy) Director(r *http.Request) {
-	target, err := url.Parse(rp.service.Endpoint)
+	target, err := url.Parse(rp.handler.service.Endpoint)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -65,9 +65,9 @@ func (rp *ReverseProxy) RoundTrip(r *http.Request) (*http.Response, error) {
 	return w, err
 }
 
-func NewReverseProxy(s *Service) *ReverseProxy {
-	rp := &ReverseProxy{service: s}
-	t := s.Timeout
+func NewReverseProxy(h *ServiceHandler) *ReverseProxy {
+	rp := &ReverseProxy{handler: h}
+	t := h.service.Timeout
 	if t <= 0 {
 		t = DEFAULT_TIMEOUT
 	}

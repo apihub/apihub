@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
+	"github.com/backstage/backstage/account"
 	. "gopkg.in/check.v1"
 )
 
@@ -14,7 +15,7 @@ func (s *S) TestServer(c *C) {
 	}))
 	defer target.Close()
 
-	service := &Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Timeout: 10}
+	service := &ServiceHandler{service: &account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Timeout: 10, Disabled: false}}
 	rp := NewReverseProxy(service)
 
 	w := httptest.NewRecorder()
