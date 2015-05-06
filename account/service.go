@@ -146,8 +146,8 @@ func (service *Service) publish() {
 	if err != nil {
 		panic(err)
 	}
-	cli := db.NewRedisClient()
 	go func() {
+		cli := db.NewRedisClient()
 		cli.Publish(CHANNEL_NAME, string(s))
 		defer cli.Close()
 	}()
