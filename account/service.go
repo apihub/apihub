@@ -2,6 +2,7 @@
 package account
 
 import (
+	"encoding/json"
 	"strings"
 
 	"github.com/backstage/backstage/db"
@@ -9,6 +10,8 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
+
+const CHANNEL_NAME = "services"
 
 // The Service type is an encapsulation of a service details.
 // It is not allowed to have more than one service with the same subdomain.
@@ -53,6 +56,7 @@ func (service *Service) Save(owner *User, team *Team) error {
 	if mgo.IsDup(err) {
 		return &errors.ValidationError{Payload: "There is another service with this subdomain."}
 	}
+	//service.publish()
 	return err
 }
 
@@ -71,6 +75,7 @@ func (service *Service) Delete() error {
 	if err != nil {
 		return &errors.ValidationError{Payload: err.Error()}
 	}
+	//service.unpublish()
 	return err
 }
 
@@ -134,4 +139,25 @@ func FindServicesByTeam(teamAlias string) ([]*Service, error) {
 		return nil, err
 	}
 	return services, nil
+}
+
+func (service *Service) publish() {
+	s, err := json.Marshal(service)
+	if err != nil {
+		panic(err)
+	}
+	cli := db.NewRedisClient()
+	defer cli.Close()
+	go cli.Publish(CHANNEL_NAME, string(s))
+}
+
+func (service *Service) unpublish() {
+	service.Disabled = true
+	s, err := json.Marshal(service)
+	if err != nil {
+		panic(err)
+	}
+	cli := db.NewRedisClient()
+	defer cli.Close()
+	go cli.Publish(CHANNEL_NAME, string(s))
 }

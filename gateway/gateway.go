@@ -11,25 +11,21 @@ import (
 	"github.com/backstage/backstage/db"
 )
 
-const CHANNEL_NAME = "services"
-
 type Config struct {
-	Host string
-	Port string
+	ChannelName string
+	Host        string
+	Port        string
 }
 
 type ServiceHandler struct {
-	service *account.Service
-
 	handler http.Handler
+	service *account.Service
 }
 
-//TODO: need to refactor this.
 type Gateway struct {
 	Config      *Config
 	redisClient *db.RedisClient
-
-	services map[string]*ServiceHandler
+	services    map[string]*ServiceHandler
 }
 
 func NewGateway(config *Config) (*Gateway, error) {
@@ -78,7 +74,12 @@ func (g *Gateway) loadServices() error {
 }
 
 func (g *Gateway) refreshServices() {
-	g.redisClient.Subscribe(CHANNEL_NAME)
+	channel := g.Config.ChannelName
+	if channel == "" {
+		log.Fatal("Missing channel name.")
+	}
+	g.redisClient.Subscribe(channel)
+	fmt.Printf("channel %+v\n", channel)
 	for {
 		fmt.Printf("cli.Receive %+v\n", g.redisClient.Receive())
 	}

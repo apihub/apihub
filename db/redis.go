@@ -40,6 +40,10 @@ func (c *RedisClient) Publish(channel string, message string) {
 	c.Unlock()
 }
 
+func (c *RedisClient) Close() {
+	c.conn.Close()
+}
+
 func (c *RedisClient) Receive() Message {
 	switch message := c.PubSubConn.Receive().(type) {
 	case redis.Message:
