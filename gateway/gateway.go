@@ -8,10 +8,11 @@ import (
 	"strings"
 
 	"github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/api"
 	"github.com/backstage/backstage/db"
 )
 
-type Config struct {
+type Settings struct {
 	ChannelName string
 	Host        string
 	Port        string
@@ -23,19 +24,19 @@ type ServiceHandler struct {
 }
 
 type Gateway struct {
-	Config      *Config
+	Settings    *Settings
 	redisClient *db.RedisClient
 	services    map[string]*ServiceHandler
 }
 
-func NewGateway(config *Config, services []*account.Service) *Gateway {
+func NewGateway(config *Settings, services []*account.Service) *Gateway {
 	s := make(map[string]*ServiceHandler)
 	if services != nil {
 		s = wrapService(services)
 	}
 
 	g := &Gateway{
-		Config:      config,
+		Settings:    config,
 		redisClient: db.NewRedisClient(),
 		services:    s,
 	}
@@ -45,7 +46,7 @@ func NewGateway(config *Config, services []*account.Service) *Gateway {
 }
 
 func (g *Gateway) Run() {
-	l, err := net.Listen("tcp", g.Config.Port)
+	l, err := net.Listen("tcp", g.Settings.Port)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -62,8 +63,7 @@ func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.ServeHTTP(w, r)
 		return
 	}
-
-	http.Error(w, "Not found.", http.StatusNotFound)
+	notFound(w)
 }
 
 func (g *Gateway) loadServices() {
@@ -81,7 +81,7 @@ func wrapService(services []*account.Service) map[string]*ServiceHandler {
 }
 
 func (g *Gateway) RefreshServices() {
-	channel := g.Config.ChannelName
+	channel := g.Settings.ChannelName
 	if channel == "" {
 		log.Fatal("Missing channel name.")
 	}
@@ -120,4 +120,11 @@ func createProxy(e *ServiceHandler) http.Handler {
 		return rp.proxy
 	}
 	return nil
+}
+
+func notFound(w http.ResponseWriter) {
+	nf := api.NotFound(ERR_NOT_FOUND)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(nf.StatusCode)
+	fmt.Fprintln(w, nf.Output())
 }

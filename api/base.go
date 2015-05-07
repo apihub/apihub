@@ -35,24 +35,32 @@ func (api *ApiHandler) parseBody(body io.ReadCloser, r interface{}) error {
 	return nil
 }
 
-func Created(payload string) *HTTPResponse {
-	return &HTTPResponse{StatusCode: http.StatusCreated, Payload: payload}
-}
-
-func OK(payload string) *HTTPResponse {
-	return &HTTPResponse{StatusCode: http.StatusOK, Payload: payload}
-}
-
 func BadRequest(errorType, errorDescription string) *HTTPResponse {
 	return &HTTPResponse{StatusCode: http.StatusBadRequest, ErrorType: errorType, ErrorDescription: errorDescription}
+}
+
+func Created(payload string) *HTTPResponse {
+	return &HTTPResponse{StatusCode: http.StatusCreated, Payload: payload}
 }
 
 func Forbidden(errorDescription string) *HTTPResponse {
 	return &HTTPResponse{StatusCode: http.StatusForbidden, ErrorType: E_FORBIDDEN_REQUEST, ErrorDescription: errorDescription}
 }
 
+func GatewayTimeout(errorDescription string) *HTTPResponse {
+	return &HTTPResponse{StatusCode: http.StatusGatewayTimeout, ErrorType: E_GATEWAY_TIMEOUT, ErrorDescription: errorDescription}
+}
+
+func InternalServerError(errorDescription string) *HTTPResponse {
+	return &HTTPResponse{StatusCode: http.StatusInternalServerError, ErrorType: E_INTERNAL_SERVER_ERROR, ErrorDescription: errorDescription}
+}
+
 func NotFound(errorDescription string) *HTTPResponse {
 	return &HTTPResponse{StatusCode: http.StatusNotFound, ErrorType: E_NOT_FOUND, ErrorDescription: errorDescription}
+}
+
+func OK(payload string) *HTTPResponse {
+	return &HTTPResponse{StatusCode: http.StatusOK, Payload: payload}
 }
 
 func Unauthorized(errorDescription string) *HTTPResponse {

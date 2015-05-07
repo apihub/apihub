@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -11,11 +12,14 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/backstage/backstage/api"
 )
 
 const DEFAULT_TIMEOUT = 10
-
-var ERR_TIMEOUT = []byte("The server, while acting as a gateway or proxy, did not receive a timely response from the upstream server.")
+const ERR_TIMEOUT = "The server, while acting as a gateway or proxy, did not receive a timely response from the upstream server."
+const ERR_UNEXPECTED_ERROR = "Something went wrong."
+const ERR_NOT_FOUND = "The requested resource could not be found but may be available again in the future. "
 
 type ReverseProxy struct {
 	handler   *ServiceHandler
@@ -42,27 +46,22 @@ func (rp *ReverseProxy) Director(r *http.Request) {
 
 func (rp *ReverseProxy) RoundTrip(r *http.Request) (*http.Response, error) {
 	var (
-		closerBuffer io.ReadCloser
-		err          error
-		w            *http.Response
+		err error
+		w   *http.Response
 	)
 
 	w, err = rp.Transport.RoundTrip(r)
 	if e, ok := err.(*net.OpError); ok {
 		if e.Timeout() {
-			closerBuffer = ioutil.NopCloser(bytes.NewBuffer(ERR_TIMEOUT))
-			w = &http.Response{
-				Request:       r,
-				StatusCode:    http.StatusGatewayTimeout,
-				ProtoMajor:    r.ProtoMajor,
-				ProtoMinor:    r.ProtoMinor,
-				ContentLength: int64(len(ERR_TIMEOUT)),
-				Body:          closerBuffer,
-			}
+			w = ErrorResponse(r, api.GatewayTimeout(ERR_TIMEOUT))
 		}
 	}
+	if w == nil && err != nil {
+		fmt.Printf("err %+v\n", err)
+		w = ErrorResponse(r, api.InternalServerError(ERR_UNEXPECTED_ERROR))
+	}
 
-	return w, err
+	return w, nil
 }
 
 func NewReverseProxy(h *ServiceHandler) *ReverseProxy {
@@ -101,4 +100,20 @@ func joinSlash(target, path string) string {
 	path = strings.TrimPrefix(path, "/")
 	s := []string{target, path}
 	return strings.Join(s, "/")
+}
+
+func ErrorResponse(r *http.Request, httpResponse *api.HTTPResponse) *http.Response {
+	out := httpResponse.Output()
+	var closerBuffer io.ReadCloser = ioutil.NopCloser(bytes.NewBufferString(out))
+	w := &http.Response{
+		Request:       r,
+		StatusCode:    httpResponse.StatusCode,
+		ProtoMajor:    r.ProtoMajor,
+		ProtoMinor:    r.ProtoMinor,
+		ContentLength: int64(len(out)),
+		Body:          closerBuffer,
+	}
+	w.Header = make(map[string][]string)
+	w.Header.Add("Content-Type", "application/json")
+	return w
 }
