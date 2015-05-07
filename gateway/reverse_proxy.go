@@ -18,7 +18,6 @@ import (
 
 const DEFAULT_TIMEOUT = 10
 const ERR_TIMEOUT = "The server, while acting as a gateway or proxy, did not receive a timely response from the upstream server."
-const ERR_UNEXPECTED_ERROR = "Something went wrong."
 const ERR_NOT_FOUND = "The requested resource could not be found but may be available again in the future. "
 
 type ReverseProxy struct {
@@ -58,7 +57,7 @@ func (rp *ReverseProxy) RoundTrip(r *http.Request) (*http.Response, error) {
 	}
 	if w == nil && err != nil {
 		fmt.Printf("err %+v\n", err)
-		w = ErrorResponse(r, api.InternalServerError(ERR_UNEXPECTED_ERROR))
+		w = ErrorResponse(r, api.InternalServerError(err.Error()))
 	}
 
 	return w, nil

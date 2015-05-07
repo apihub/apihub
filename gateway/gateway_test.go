@@ -78,3 +78,17 @@ func (s *S) TestGatewayCopyResponseHeaders(c *C) {
 	c.Assert(w.Code, Equals, http.StatusCreated)
 	c.Assert(w.Header().Get("Content-Type"), Equals, "text/plain; charset=utf-8")
 }
+
+func (s *S) TestGatewayInternalError(c *C) {
+	services := []*account.Service{&account.Service{Endpoint: "http://invalidurl", Subdomain: "test"}}
+	gateway := NewGateway(s.settings, services)
+	defer gateway.Close()
+	w := httptest.NewRecorder()
+	w.Body = new(bytes.Buffer)
+	r, _ := http.NewRequest("GET", "http://test.backstage.dev", nil)
+	gateway.ServeHTTP(w, r)
+
+	c.Assert(w.Code, Equals, http.StatusInternalServerError)
+	c.Assert(w.Header().Get("Content-Type"), Equals, "application/json")
+	c.Assert(w.Body.String(), Equals, "{\"error\":\"internal_server_error\",\"error_description\":\"dial tcp: lookup invalidurl: no such host\"}")
+}
