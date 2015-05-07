@@ -28,17 +28,20 @@ type Gateway struct {
 	services    map[string]*ServiceHandler
 }
 
-func NewGateway(config *Config) (*Gateway, error) {
+func NewGateway(config *Config, services []*account.Service) *Gateway {
+	s := make(map[string]*ServiceHandler)
+	if services != nil {
+		s = wrapService(services)
+	}
+
 	g := &Gateway{
 		Config:      config,
 		redisClient: db.NewRedisClient(),
-		services:    make(map[string]*ServiceHandler),
+		services:    s,
 	}
-	if err := g.loadServices(); err != nil {
-		return nil, err
-	}
-	go g.refreshServices()
-	return g, nil
+
+	g.loadServices()
+	return g
 }
 
 func (g *Gateway) Run() {
@@ -50,6 +53,10 @@ func (g *Gateway) Run() {
 	log.Fatal(http.Serve(l, g))
 }
 
+func (g *Gateway) Close() {
+	g.redisClient.Close()
+}
+
 func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if h := g.handler(r); h != nil {
 		h.ServeHTTP(w, r)
@@ -59,21 +66,21 @@ func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Not found.", http.StatusNotFound)
 }
 
-func (g *Gateway) loadServices() error {
-	services := map[string]*ServiceHandler{"tres": &ServiceHandler{service: &account.Service{Endpoint: "http://localhost:3000"}}, "cinco": &ServiceHandler{service: &account.Service{Endpoint: "http://localhost:5000"}}}
-
-	for _, e := range services {
-		e.handler = createHandler(e)
-		if e.handler == nil {
-			log.Printf("endpoint error: %#v", e)
-		}
+func (g *Gateway) loadServices() {
+	for _, e := range g.services {
+		e.handler = createProxy(e)
 	}
-	g.services = services
-
-	return nil
 }
 
-func (g *Gateway) refreshServices() {
+func wrapService(services []*account.Service) map[string]*ServiceHandler {
+	s := make(map[string]*ServiceHandler)
+	for _, serv := range services {
+		s[serv.Subdomain] = &ServiceHandler{service: serv}
+	}
+	return s
+}
+
+func (g *Gateway) RefreshServices() {
 	channel := g.Config.ChannelName
 	if channel == "" {
 		log.Fatal("Missing channel name.")
@@ -104,15 +111,13 @@ func extractSubdomain(host string) string {
 	if len(host_parts) > 2 {
 		subdomain = host_parts[0]
 	}
-
 	return subdomain
 }
 
-func createHandler(e *ServiceHandler) http.Handler {
+func createProxy(e *ServiceHandler) http.Handler {
 	if h := e.service.Endpoint; h != "" {
 		rp := NewReverseProxy(e)
 		return rp.proxy
 	}
-
 	return nil
 }
