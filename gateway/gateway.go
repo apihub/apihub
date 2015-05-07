@@ -46,11 +46,12 @@ func NewGateway(config *Settings, services []*account.Service) *Gateway {
 }
 
 func (g *Gateway) Run() {
+	fmt.Println("Backstage Gateway starting...")
 	l, err := net.Listen("tcp", g.Settings.Port)
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	fmt.Println("The proxy is now ready to accept connections on port " + g.Settings.Port)
 	log.Fatal(http.Serve(l, g))
 }
 
@@ -81,15 +82,17 @@ func wrapService(services []*account.Service) map[string]*ServiceHandler {
 }
 
 func (g *Gateway) RefreshServices() {
-	channel := g.Settings.ChannelName
-	if channel == "" {
-		log.Fatal("Missing channel name.")
-	}
-	g.redisClient.Subscribe(channel)
-	fmt.Printf("channel %+v\n", channel)
-	for {
-		fmt.Printf("cli.Receive %+v\n", g.redisClient.Receive())
-	}
+	go func() {
+		channel := g.Settings.ChannelName
+		if channel == "" {
+			log.Fatal("Missing channel name.")
+		}
+		g.redisClient.Subscribe(channel)
+		fmt.Printf("channel %+v\n", channel)
+		for {
+			fmt.Printf("cli.Receive %+v\n", g.redisClient.Receive())
+		}
+	}()
 }
 
 func (g *Gateway) handler(r *http.Request) http.Handler {
