@@ -7,7 +7,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"strings"
 	"time"
@@ -21,7 +20,7 @@ const ERR_NOT_FOUND = "The requested resource could not be found but may be avai
 
 type Dispatcher struct {
 	handler   *ServiceHandler
-	proxy     *httputil.ReverseProxy
+	proxy     *ReverseProxy
 	Transport *http.Transport
 }
 
@@ -75,7 +74,7 @@ func NewDispatcher(h *ServiceHandler) *Dispatcher {
 		Proxy:               http.ProxyFromEnvironment,
 		TLSHandshakeTimeout: timeout * time.Second,
 	}
-	rp.proxy = &httputil.ReverseProxy{
+	rp.proxy = &ReverseProxy{
 		Director:  rp.Director,
 		Transport: rp,
 	}
