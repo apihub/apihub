@@ -9,11 +9,11 @@ import (
 func Test(t *testing.T) { TestingT(t) }
 
 type S struct {
-	settings *Settings
+	Settings *Settings
 }
 
 func (s *S) SetUpTest(c *C) {
-	s.settings = &Settings{
+	s.Settings = &Settings{
 		Host:        "test.backstage.dev",
 		Port:        ":4567",
 		ChannelName: "services",

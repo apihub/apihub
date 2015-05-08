@@ -1,10 +1,12 @@
 package gateway
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/backstage/backstage/account"
@@ -30,11 +32,11 @@ type Gateway struct {
 }
 
 func NewGateway(config *Settings, services []*account.Service) *Gateway {
+	log.Print("Backstage Gateway starting...")
 	s := make(map[string]*ServiceHandler)
 	if services != nil {
-		s = wrapService(services)
+		s = wrapServices(services)
 	}
-
 	g := &Gateway{
 		Settings:    config,
 		redisClient: db.NewRedisClient(),
@@ -46,12 +48,11 @@ func NewGateway(config *Settings, services []*account.Service) *Gateway {
 }
 
 func (g *Gateway) Run() {
-	fmt.Println("Backstage Gateway starting...")
 	l, err := net.Listen("tcp", g.Settings.Port)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("The proxy is now ready to accept connections on port " + g.Settings.Port)
+	log.Printf("The proxy is now ready to accept connections on port %d", g.Settings.Port)
 	log.Fatal(http.Serve(l, g))
 }
 
@@ -71,9 +72,10 @@ func (g *Gateway) loadServices() {
 	for _, e := range g.services {
 		e.handler = createProxy(e)
 	}
+	log.Print("Services loaded.")
 }
 
-func wrapService(services []*account.Service) map[string]*ServiceHandler {
+func wrapServices(services []*account.Service) map[string]*ServiceHandler {
 	s := make(map[string]*ServiceHandler)
 	for _, serv := range services {
 		s[serv.Subdomain] = &ServiceHandler{service: serv}
@@ -81,18 +83,43 @@ func wrapService(services []*account.Service) map[string]*ServiceHandler {
 	return s
 }
 
+//FIXME: need to figure out how to test this since it's running on its own goroutine.
 func (g *Gateway) RefreshServices() {
 	go func() {
 		channel := g.Settings.ChannelName
 		if channel == "" {
 			log.Fatal("Missing channel name.")
 		}
-		g.redisClient.Subscribe(channel)
-		fmt.Printf("channel %+v\n", channel)
+		if err := g.redisClient.Subscribe(channel); err != nil {
+			fmt.Println("Could not connect to Redis: " + err.Error())
+			os.Exit(1)
+		}
+
 		for {
-			fmt.Printf("cli.Receive %+v\n", g.redisClient.Receive())
+			var service account.Service
+			data := g.redisClient.Receive().Data
+			err := json.Unmarshal([]byte(data), &service)
+			if err == nil {
+				if service.Disabled {
+					g.removeService(&service)
+				} else {
+					g.addService(&service)
+				}
+			}
 		}
 	}()
+}
+
+func (g *Gateway) addService(s *account.Service) {
+	h := &ServiceHandler{service: s}
+	h.handler = createProxy(h)
+	g.services[s.Subdomain] = h
+	log.Printf("New service has been added: %s -> %s.", s.Subdomain, s.Endpoint)
+}
+
+func (g *Gateway) removeService(s *account.Service) {
+	delete(g.services, s.Subdomain)
+	log.Printf("Service has been removed: %s -> %s.", s.Subdomain, s.Endpoint)
 }
 
 func (g *Gateway) handler(r *http.Request) http.Handler {

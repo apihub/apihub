@@ -11,7 +11,7 @@ import (
 )
 
 func (s *S) TestGatewayNotFound(c *C) {
-	gateway := NewGateway(s.settings, nil)
+	gateway := NewGateway(s.Settings, nil)
 	defer gateway.Close()
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
@@ -30,7 +30,7 @@ func (s *S) TestGatewayExistingService(c *C) {
 	defer target.Close()
 
 	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test"}}
-	gateway := NewGateway(s.settings, services)
+	gateway := NewGateway(s.Settings, services)
 	defer gateway.Close()
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
@@ -48,7 +48,7 @@ func (s *S) TestGatewayTimeout(c *C) {
 	defer target.Close()
 
 	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Timeout: 1}}
-	gateway := NewGateway(s.settings, services)
+	gateway := NewGateway(s.Settings, services)
 	defer gateway.Close()
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
@@ -68,7 +68,7 @@ func (s *S) TestGatewayCopyResponseHeaders(c *C) {
 	defer target.Close()
 
 	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test"}}
-	gateway := NewGateway(s.settings, services)
+	gateway := NewGateway(s.Settings, services)
 	defer gateway.Close()
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
@@ -81,7 +81,7 @@ func (s *S) TestGatewayCopyResponseHeaders(c *C) {
 
 func (s *S) TestGatewayInternalError(c *C) {
 	services := []*account.Service{&account.Service{Endpoint: "http://invalidurl", Subdomain: "test"}}
-	gateway := NewGateway(s.settings, services)
+	gateway := NewGateway(s.Settings, services)
 	defer gateway.Close()
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
