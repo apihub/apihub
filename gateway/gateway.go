@@ -50,6 +50,7 @@ func NewGateway(config *Settings) *Gateway {
 	g := &Gateway{
 		Settings:    config,
 		redisClient: db.NewRedisClient(),
+		services:    make(map[string]*ServiceHandler),
 	}
 
 	g.loadFilters()
@@ -57,15 +58,15 @@ func NewGateway(config *Settings) *Gateway {
 }
 
 func (g *Gateway) LoadServices(services []*account.Service) {
-	s := make(map[string]*ServiceHandler)
 	if services != nil {
+		s := make(map[string]*ServiceHandler)
 		s = g.wrapServices(services)
+		for _, e := range s {
+			e.handler = createProxy(e)
+			g.services[e.service.Subdomain] = e
+		}
+		log.Print("Services loaded.")
 	}
-	g.services = s
-	for _, e := range g.services {
-		e.handler = createProxy(e)
-	}
-	log.Print("Services loaded.")
 }
 
 func (g *Gateway) Run() {
@@ -132,9 +133,7 @@ func (g *Gateway) RefreshServices() {
 }
 
 func (g *Gateway) addService(s *account.Service) {
-	h := &ServiceHandler{service: s}
-	h.handler = createProxy(h)
-	g.services[s.Subdomain] = h
+	g.LoadServices([]*account.Service{s})
 	log.Printf("New service has been added: %s -> %s.", s.Subdomain, s.Endpoint)
 }
 
