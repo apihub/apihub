@@ -163,6 +163,7 @@ func (api *Api) route(handler interface{}, route string) interface{} {
 	fn := func(c web.C, w http.ResponseWriter, r *http.Request) {
 		c.Env["Api"] = api
 
+		Logger.Debug("[REQUEST] Headers: %#v.", r.Header)
 		methodValue := reflect.ValueOf(handler).MethodByName(route)
 		methodInterface := methodValue.Interface()
 		method := methodInterface.(func(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse)
@@ -175,7 +176,7 @@ func (api *Api) route(handler interface{}, route string) interface{} {
 				w.Header().Set("Content-Type", "application/json")
 			}
 			io.WriteString(w, response.Output())
-			Logger.Debug("Headers: %#v. Output: %s", w.Header(), response.Output())
+			Logger.Debug("[RESPONSE] Headers: %#v. Output: %s", w.Header(), response.Output())
 		}
 	}
 	return fn

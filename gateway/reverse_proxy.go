@@ -2,7 +2,6 @@ package gateway
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -56,7 +55,7 @@ func (rp *ReverseProxy) RoundTrip(r *http.Request) (*http.Response, error) {
 		}
 	}
 	if w == nil && err != nil {
-		fmt.Printf("err %+v\n", err)
+		log.Printf("Error while accessing %s: %s.", r.Header.Get("X-Forwarded-Host"), err.Error())
 		w = ErrorResponse(r, api.InternalServerError(err.Error()))
 	}
 

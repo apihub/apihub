@@ -52,7 +52,7 @@ func (g *Gateway) Run() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("The proxy is now ready to accept connections on port %d", g.Settings.Port)
+	log.Printf("The proxy is now ready to accept connections on port %s.", g.Settings.Port)
 	log.Fatal(http.Serve(l, g))
 }
 
