@@ -16,7 +16,7 @@ func (s *S) TestServer(c *C) {
 	defer target.Close()
 
 	service := &ServiceHandler{service: &account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Timeout: 10, Disabled: false}}
-	rp := NewReverseProxy(service)
+	rp := NewDispatcher(service)
 
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)

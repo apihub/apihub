@@ -19,13 +19,13 @@ const DEFAULT_TIMEOUT = 10
 const ERR_TIMEOUT = "The server, while acting as a gateway or proxy, did not receive a timely response from the upstream server."
 const ERR_NOT_FOUND = "The requested resource could not be found but may be available again in the future. "
 
-type ReverseProxy struct {
+type Dispatcher struct {
 	handler   *ServiceHandler
 	proxy     *httputil.ReverseProxy
 	Transport *http.Transport
 }
 
-func (rp *ReverseProxy) Director(r *http.Request) {
+func (rp *Dispatcher) Director(r *http.Request) {
 	target, err := url.Parse(rp.handler.service.Endpoint)
 	if err != nil {
 		log.Fatal(err)
@@ -42,7 +42,7 @@ func (rp *ReverseProxy) Director(r *http.Request) {
 	}
 }
 
-func (rp *ReverseProxy) RoundTrip(r *http.Request) (*http.Response, error) {
+func (rp *Dispatcher) RoundTrip(r *http.Request) (*http.Response, error) {
 	var (
 		err error
 		w   *http.Response
@@ -62,8 +62,8 @@ func (rp *ReverseProxy) RoundTrip(r *http.Request) (*http.Response, error) {
 	return w, nil
 }
 
-func NewReverseProxy(h *ServiceHandler) *ReverseProxy {
-	rp := &ReverseProxy{handler: h}
+func NewDispatcher(h *ServiceHandler) *Dispatcher {
+	rp := &Dispatcher{handler: h}
 	t := h.service.Timeout
 	if t <= 0 {
 		t = DEFAULT_TIMEOUT
