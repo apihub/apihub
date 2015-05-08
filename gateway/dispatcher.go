@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/backstage/backstage/api"
+	. "github.com/backstage/backstage/gateway/filter"
 )
 
 const DEFAULT_TIMEOUT = 10
@@ -77,6 +78,7 @@ func NewDispatcher(h *ServiceHandler) *Dispatcher {
 	rp.proxy = &ReverseProxy{
 		Director:  rp.Director,
 		Transport: rp,
+		Filters:   h.filters,
 	}
 	return rp
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/backstage/backstage/account"
 	"github.com/backstage/backstage/api"
 	"github.com/backstage/backstage/db"
+	. "github.com/backstage/backstage/gateway/filter"
 )
 
 type Settings struct {
@@ -23,31 +24,52 @@ type Settings struct {
 type ServiceHandler struct {
 	handler http.Handler
 	service *account.Service
+	filters []Filter
 }
 
 type Gateway struct {
 	Settings    *Settings
+	filters     Filters
 	redisClient *db.RedisClient
 	services    map[string]*ServiceHandler
 }
 
-func NewGateway(config *Settings, services []*account.Service) *Gateway {
-	log.Print("Backstage Gateway starting...")
-	s := make(map[string]*ServiceHandler)
-	if services != nil {
-		s = wrapServices(services)
+func (g *Gateway) Filter() Filters {
+	if g.filters == nil {
+		g.filters = map[string]Filter{}
 	}
+	return g.filters
+}
+
+func (g *Gateway) loadFilters() {
+	//g.Filter().Add("AddSecurityHeaders", AddHeaders)
+	log.Print("Default filters loaded.")
+}
+
+func NewGateway(config *Settings) *Gateway {
 	g := &Gateway{
 		Settings:    config,
 		redisClient: db.NewRedisClient(),
-		services:    s,
 	}
 
-	g.loadServices()
+	g.loadFilters()
 	return g
 }
 
+func (g *Gateway) LoadServices(services []*account.Service) {
+	s := make(map[string]*ServiceHandler)
+	if services != nil {
+		s = g.wrapServices(services)
+	}
+	g.services = s
+	for _, e := range g.services {
+		e.handler = createProxy(e)
+	}
+	log.Print("Services loaded.")
+}
+
 func (g *Gateway) Run() {
+	log.Print("Backstage Gateway starting...")
 	l, err := net.Listen("tcp", g.Settings.Port)
 	if err != nil {
 		log.Fatal(err)
@@ -68,17 +90,16 @@ func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	notFound(w)
 }
 
-func (g *Gateway) loadServices() {
-	for _, e := range g.services {
-		e.handler = createProxy(e)
-	}
-	log.Print("Services loaded.")
-}
-
-func wrapServices(services []*account.Service) map[string]*ServiceHandler {
+func (g *Gateway) wrapServices(services []*account.Service) map[string]*ServiceHandler {
 	s := make(map[string]*ServiceHandler)
 	for _, serv := range services {
-		s[serv.Subdomain] = &ServiceHandler{service: serv}
+		h := &ServiceHandler{service: serv}
+		s[serv.Subdomain] = h
+		for _, f := range serv.Filters {
+			if filter := g.Filter().Get(f); filter != nil {
+				h.filters = append(h.filters, filter)
+			}
+		}
 	}
 	return s
 }

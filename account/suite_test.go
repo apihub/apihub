@@ -40,6 +40,6 @@ func (s *S) TearDownSuite(c *C) {
 func (s *S) SetUpTest(c *C) {
 	team = &Team{Name: "Team", Alias: "Alias"}
 	owner = &User{Name: "Owner", Username: "owner", Email: "owner@example.org", Password: "123456"}
-	service = &Service{Endpoint: "http://example.org/api", Subdomain: "backstage"}
+	service = &Service{Endpoint: "http://example.org/api", Subdomain: "backstage", Filters: []string{}}
 	client = &Client{Id: "backstage", Secret: "SuperSecret", Name: "Backstage", RedirectUri: "http://example.org/auth"}
 }

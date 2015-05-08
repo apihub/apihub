@@ -11,7 +11,7 @@ import (
 )
 
 func (s *S) TestGatewayNotFound(c *C) {
-	gateway := NewGateway(s.Settings, nil)
+	gateway := NewGateway(s.Settings)
 	defer gateway.Close()
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
@@ -30,7 +30,8 @@ func (s *S) TestGatewayExistingService(c *C) {
 	defer target.Close()
 
 	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test"}}
-	gateway := NewGateway(s.Settings, services)
+	gateway := NewGateway(s.Settings)
+	gateway.LoadServices(services)
 	defer gateway.Close()
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
@@ -48,7 +49,8 @@ func (s *S) TestGatewayTimeout(c *C) {
 	defer target.Close()
 
 	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Timeout: 1}}
-	gateway := NewGateway(s.Settings, services)
+	gateway := NewGateway(s.Settings)
+	gateway.LoadServices(services)
 	defer gateway.Close()
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
@@ -68,7 +70,8 @@ func (s *S) TestGatewayCopyResponseHeaders(c *C) {
 	defer target.Close()
 
 	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test"}}
-	gateway := NewGateway(s.Settings, services)
+	gateway := NewGateway(s.Settings)
+	gateway.LoadServices(services)
 	defer gateway.Close()
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
@@ -81,7 +84,8 @@ func (s *S) TestGatewayCopyResponseHeaders(c *C) {
 
 func (s *S) TestGatewayInternalError(c *C) {
 	services := []*account.Service{&account.Service{Endpoint: "http://invalidurl", Subdomain: "test"}}
-	gateway := NewGateway(s.Settings, services)
+	gateway := NewGateway(s.Settings)
+	gateway.LoadServices(services)
 	defer gateway.Close()
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
@@ -91,4 +95,30 @@ func (s *S) TestGatewayInternalError(c *C) {
 	c.Assert(w.Code, Equals, http.StatusInternalServerError)
 	c.Assert(w.Header().Get("Content-Type"), Equals, "application/json")
 	c.Assert(w.Body.String(), Equals, "{\"error\":\"internal_server_error\",\"error_description\":\"dial tcp: lookup invalidurl: no such host\"}")
+}
+
+func (s *S) TestGatewayWithFilter(c *C) {
+	addHeader := func(r *http.Request, w *http.Response) {
+		w.Header.Set("X-Backstage-Header", "Custom Header")
+	}
+
+	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("OK"))
+	}))
+	defer target.Close()
+
+	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Filters: []string{"AddHeader"}}}
+	gateway := NewGateway(s.Settings)
+	gateway.Filter().Add("AddHeader", addHeader)
+	gateway.LoadServices(services)
+	defer gateway.Close()
+
+	w := httptest.NewRecorder()
+	w.Body = new(bytes.Buffer)
+	r, _ := http.NewRequest("GET", "http://test.backstage.dev", nil)
+	gateway.ServeHTTP(w, r)
+
+	c.Assert(w.Code, Equals, http.StatusOK)
+	c.Assert(w.Body.String(), Equals, "OK")
+	c.Assert(w.Header().Get("X-Backstage-Header"), Equals, "Custom Header")
 }

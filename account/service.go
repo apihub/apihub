@@ -19,15 +19,16 @@ const CHANNEL_NAME = "services"
 // The `Disabled` field indicates if the proxy dispatch the requests to the service.
 // The `Timeout` field represents how milliseconds the proxy wait for the response, before returning an error.
 type Service struct {
-	Subdomain       string `bson:"_id" json:"subdomain"`
-	AllowKeylessUse bool   `json:"allow_keyless_use"`
-	Description     string `json:"description"`
-	Disabled        bool   `json:"disabled"`
-	Documentation   string `json:"documentation"`
-	Endpoint        string `json:"endpoint"`
-	Owner           string `json:"owner"`
-	Team            string `json:"team"`
-	Timeout         int    `json:"timeout"`
+	Subdomain       string   `bson:"_id" json:"subdomain"`
+	AllowKeylessUse bool     `json:"allow_keyless_use"`
+	Description     string   `json:"description"`
+	Disabled        bool     `json:"disabled"`
+	Documentation   string   `json:"documentation"`
+	Endpoint        string   `json:"endpoint"`
+	Filters         []string `json:"filters"`
+	Owner           string   `json:"owner"`
+	Team            string   `json:"team"`
+	Timeout         int      `json:"timeout"`
 }
 
 // Save creates a new service.
