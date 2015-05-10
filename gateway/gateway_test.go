@@ -98,8 +98,12 @@ func (s *S) TestGatewayInternalError(c *C) {
 }
 
 func (s *S) TestGatewayWithFilter(c *C) {
-	addHeader := func(r *http.Request, w *http.Response) {
+	addBackstageHeader := func(r *http.Request, w *http.Response, buf *bytes.Buffer) {
 		w.Header.Set("X-Backstage-Header", "Custom Header")
+	}
+
+	addViaHeader := func(r *http.Request, w *http.Response, buf *bytes.Buffer) {
+		w.Header.Set("Via", "test.backstage.dev")
 	}
 
 	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -107,9 +111,10 @@ func (s *S) TestGatewayWithFilter(c *C) {
 	}))
 	defer target.Close()
 
-	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Filters: []string{"AddHeader"}}}
+	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Filters: []string{"AddHeader", "AddHeaderVia"}}}
 	gateway := NewGateway(s.Settings)
-	gateway.Filter().Add("AddHeader", addHeader)
+	gateway.Filter().Add("AddHeader", addBackstageHeader)
+	gateway.Filter().Add("AddHeaderVia", addViaHeader)
 	gateway.LoadServices(services)
 	defer gateway.Close()
 
@@ -121,4 +126,5 @@ func (s *S) TestGatewayWithFilter(c *C) {
 	c.Assert(w.Code, Equals, http.StatusOK)
 	c.Assert(w.Body.String(), Equals, "OK")
 	c.Assert(w.Header().Get("X-Backstage-Header"), Equals, "Custom Header")
+	c.Assert(w.Header().Get("Via"), Equals, "test.backstage.dev")
 }
