@@ -13,6 +13,7 @@ import (
 
 	"github.com/backstage/backstage/api"
 	. "github.com/backstage/backstage/gateway/filter"
+	"github.com/codegangsta/negroni"
 )
 
 const DEFAULT_TIMEOUT = 10
@@ -62,7 +63,7 @@ func (rp *Dispatcher) RoundTrip(r *http.Request) (*http.Response, error) {
 	return w, nil
 }
 
-func NewDispatcher(h *ServiceHandler) *Dispatcher {
+func NewDispatcher(h *ServiceHandler) http.Handler {
 	rp := &Dispatcher{handler: h}
 	t := h.service.Timeout
 	if t <= 0 {
@@ -75,12 +76,19 @@ func NewDispatcher(h *ServiceHandler) *Dispatcher {
 		Proxy:               http.ProxyFromEnvironment,
 		TLSHandshakeTimeout: timeout * time.Second,
 	}
+	//Load middlewares before adding the reverse proxy to the stack.
+	n := negroni.New()
+	for _, m := range h.middlewares {
+		n.Use(negroni.HandlerFunc(m))
+	}
+
 	rp.proxy = &ReverseProxy{
 		Director:  rp.Director,
 		Transport: rp,
 		Filters:   h.filters,
 	}
-	return rp
+	n.UseHandler(rp.proxy)
+	return n
 }
 
 func timeoutDialer(cTimeout time.Duration, rwTimeout time.Duration) func(net, addr string) (c net.Conn, err error) {

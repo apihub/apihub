@@ -114,7 +114,9 @@ func (storage *Storage) GetTokenValue(key string, t interface{}) error {
 		fmt.Print(err)
 		return err
 	}
-	Cache.Replace(key, data)
+	if len(data) > 0 {
+		Cache.Replace(key, data)
+	}
 	return nil
 }
 

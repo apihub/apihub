@@ -5,8 +5,9 @@ import (
 	"flag"
 	"io"
 	"net/http"
-	"path/filepath"
 	"reflect"
+	"runtime"
+	"path"
 	"strings"
 	"unicode"
 
@@ -112,10 +113,8 @@ func (api *Api) drawDefaultRoutes() {
 	oauthHandler := &OAuthHandler{}
 
 	//Assets
-	assetsFilesLocation, err := filepath.Abs("../api/views")
-	if err != nil {
-		Logger.Error(err.Error())
-	}
+	_, filename, _, _ := runtime.Caller(1)
+	assetsFilesLocation := path.Join(path.Dir(filename), "views")
 	goji.Handle("/assets/*", http.FileServer(http.Dir(assetsFilesLocation)))
 
 	// Public Routes

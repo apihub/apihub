@@ -68,8 +68,8 @@ func getRedis() *redis.Pool {
 	redisNumber, _ := config.GetInt("redis:number")
 
 	pool := &redis.Pool{
-		MaxActive:   1,
-		MaxIdle:     1,
+		MaxActive:   4,
+		MaxIdle:     2,
 		IdleTimeout: 0,
 		Wait:        true,
 		Dial: func() (redis.Conn, error) {
@@ -124,7 +124,7 @@ func delCache(key string) (interface{}, error) {
 }
 
 func getHCache(key string) ([]interface{}, error) {
-	conn := NewRedisClient().conn
+	conn := getRedis().Get()
 	defer conn.Close()
 	keyValue, err := conn.Do("HGETALL", key)
 	if err != nil {

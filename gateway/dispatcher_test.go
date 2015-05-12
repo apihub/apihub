@@ -16,12 +16,12 @@ func (s *S) TestServer(c *C) {
 	defer target.Close()
 
 	service := &ServiceHandler{service: &account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Timeout: 10, Disabled: false}}
-	rp := NewDispatcher(service)
+	dispatcher := NewDispatcher(service)
 
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
 	r, _ := http.NewRequest("GET", "test.backstage.dev", nil)
-	rp.proxy.ServeHTTP(w, r)
+	dispatcher.ServeHTTP(w, r)
 	c.Assert(w.Code, Equals, http.StatusOK)
 	c.Assert(w.Body.String(), Equals, "OK")
 }

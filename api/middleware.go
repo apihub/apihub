@@ -29,10 +29,10 @@ func AuthorizationMiddleware(c *web.C, h http.Handler) http.Handler {
 
 func ErrorMiddleware(c *web.C, h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
 		h.ServeHTTP(w, r)
 		key, ok := GetRequestError(c)
 		if ok {
+			w.Header().Set("Content-Type", "application/json")
 			body, _ := json.Marshal(key)
 			w.WriteHeader(key.StatusCode)
 			io.WriteString(w, string(body))

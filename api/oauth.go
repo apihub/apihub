@@ -2,10 +2,11 @@ package api
 
 import (
 	"fmt"
+	"runtime"
+	"path"
 	"html/template"
 	"net/http"
 	"net/url"
-	"path/filepath"
 
 	"github.com/RangelReale/osin"
 	. "github.com/backstage/backstage/account"
@@ -58,6 +59,7 @@ func HandleLoginPage(ar *osin.AuthorizeRequest, w http.ResponseWriter, r *http.R
 		Action: fmt.Sprintf("/login/oauth/authorize?response_type=%s&client_id=%s&state=%s&redirect_uri=%s", ar.Type, ar.Client.GetId(), ar.State, url.QueryEscape(ar.RedirectUri)),
 		Method: "POST",
 	}
+
 	if client, err := FindClientById(ar.Client.GetId()); err == nil {
 		p.Data = map[string]interface{}{"client": client.Name}
 	}
@@ -70,10 +72,9 @@ func HandleLoginPage(ar *osin.AuthorizeRequest, w http.ResponseWriter, r *http.R
 		p.InvalidCredentials = true
 	}
 
-	dir, err := filepath.Abs("../api/views/login.html")
-	if err != nil {
-		Logger.Error(err.Error())
-	}
+	_, filename, _, _ := runtime.Caller(1)
+	dir := path.Join(path.Dir(filename), "views/login.html")
+	w.Header().Set("Content-Type", "text/html")
 	t, _ := template.ParseFiles(dir)
 	t.Execute(w, p)
 	return nil

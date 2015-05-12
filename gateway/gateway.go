@@ -13,6 +13,7 @@ import (
 	"github.com/backstage/backstage/api"
 	"github.com/backstage/backstage/db"
 	. "github.com/backstage/backstage/gateway/filter"
+	. "github.com/backstage/backstage/gateway/middleware"
 )
 
 type Settings struct {
@@ -22,33 +23,39 @@ type Settings struct {
 }
 
 type ServiceHandler struct {
-	handler http.Handler
-	service *account.Service
-	filters []Filter
+	handler     http.Handler
+	service     *account.Service
+	filters     []Filter
+	middlewares []Middleware
 }
 
 type Gateway struct {
 	Settings    *Settings
 	filters     Filters
+	middlewares Middlewares
 	redisClient *db.RedisClient
 	services    map[string]*ServiceHandler
 }
 
 func (g *Gateway) Filter() Filters {
-	if g.filters == nil {
-		g.filters = map[string]Filter{}
-	}
 	return g.filters
 }
 
+func (g *Gateway) Middleware() Middlewares {
+	return g.middlewares
+}
+
 func (g *Gateway) loadFilters() {
-	//g.Filter().Add("AddSecurityHeaders", AddHeaders)
+	g.Filter().Add("ConvertXmlToJson", ConvertXmlToJson)
+	g.Filter().Add("ConvertJsonToXml", ConvertJsonToXml)
 	log.Print("Default filters loaded.")
 }
 
 func NewGateway(config *Settings) *Gateway {
 	g := &Gateway{
 		Settings:    config,
+		filters:     map[string]Filter{},
+		middlewares: map[string]Middleware{},
 		redisClient: db.NewRedisClient(),
 		services:    make(map[string]*ServiceHandler),
 	}
@@ -96,9 +103,18 @@ func (g *Gateway) wrapServices(services []*account.Service) map[string]*ServiceH
 	for _, serv := range services {
 		h := &ServiceHandler{service: serv}
 		s[serv.Subdomain] = h
+		//Extract filters
 		for _, f := range serv.Filters {
 			if filter := g.Filter().Get(f); filter != nil {
+				log.Printf("Filter `%s` added successfully.", f)
 				h.filters = append(h.filters, filter)
+			}
+		}
+		//Extract middlewares
+		for _, m := range serv.Middlewares {
+			if midd := g.Middleware().Get(m); midd != nil {
+				log.Printf("Middleware `%s` added successfully.", m)
+				h.middlewares = append(h.middlewares, midd)
 			}
 		}
 	}
@@ -166,8 +182,7 @@ func extractSubdomain(host string) string {
 
 func createProxy(e *ServiceHandler) http.Handler {
 	if h := e.service.Endpoint; h != "" {
-		rp := NewDispatcher(e)
-		return rp.proxy
+		return NewDispatcher(e)
 	}
 	return nil
 }

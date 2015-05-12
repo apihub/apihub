@@ -9,11 +9,13 @@
 package gateway
 
 import (
+	"bytes"
 	"io"
 	"log"
 	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -156,8 +158,10 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 	defer res.Body.Close()
 
+	body := new(bytes.Buffer)
+	body.ReadFrom(res.Body)
 	for _, filter := range p.Filters {
-		filter(req, res)
+		filter(req, res, body)
 	}
 
 	for _, h := range hopHeaders {
@@ -165,9 +169,9 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	copyHeader(rw.Header(), res.Header)
-
+	rw.Header().Set("Content-Length", strconv.Itoa(body.Len()))
 	rw.WriteHeader(res.StatusCode)
-	p.copyResponse(rw, res.Body)
+	p.copyResponse(rw, body)
 }
 
 func (p *ReverseProxy) copyResponse(dst io.Writer, src io.Reader) {
