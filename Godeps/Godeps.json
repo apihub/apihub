@@ -29,6 +29,15 @@
 			"Rev": "df0a178061f67ebc85ceac3f8a8d96df1a84f939"
 		},
 		{
+			"ImportPath": "github.com/clbanning/mxj",
+			"Rev": "da17de41d4c2e579884683ad838411fac440984d"
+		},
+		{
+			"ImportPath": "github.com/codegangsta/negroni",
+			"Comment": "v0.1-34-gae96f1c",
+			"Rev": "ae96f1c1ac9eb11be7dff4fe4cb42f6846b93d77"
+		},
+		{
 			"ImportPath": "github.com/fatih/structs",
 			"Rev": "cff54a688549a095900d74a02d02b1120bee96e7"
 		},
