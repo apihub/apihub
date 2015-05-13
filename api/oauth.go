@@ -2,11 +2,11 @@ package api
 
 import (
 	"fmt"
-	"runtime"
-	"path"
 	"html/template"
 	"net/http"
 	"net/url"
+	"path"
+	"runtime"
 
 	"github.com/RangelReale/osin"
 	. "github.com/backstage/backstage/account"
@@ -25,6 +25,15 @@ type PageForm struct {
 	InvalidCredentials bool
 	Data               map[string]interface{}
 	Method             string
+}
+
+type AuthenticationInfo struct {
+	ClientId  string `json:"client_id"`
+	CreatedAt string `bson:"created_at" json:"created_at"`
+	Expires   int    `json:"expires"`
+	Token     string `json:"access_token"`
+	Type      string `json:"token_type"`
+	UserId    string `json:"user_id"`
 }
 
 func (handler *OAuthHandler) Token(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {

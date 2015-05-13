@@ -81,7 +81,6 @@ func NewDispatcher(h *ServiceHandler) http.Handler {
 	for _, m := range h.middlewares {
 		n.Use(negroni.HandlerFunc(m))
 	}
-
 	rp.proxy = &ReverseProxy{
 		Director:  rp.Director,
 		Transport: rp,

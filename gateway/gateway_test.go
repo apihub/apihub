@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/api"
 	"github.com/backstage/backstage/gateway/middleware"
 	"github.com/fatih/structs"
 	. "gopkg.in/check.v1"
@@ -179,7 +180,7 @@ func (s *S) TestAuthenticationMiddlewareWithValidHeader(c *C) {
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
 
-	auth := &middleware.AuthenticationInfo{ClientId: "123", Token: "test-123", Type: "Bearer", CreatedAt: "now", UserId: "123", Expires: 10}
+	auth := &api.AuthenticationInfo{ClientId: "123", Token: "test-123", Type: "Bearer", CreatedAt: "now", UserId: "123", Expires: 10}
 	s.AddToken(auth.Token, auth.Expires, structs.Map(auth))
 	defer s.DeleteToken(auth.Token)
 

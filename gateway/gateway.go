@@ -14,6 +14,7 @@ import (
 	"github.com/backstage/backstage/db"
 	. "github.com/backstage/backstage/gateway/filter"
 	. "github.com/backstage/backstage/gateway/middleware"
+	"github.com/rs/cors"
 )
 
 type Settings struct {
@@ -45,6 +46,11 @@ func (g *Gateway) Middleware() Middlewares {
 	return g.middlewares
 }
 
+func (g *Gateway) loadMiddlewares() {
+	g.Middleware().Add("CorsMiddleware", Middleware(cors.Default().ServeHTTP))
+	log.Print("Default middlewares loaded.")
+}
+
 func (g *Gateway) loadFilters() {
 	g.Filter().Add("ConvertXmlToJson", ConvertXmlToJson)
 	g.Filter().Add("ConvertJsonToXml", ConvertJsonToXml)
@@ -60,6 +66,7 @@ func NewGateway(config *Settings) *Gateway {
 		services:    make(map[string]*ServiceHandler),
 	}
 
+	g.loadMiddlewares()
 	g.loadFilters()
 	return g
 }
