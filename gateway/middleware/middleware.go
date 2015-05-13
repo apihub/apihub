@@ -8,7 +8,10 @@ import (
 	"github.com/backstage/backstage/db"
 )
 
+// Function which modify the request.
 type Middleware func(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc)
+
+// An array of Middleware with key to be used by the gateway and service.
 type Middlewares map[string]Middleware
 
 func (f Middlewares) Add(key string, value Middleware) {
@@ -18,6 +21,8 @@ func (f Middlewares) Get(key string) Middleware {
 	return f[key]
 }
 
+// AuthorizationMiddleware authenticates the request by checking if there is
+// key in Redis following the api.AuthorizationInfo struct.
 func AuthenticationMiddleware(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	auth := r.Header.Get("Authorization")
 	a := strings.TrimSpace(auth)

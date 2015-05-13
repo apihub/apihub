@@ -1,3 +1,4 @@
+// Package gateway provide a reverse proxy with middlewares and filters.
 package gateway
 
 import (
@@ -23,6 +24,8 @@ type Settings struct {
 	Port        string
 }
 
+// ServiceHandler registers the handler, filters and middlewares for the given
+// service.
 type ServiceHandler struct {
 	handler     http.Handler
 	service     *account.Service
@@ -30,6 +33,8 @@ type ServiceHandler struct {
 	middlewares []Middleware
 }
 
+// Gateway is a reverse proxy.
+// It is possible to add custom filters and middlewares to be used by services.
 type Gateway struct {
 	Settings    *Settings
 	filters     Filters
@@ -38,25 +43,18 @@ type Gateway struct {
 	services    map[string]*ServiceHandler
 }
 
+// Filter() returns the filter map that will be sent to ReverseProxy.
 func (g *Gateway) Filter() Filters {
 	return g.filters
 }
 
+// Middleware() returns the middleware map that will be sent to ReverseProxy.
 func (g *Gateway) Middleware() Middlewares {
 	return g.middlewares
 }
 
-func (g *Gateway) loadMiddlewares() {
-	g.Middleware().Add("CorsMiddleware", Middleware(cors.Default().ServeHTTP))
-	log.Print("Default middlewares loaded.")
-}
-
-func (g *Gateway) loadFilters() {
-	g.Filter().Add("ConvertXmlToJson", ConvertXmlToJson)
-	g.Filter().Add("ConvertJsonToXml", ConvertJsonToXml)
-	log.Print("Default filters loaded.")
-}
-
+// NewGateway returns a new Gateway, serving the provided services as proxy.
+// The returned Gateway simply dispatch the incoming requests to services.
 func NewGateway(config *Settings) *Gateway {
 	g := &Gateway{
 		Settings:    config,
@@ -71,14 +69,10 @@ func NewGateway(config *Settings) *Gateway {
 	return g
 }
 
+// LoadServices wraps and loads the services provided.
 func (g *Gateway) LoadServices(services []*account.Service) {
 	if services != nil {
-		s := make(map[string]*ServiceHandler)
-		s = g.wrapServices(services)
-		for _, e := range s {
-			e.handler = createProxy(e)
-			g.services[e.service.Subdomain] = e
-		}
+		g.wrapServices(services)
 		log.Print("Services loaded.")
 	}
 }
@@ -105,11 +99,10 @@ func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	notFound(w)
 }
 
-func (g *Gateway) wrapServices(services []*account.Service) map[string]*ServiceHandler {
-	s := make(map[string]*ServiceHandler)
+// Creates an instance of ServiceHandler for each service for the given array.
+func (g *Gateway) wrapServices(services []*account.Service) {
 	for _, serv := range services {
 		h := &ServiceHandler{service: serv}
-		s[serv.Subdomain] = h
 		//Extract filters
 		for _, f := range serv.Filters {
 			if filter := g.Filter().Get(f); filter != nil {
@@ -124,8 +117,9 @@ func (g *Gateway) wrapServices(services []*account.Service) map[string]*ServiceH
 				h.middlewares = append(h.middlewares, midd)
 			}
 		}
+		h.handler = createProxy(h)
+		g.services[h.service.Subdomain] = h
 	}
-	return s
 }
 
 //FIXME: need to figure out how to test this since it's running on its own goroutine.
@@ -155,30 +149,47 @@ func (g *Gateway) RefreshServices() {
 	}()
 }
 
+// Add a new service that will be used for proxying requests.
 func (g *Gateway) addService(s *account.Service) {
 	g.LoadServices([]*account.Service{s})
 	log.Printf("New service has been added: %s -> %s.", s.Subdomain, s.Endpoint)
 }
 
+// Remove a service from the Gateway.
 func (g *Gateway) removeService(s *account.Service) {
 	delete(g.services, s.Subdomain)
 	log.Printf("Service has been removed: %s -> %s.", s.Subdomain, s.Endpoint)
 }
 
+// handler is responsible to check if the gateway has a service to respond the request.
 func (g *Gateway) handler(r *http.Request) http.Handler {
-	h := strings.TrimSpace(r.Host)
-	if i := strings.Index(h, ":"); i >= 0 {
-		h = h[:i]
-	}
-
-	subdomain := extractSubdomain(h)
+	subdomain := extractSubdomain(r)
 	if _, ok := g.services[subdomain]; ok {
 		return g.services[subdomain].handler
 	}
 	return nil
 }
 
-func extractSubdomain(host string) string {
+// Load default middlewares provided by Backstage Gateway.
+func (g *Gateway) loadMiddlewares() {
+	g.Middleware().Add("CorsMiddleware", Middleware(cors.Default().ServeHTTP))
+	log.Print("Default middlewares loaded.")
+}
+
+// Load default filters provided by Backstage Gateway.
+func (g *Gateway) loadFilters() {
+	g.Filter().Add("ConvertXmlToJson", ConvertXmlToJson)
+	g.Filter().Add("ConvertJsonToXml", ConvertJsonToXml)
+	log.Print("Default filters loaded.")
+}
+
+// Extract the subdomain from request.
+func extractSubdomain(r *http.Request) string {
+	host := strings.TrimSpace(r.Host)
+	if i := strings.Index(host, ":"); i >= 0 {
+		host = host[:i]
+	}
+
 	var subdomain string
 	host_parts := strings.Split(host, ".")
 	if len(host_parts) > 2 {
@@ -187,6 +198,8 @@ func extractSubdomain(host string) string {
 	return subdomain
 }
 
+// createProxy returns an instance of Dispatch, which implements http.Handler.
+// It is an instance of reverse proxy that will be available to be used by Backstage Gateway.
 func createProxy(e *ServiceHandler) http.Handler {
 	if h := e.service.Endpoint; h != "" {
 		return NewDispatcher(e)

@@ -10,7 +10,10 @@ import (
 	"github.com/clbanning/mxj/x2j"
 )
 
+// Function which modify the response.
 type Filter func(*http.Request, *http.Response, *bytes.Buffer)
+
+// An array of Filter with key to be used by the gateway and service.
 type Filters map[string]Filter
 
 func (f Filters) Add(key string, value Filter) {
@@ -21,6 +24,7 @@ func (f Filters) Get(key string) Filter {
 	return f[key]
 }
 
+// Given a xml as response body, convert it to json.
 func ConvertXmlToJson(r *http.Request, w *http.Response, body *bytes.Buffer) {
 	b, err := ioutil.ReadAll(body)
 	if err != nil {
@@ -39,6 +43,7 @@ func ConvertXmlToJson(r *http.Request, w *http.Response, body *bytes.Buffer) {
 	body.Write(m)
 }
 
+// Given a json as response body, convert it to xml.
 func ConvertJsonToXml(r *http.Request, w *http.Response, body *bytes.Buffer) {
 	b, err := ioutil.ReadAll(body)
 	if err != nil {

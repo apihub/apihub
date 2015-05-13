@@ -53,6 +53,8 @@ type ReverseProxy struct {
 	// standard logger.
 	ErrorLog *log.Logger
 
+	// Filters are supposed to modify the response before
+	// sending it back.
 	Filters []filter.Filter
 }
 
