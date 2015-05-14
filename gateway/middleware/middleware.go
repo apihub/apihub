@@ -31,7 +31,9 @@ func AuthenticationMiddleware(rw http.ResponseWriter, r *http.Request, next http
 		e := api.AuthenticationInfo{}
 		get(a, &tokenInfo)
 		if tokenInfo != e {
-			r.Header.Set("Backstage-User", tokenInfo.UserId)
+			if tokenInfo.UserId != "" {
+				r.Header.Set("Backstage-User", tokenInfo.UserId)
+			}
 			r.Header.Set("Backstage-ClientId", tokenInfo.ClientId)
 			next(rw, r)
 			return
@@ -43,6 +45,7 @@ func AuthenticationMiddleware(rw http.ResponseWriter, r *http.Request, next http
 	return
 }
 
+// Get Token From Redis.
 func get(token string, t interface{}) error {
 	conn := &db.Storage{}
 	return conn.GetTokenValue(token, t)

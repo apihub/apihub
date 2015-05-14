@@ -13,8 +13,8 @@ import (
 	"github.com/backstage/backstage/account"
 	"github.com/backstage/backstage/api"
 	"github.com/backstage/backstage/db"
-	. "github.com/backstage/backstage/gateway/transformer"
 	. "github.com/backstage/backstage/gateway/middleware"
+	. "github.com/backstage/backstage/gateway/transformer"
 	"github.com/rs/cors"
 )
 
@@ -27,20 +27,20 @@ type Settings struct {
 // ServiceHandler registers the handler, transformers and middlewares for the given
 // service.
 type ServiceHandler struct {
-	handler     http.Handler
-	service     *account.Service
-	transformers     []Transformer
-	middlewares []Middleware
+	handler      http.Handler
+	service      *account.Service
+	transformers []Transformer
+	middlewares  []Middleware
 }
 
 // Gateway is a reverse proxy.
 // It is possible to add custom transformers and middlewares to be used by services.
 type Gateway struct {
-	Settings    *Settings
-	transformers     Transformers
-	middlewares Middlewares
-	redisClient *db.RedisClient
-	services    map[string]*ServiceHandler
+	Settings     *Settings
+	transformers Transformers
+	middlewares  Middlewares
+	redisClient  *db.RedisClient
+	services     map[string]*ServiceHandler
 }
 
 // Transformer() returns the transformer map that will be sent to ReverseProxy.
@@ -57,11 +57,11 @@ func (g *Gateway) Middleware() Middlewares {
 // The returned Gateway simply dispatch the incoming requests to services.
 func NewGateway(config *Settings) *Gateway {
 	g := &Gateway{
-		Settings:    config,
-		transformers:     map[string]Transformer{},
-		middlewares: map[string]Middleware{},
-		redisClient: db.NewRedisClient(),
-		services:    make(map[string]*ServiceHandler),
+		Settings:     config,
+		transformers: map[string]Transformer{},
+		middlewares:  map[string]Middleware{},
+		redisClient:  db.NewRedisClient(),
+		services:     make(map[string]*ServiceHandler),
 	}
 
 	g.loadMiddlewares()

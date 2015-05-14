@@ -193,3 +193,32 @@ func (s *S) TestAuthenticationMiddlewareWithValidHeader(c *C) {
 	c.Assert(w.Code, Equals, http.StatusOK)
 	c.Assert(w.Body.String(), Equals, "OK")
 }
+
+func (s *S) TestAuthenticationMiddlewareWithValidHeaderForApp(c *C) {
+	auth := &api.AuthenticationInfo{ClientId: "123", Token: "test-123", Type: "Bearer", CreatedAt: "now", Expires: 10}
+	s.AddToken(auth.Token, auth.Expires, structs.Map(auth))
+	defer s.DeleteToken(auth.Token)
+
+	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Check(r.Header["Backstage-User"], IsNil)
+		c.Assert(r.Header.Get("Backstage-ClientId"), Equals, auth.ClientId)
+		w.Write([]byte("OK"))
+	}))
+	defer target.Close()
+
+	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test",
+		Middlewares: []string{"AuthenticationMiddleware"}}}
+	gateway := NewGateway(s.Settings)
+	gateway.Middleware().Add("AuthenticationMiddleware", middleware.AuthenticationMiddleware)
+	gateway.LoadServices(services)
+	defer gateway.Close()
+	w := httptest.NewRecorder()
+	w.Body = new(bytes.Buffer)
+
+	r, _ := http.NewRequest("GET", "http://test.backstage.dev", nil)
+	r.Header.Set("Authorization", auth.Token)
+	gateway.ServeHTTP(w, r)
+
+	c.Assert(w.Code, Equals, http.StatusOK)
+	c.Assert(w.Body.String(), Equals, "OK")
+}
