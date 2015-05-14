@@ -23,6 +23,11 @@ Gateway/Reverse Proxy
 A reverse proxy sits between the api server and the world. It ensures that all requests for the apis, either for reading or writing, are properly authenticated and authorized. Moreover, it is possible to have several other filters: throttling, share, and so on.
 
 
+Middleware
+----------
+Middleware is a wrapper around your API that decorates the requests without adding logic in the application. It's supposed to run before dispatching the request to the API.
+
+
 OAuth 2.0
 ---------
   "OAuth 2.0 is the next evolution of the OAuth protocol which was originally created in late 2006. OAuth 2.0 focuses on client developer simplicity while providing specific authorization flows for web applications, desktop applications, mobile phones, and living room devices."
@@ -38,6 +43,10 @@ Team
 ----
 A group of users that have valid accounts.
 
+
+Transformer
+-----------
+Transformer is supposed to run after the API response, just before writing the final response.
 
 User
 ----
