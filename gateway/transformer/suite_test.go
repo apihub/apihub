@@ -1,4 +1,4 @@
-package filter
+package transformer
 
 import (
 	"testing"
@@ -9,11 +9,11 @@ import (
 func Test(t *testing.T) { TestingT(t) }
 
 type S struct {
-	filters Filters
+	transformers Transformers
 }
 
 func (s *S) SetUpTest(c *C) {
-	s.filters = make(map[string]Filter)
+	s.transformers = make(map[string]Transformer)
 }
 
 var _ = Suite(&S{})

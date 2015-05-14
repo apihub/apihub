@@ -13,5 +13,6 @@ Contents:
    quick_start/index
    authentication/index
    api/index
+   plugins/index
    contributing/index
    tools/index

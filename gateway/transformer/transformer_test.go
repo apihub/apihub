@@ -1,4 +1,4 @@
-package filter
+package transformer
 
 import (
 	"bytes"
@@ -7,15 +7,15 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-func (s *S) TestGetFilter(c *C) {
-	c.Check(s.filters.Get("invalid"), IsNil)
+func (s *S) TestGetTransformer(c *C) {
+	c.Check(s.transformers.Get("invalid"), IsNil)
 }
 
-func (s *S) TestAddFilter(c *C) {
-	c.Check(s.filters.Get("AddHeader"), IsNil)
+func (s *S) TestAddTransformer(c *C) {
+	c.Check(s.transformers.Get("AddHeader"), IsNil)
 	ah := func(r *http.Request, w *http.Response, buf *bytes.Buffer) {}
-	s.filters.Add("AddHeader", ah)
-	c.Check(s.filters.Get("AddHeader"), NotNil)
+	s.transformers.Add("AddHeader", ah)
+	c.Check(s.transformers.Get("AddHeader"), NotNil)
 }
 
 func (s *S) TestConvertXmlToJson(c *C) {

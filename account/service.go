@@ -24,7 +24,7 @@ type Service struct {
 	Disabled      bool     `json:"disabled"`
 	Documentation string   `json:"documentation"`
 	Endpoint      string   `json:"endpoint"`
-	Filters       []string `json:"filters"`
+	Transformers       []string `json:"transformers"`
 	Middlewares   []string `json:"middlewares"`
 	Owner         string   `json:"owner"`
 	Team          string   `json:"team"`

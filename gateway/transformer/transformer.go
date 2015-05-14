@@ -1,4 +1,4 @@
-package filter
+package transformer
 
 import (
 	"bytes"
@@ -11,16 +11,16 @@ import (
 )
 
 // Function which modify the response.
-type Filter func(*http.Request, *http.Response, *bytes.Buffer)
+type Transformer func(*http.Request, *http.Response, *bytes.Buffer)
 
-// An array of Filter with key to be used by the gateway and service.
-type Filters map[string]Filter
+// An array of Transformer with key to be used by the gateway and service.
+type Transformers map[string]Transformer
 
-func (f Filters) Add(key string, value Filter) {
+func (f Transformers) Add(key string, value Transformer) {
 	f[key] = value
 }
 
-func (f Filters) Get(key string) Filter {
+func (f Transformers) Get(key string) Transformer {
 	return f[key]
 }
 

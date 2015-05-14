@@ -31,6 +31,8 @@ func AuthenticationMiddleware(rw http.ResponseWriter, r *http.Request, next http
 		e := api.AuthenticationInfo{}
 		get(a, &tokenInfo)
 		if tokenInfo != e {
+			r.Header.Set("Backstage-User", tokenInfo.UserId)
+			r.Header.Set("Backstage-ClientId", tokenInfo.ClientId)
 			next(rw, r)
 			return
 		}

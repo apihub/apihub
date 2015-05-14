@@ -1,4 +1,4 @@
-// Package gateway provide a reverse proxy with middlewares and filters.
+// Package gateway provide a reverse proxy with middlewares and transformers.
 package gateway
 
 import (
@@ -13,7 +13,7 @@ import (
 	"github.com/backstage/backstage/account"
 	"github.com/backstage/backstage/api"
 	"github.com/backstage/backstage/db"
-	. "github.com/backstage/backstage/gateway/filter"
+	. "github.com/backstage/backstage/gateway/transformer"
 	. "github.com/backstage/backstage/gateway/middleware"
 	"github.com/rs/cors"
 )
@@ -24,28 +24,28 @@ type Settings struct {
 	Port        string
 }
 
-// ServiceHandler registers the handler, filters and middlewares for the given
+// ServiceHandler registers the handler, transformers and middlewares for the given
 // service.
 type ServiceHandler struct {
 	handler     http.Handler
 	service     *account.Service
-	filters     []Filter
+	transformers     []Transformer
 	middlewares []Middleware
 }
 
 // Gateway is a reverse proxy.
-// It is possible to add custom filters and middlewares to be used by services.
+// It is possible to add custom transformers and middlewares to be used by services.
 type Gateway struct {
 	Settings    *Settings
-	filters     Filters
+	transformers     Transformers
 	middlewares Middlewares
 	redisClient *db.RedisClient
 	services    map[string]*ServiceHandler
 }
 
-// Filter() returns the filter map that will be sent to ReverseProxy.
-func (g *Gateway) Filter() Filters {
-	return g.filters
+// Transformer() returns the transformer map that will be sent to ReverseProxy.
+func (g *Gateway) Transformer() Transformers {
+	return g.transformers
 }
 
 // Middleware() returns the middleware map that will be sent to ReverseProxy.
@@ -58,14 +58,14 @@ func (g *Gateway) Middleware() Middlewares {
 func NewGateway(config *Settings) *Gateway {
 	g := &Gateway{
 		Settings:    config,
-		filters:     map[string]Filter{},
+		transformers:     map[string]Transformer{},
 		middlewares: map[string]Middleware{},
 		redisClient: db.NewRedisClient(),
 		services:    make(map[string]*ServiceHandler),
 	}
 
 	g.loadMiddlewares()
-	g.loadFilters()
+	g.loadTransformers()
 	return g
 }
 
@@ -103,11 +103,11 @@ func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (g *Gateway) wrapServices(services []*account.Service) {
 	for _, serv := range services {
 		h := &ServiceHandler{service: serv}
-		//Extract filters
-		for _, f := range serv.Filters {
-			if filter := g.Filter().Get(f); filter != nil {
-				log.Printf("Filter `%s` added successfully.", f)
-				h.filters = append(h.filters, filter)
+		//Extract transformers
+		for _, f := range serv.Transformers {
+			if transformer := g.Transformer().Get(f); transformer != nil {
+				log.Printf("Transformer `%s` added successfully.", f)
+				h.transformers = append(h.transformers, transformer)
 			}
 		}
 		//Extract middlewares
@@ -176,11 +176,11 @@ func (g *Gateway) loadMiddlewares() {
 	log.Print("Default middlewares loaded.")
 }
 
-// Load default filters provided by Backstage Gateway.
-func (g *Gateway) loadFilters() {
-	g.Filter().Add("ConvertXmlToJson", ConvertXmlToJson)
-	g.Filter().Add("ConvertJsonToXml", ConvertJsonToXml)
-	log.Print("Default filters loaded.")
+// Load default transformers provided by Backstage Gateway.
+func (g *Gateway) loadTransformers() {
+	g.Transformer().Add("ConvertXmlToJson", ConvertXmlToJson)
+	g.Transformer().Add("ConvertJsonToXml", ConvertJsonToXml)
+	log.Print("Default transformers loaded.")
 }
 
 // Extract the subdomain from request.

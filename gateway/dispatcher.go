@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/backstage/backstage/api"
-	. "github.com/backstage/backstage/gateway/filter"
+	. "github.com/backstage/backstage/gateway/transformer"
 	"github.com/codegangsta/negroni"
 )
 
@@ -84,7 +84,7 @@ func NewDispatcher(h *ServiceHandler) http.Handler {
 	rp.proxy = &ReverseProxy{
 		Director:  rp.Director,
 		Transport: rp,
-		Filters:   h.filters,
+		Transformers:   h.transformers,
 	}
 	n.UseHandler(rp.proxy)
 	return n

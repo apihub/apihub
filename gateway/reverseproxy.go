@@ -20,7 +20,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/backstage/backstage/gateway/filter"
+	"github.com/backstage/backstage/gateway/transformer"
 )
 
 // onExitFlushLoop is a callback set by tests to detect the state of the
@@ -53,9 +53,9 @@ type ReverseProxy struct {
 	// standard logger.
 	ErrorLog *log.Logger
 
-	// Filters are supposed to modify the response before
+	// Transformers are supposed to modify the response before
 	// sending it back.
-	Filters []filter.Filter
+	Transformers []transformer.Transformer
 }
 
 func singleJoiningSlash(a, b string) string {
@@ -162,8 +162,8 @@ func (p *ReverseProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	body := new(bytes.Buffer)
 	body.ReadFrom(res.Body)
-	for _, filter := range p.Filters {
-		filter(req, res, body)
+	for _, transformer := range p.Transformers {
+		transformer(req, res, body)
 	}
 
 	for _, h := range hopHeaders {

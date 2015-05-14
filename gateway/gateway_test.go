@@ -100,7 +100,7 @@ func (s *S) TestGatewayInternalError(c *C) {
 	c.Assert(w.Body.String(), Equals, "{\"error\":\"internal_server_error\",\"error_description\":\"dial tcp: lookup invalidurl: no such host\"}")
 }
 
-func (s *S) TestGatewayWithFilter(c *C) {
+func (s *S) TestGatewayWithTransformer(c *C) {
 	addBackstageHeader := func(r *http.Request, w *http.Response, buf *bytes.Buffer) {
 		w.Header.Set("X-Backstage-Header", "Custom Header")
 	}
@@ -114,10 +114,10 @@ func (s *S) TestGatewayWithFilter(c *C) {
 	}))
 	defer target.Close()
 
-	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Filters: []string{"AddHeader", "AddHeaderVia"}}}
+	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Transformers: []string{"AddHeader", "AddHeaderVia"}}}
 	gateway := NewGateway(s.Settings)
-	gateway.Filter().Add("AddHeader", addBackstageHeader)
-	gateway.Filter().Add("AddHeaderVia", addViaHeader)
+	gateway.Transformer().Add("AddHeader", addBackstageHeader)
+	gateway.Transformer().Add("AddHeaderVia", addViaHeader)
 	gateway.LoadServices(services)
 	defer gateway.Close()
 
@@ -166,7 +166,13 @@ func (s *S) TestAuthenticationMiddlewareWithInvalidHeader(c *C) {
 }
 
 func (s *S) TestAuthenticationMiddlewareWithValidHeader(c *C) {
+	auth := &api.AuthenticationInfo{ClientId: "123", Token: "test-123", Type: "Bearer", CreatedAt: "now", UserId: "alice", Expires: 10}
+	s.AddToken(auth.Token, auth.Expires, structs.Map(auth))
+	defer s.DeleteToken(auth.Token)
+
 	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		c.Assert(r.Header.Get("Backstage-User"), Equals, auth.UserId)
+		c.Assert(r.Header.Get("Backstage-ClientId"), Equals, auth.ClientId)
 		w.Write([]byte("OK"))
 	}))
 	defer target.Close()
@@ -179,10 +185,6 @@ func (s *S) TestAuthenticationMiddlewareWithValidHeader(c *C) {
 	defer gateway.Close()
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
-
-	auth := &api.AuthenticationInfo{ClientId: "123", Token: "test-123", Type: "Bearer", CreatedAt: "now", UserId: "123", Expires: 10}
-	s.AddToken(auth.Token, auth.Expires, structs.Map(auth))
-	defer s.DeleteToken(auth.Token)
 
 	r, _ := http.NewRequest("GET", "http://test.backstage.dev", nil)
 	r.Header.Set("Authorization", auth.Token)
