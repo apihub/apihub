@@ -52,7 +52,8 @@ func (s *S) TestDeleteMiddCfgAnExisting(c *C) {
 		Config:  map[string]interface{}{"allow_origins": []string{"www"}, "debug": true},
 	}
 	err := config.Save()
-	c.Check(err, IsNil)
-	err = config.Delete()
-	c.Check(err, IsNil)
+	if err == nil {
+		err = config.Delete()
+		c.Check(err, IsNil)
+	}
 }
