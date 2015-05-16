@@ -46,13 +46,9 @@ func (s *S) TestDeleteMiddConfigANonExistingMidd(c *C) {
 }
 
 func (s *S) TestDeleteMiddCfgAnExisting(c *C) {
-	service := Service{
-		Endpoint:  "http://example.org/api",
-		Subdomain: "_test_middcfg",
-	}
 	config := &MiddlewareConfig{
 		Name:    "cors",
-		Service: service.Subdomain,
+		Service: "_test_midd",
 		Config:  map[string]interface{}{"allow_origins": []string{"www"}, "debug": true},
 	}
 	err := config.Save()
