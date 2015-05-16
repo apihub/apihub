@@ -2,47 +2,26 @@ package middleware
 
 import (
 	"net/http"
-	"strings"
+	//"strings"
 
-	"github.com/backstage/backstage/api"
+	//"github.com/backstage/backstage/api"
 	"github.com/backstage/backstage/db"
 )
 
-// Function which modify the request.
-type Middleware func(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc)
+// Middleware which modify the request.
+type Middleware interface {
+	Configure(cfg string)
+	Serve(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc)
+}
 
 // An array of Middleware with key to be used by the gateway and service.
-type Middlewares map[string]Middleware
+type Middlewares map[string]func() Middleware
 
-func (f Middlewares) Add(key string, value Middleware) {
+func (f Middlewares) Add(key string, value func() Middleware) {
 	f[key] = value
 }
-func (f Middlewares) Get(key string) Middleware {
+func (f Middlewares) Get(key string) func() Middleware {
 	return f[key]
-}
-
-// AuthorizationMiddleware authenticates the request by checking if there is
-// key in Redis following the api.AuthorizationInfo struct.
-func AuthenticationMiddleware(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	auth := r.Header.Get("Authorization")
-	a := strings.TrimSpace(auth)
-	if len(a) > 0 {
-		var tokenInfo api.AuthenticationInfo
-		e := api.AuthenticationInfo{}
-		get(a, &tokenInfo)
-		if tokenInfo != e {
-			if tokenInfo.UserId != "" {
-				r.Header.Set("Backstage-User", tokenInfo.UserId)
-			}
-			r.Header.Set("Backstage-ClientId", tokenInfo.ClientId)
-			next(rw, r)
-			return
-		}
-	}
-	err := api.Unauthorized("Request refused or access is not allowed.")
-	rw.WriteHeader(err.StatusCode)
-	rw.Write([]byte(err.Output()))
-	return
 }
 
 // Get Token From Redis.

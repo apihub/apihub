@@ -15,7 +15,6 @@ import (
 	"github.com/backstage/backstage/db"
 	. "github.com/backstage/backstage/gateway/middleware"
 	. "github.com/backstage/backstage/gateway/transformer"
-	"github.com/rs/cors"
 )
 
 type Settings struct {
@@ -31,6 +30,22 @@ type ServiceHandler struct {
 	service      *account.Service
 	transformers []Transformer
 	middlewares  []Middleware
+}
+
+func (s *ServiceHandler) addMiddleware(m Middleware, mc *account.MiddlewareConfig) {
+	marshal, err := json.Marshal(mc.Config)
+	if err != nil {
+		log.Printf("Wasnt possible to register middleware `%s`. Error: %s", mc.Name, err)
+		return
+	}
+	m.Configure(string(marshal))
+	s.middlewares = append(s.middlewares, m)
+	log.Printf("Middleware `%s` added successfully for service `%s`.", mc.Name, s.service.Subdomain)
+}
+
+func (s *ServiceHandler) addTransformer(name string, t Transformer) {
+	s.transformers = append(s.transformers, t)
+	log.Printf("Transformer `%s` added successfully for service `%s`.", name, s.service.Subdomain)
 }
 
 // Gateway is a reverse proxy.
@@ -58,10 +73,10 @@ func (g *Gateway) Middleware() Middlewares {
 func NewGateway(config *Settings) *Gateway {
 	g := &Gateway{
 		Settings:     config,
-		transformers: map[string]Transformer{},
-		middlewares:  map[string]Middleware{},
+		middlewares:  map[string]func() Middleware{},
 		redisClient:  db.NewRedisClient(),
 		services:     make(map[string]*ServiceHandler),
+		transformers: map[string]Transformer{},
 	}
 
 	g.loadMiddlewares()
@@ -99,24 +114,34 @@ func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	notFound(w)
 }
 
+func (g *Gateway) HasMiddleware(name string) bool {
+	if middleware := g.Middleware().Get(name); middleware != nil {
+		return true
+	}
+	return false
+}
+
 // Creates an instance of ServiceHandler for each service for the given array.
 func (g *Gateway) wrapServices(services []*account.Service) {
 	for _, serv := range services {
 		h := &ServiceHandler{service: serv}
+		//Extract middlewares
+		middlewares, err := serv.Middlewares()
+		if err == nil {
+			for _, mc := range middlewares {
+				// Need to confirm if the middleware is registered in the Gateway.
+				if middleware := g.Middleware().Get(mc.Name); middleware != nil {
+					h.addMiddleware(middleware(), mc)
+				}
+			}
+		}
 		//Extract transformers
 		for _, f := range serv.Transformers {
 			if transformer := g.Transformer().Get(f); transformer != nil {
-				log.Printf("Transformer `%s` added successfully.", f)
-				h.transformers = append(h.transformers, transformer)
+				h.addTransformer(f, transformer)
 			}
 		}
-		//Extract middlewares
-		for _, m := range serv.Middlewares {
-			if midd := g.Middleware().Get(m); midd != nil {
-				log.Printf("Middleware `%s` added successfully.", m)
-				h.middlewares = append(h.middlewares, midd)
-			}
-		}
+
 		h.handler = createProxy(h)
 		g.services[h.service.Subdomain] = h
 	}
@@ -172,7 +197,8 @@ func (g *Gateway) handler(r *http.Request) http.Handler {
 
 // Load default middlewares provided by Backstage Gateway.
 func (g *Gateway) loadMiddlewares() {
-	g.Middleware().Add("CorsMiddleware", Middleware(cors.Default().ServeHTTP))
+	g.Middleware().Add("cors", NewCorsMiddleware)
+	g.Middleware().Add("authentication", NewAuthenticationMiddleware)
 	log.Print("Default middlewares loaded.")
 }
 

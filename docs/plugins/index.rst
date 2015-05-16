@@ -7,7 +7,7 @@ It's possible to add functionalities to your APIs just by using plugins. Backsta
 
 Middleware
 ----------
-Middleware is a wrapper around your API that decorates the requests without adding logic in the application. It's supposed to run before dispatching the request to the API. It's allowed to use as many middlewares as you want, since they implement the type below:
+Middleware is a wrapper around your API that decorates the requests without adding logic in the application. It's supposed to run before dispatching the request to the API. It's allowed to use as many middlewares as you want, since they implement the interface below:
 
 .. image:: middleware.png
    :name: middleware
@@ -16,7 +16,11 @@ Middleware is a wrapper around your API that decorates the requests without addi
 
 ::
 
-  type Middleware func(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc)
+  type Middleware interface {
+    Configure(cfg string)
+    Serve(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc)
+  }
+
 
 
 Writting a Middleware
@@ -26,17 +30,46 @@ Writting a Middleware
 
 ::
 
- func AuthenticationMiddleware(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-    auth := r.Header.Get("Authorization")
-    a := strings.TrimSpace(auth)
-    if a == "secret"{
-      next(rw, r)
-      return
-    }
-    rw.WriteHeader(http.StatusUnauthorized)
-    rw.Write([]byte("You must be logged in."))
-    return
+  package middleware
+
+  import (
+    "encoding/json"
+    "net/http"
+
+    "github.com/rs/cors"
+  )
+
+  type Cors struct {
+    AllowedOrigins   []string `json:"allowed_origins"`
+    AllowedMethods   []string `json:"allowed_methods"`
+    AllowedHeaders   []string `json:"allowed_headers"`
+    ExposedHeaders   []string `json:"exposed_headers"`
+    AllowCredentials bool     `json:"allow_credentials"`
+    MaxAge           int      `json:"max_age"`
+    Debug            bool     `json:"debug"`
   }
+
+  func NewCorsMiddleware() Middleware {
+    return &Cors{}
+  }
+
+  func (c *Cors) Serve(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+    cors := cors.New(cors.Options{
+      AllowedOrigins:   c.AllowedOrigins,
+      AllowedMethods:   c.AllowedMethods,
+      AllowedHeaders:   c.AllowedHeaders,
+      ExposedHeaders:   c.ExposedHeaders,
+      AllowCredentials: c.AllowCredentials,
+      MaxAge:           c.MaxAge,
+      Debug:            c.Debug,
+    })
+    cors.ServeHTTP(rw, r, next)
+  }
+
+  func (c *Cors) Configure(cfg string) {
+    json.Unmarshal([]byte(cfg), c)
+  }
+
 
 After that, it's needed to add the middleware to the Gateway:
 

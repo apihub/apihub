@@ -10,12 +10,12 @@ func (s *S) TestCreateServiceNewService(c *C) {
 	team := &Team{Name: "Team", Alias: "team"}
 	service := Service{
 		Endpoint:  "http://example.org/api",
-		Subdomain: "BACKSTAGE",
+		Subdomain: "_test_create_service",
 	}
 	err := service.Save(owner, team)
 	defer service.Delete()
 
-	c.Check(service.Subdomain, Equals, "backstage")
+	c.Check(service.Subdomain, Equals, "_test_create_service")
 	_, ok := err.(*errors.ValidationError)
 	c.Check(ok, Equals, false)
 }
@@ -149,4 +149,21 @@ func (s *S) TestFindServicesByTeam(c *C) {
 func (s *S) TestFindServicesByTeamWithoutElements(c *C) {
 	se, _ := FindServicesByTeam("non-existing-team")
 	c.Assert(len(se), Equals, 0)
+}
+
+func (s *S) TestMiddlewares(c *C) {
+	service := &Service{
+		Subdomain: "_test_middlewares",
+		Endpoint:  "http://example.org/api",
+	}
+	config := &MiddlewareConfig{
+		Name:    "cors",
+		Service: service.Subdomain,
+		Config:  map[string]interface{}{"allow_origins": []string{"www"}, "debug": true},
+	}
+	defer config.Delete()
+	err := config.Save()
+	c.Check(err, IsNil)
+	midds, _ := service.Middlewares()
+	c.Assert(len(midds), Equals, 1)
 }

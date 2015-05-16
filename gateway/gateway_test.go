@@ -133,10 +133,16 @@ func (s *S) TestGatewayWithTransformer(c *C) {
 }
 
 func (s *S) TestAuthenticationMiddlewareWithoutHeader(c *C) {
-	services := []*account.Service{&account.Service{Endpoint: "http://test.backstage.dev", Subdomain: "test",
-		Middlewares: []string{"AuthenticationMiddleware"}}}
+	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("OK"))
+	}))
+	defer target.Close()
+
+	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Transformers: []string{"AddHeader", "AddHeaderVia"}}}
+
+	conf := configAuthenticationMiddleware(services[0])
+	defer conf.Delete()
 	gateway := NewGateway(s.Settings)
-	gateway.Middleware().Add("AuthenticationMiddleware", middleware.AuthenticationMiddleware)
 	gateway.LoadServices(services)
 	defer gateway.Close()
 	w := httptest.NewRecorder()
@@ -144,15 +150,21 @@ func (s *S) TestAuthenticationMiddlewareWithoutHeader(c *C) {
 	r, _ := http.NewRequest("GET", "http://test.backstage.dev", nil)
 	gateway.ServeHTTP(w, r)
 
-	c.Assert(w.Code, Equals, http.StatusUnauthorized)
 	c.Assert(w.Body.String(), Equals, `{"error":"unauthorized_access","error_description":"Request refused or access is not allowed."}`)
+	c.Assert(w.Code, Equals, http.StatusUnauthorized)
 }
 
 func (s *S) TestAuthenticationMiddlewareWithInvalidHeader(c *C) {
-	services := []*account.Service{&account.Service{Endpoint: "http://test.backstage.dev", Subdomain: "test",
-		Middlewares: []string{"AuthenticationMiddleware"}}}
+	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("OK"))
+	}))
+	defer target.Close()
+
+	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Transformers: []string{"AddHeader", "AddHeaderVia"}}}
+
+	conf := configAuthenticationMiddleware(services[0])
+	defer conf.Delete()
 	gateway := NewGateway(s.Settings)
-	gateway.Middleware().Add("AuthenticationMiddleware", middleware.AuthenticationMiddleware)
 	gateway.LoadServices(services)
 	defer gateway.Close()
 	w := httptest.NewRecorder()
@@ -161,8 +173,8 @@ func (s *S) TestAuthenticationMiddlewareWithInvalidHeader(c *C) {
 	r.Header.Set("Authorization", "non-existing-token")
 	gateway.ServeHTTP(w, r)
 
-	c.Assert(w.Code, Equals, http.StatusUnauthorized)
 	c.Assert(w.Body.String(), Equals, `{"error":"unauthorized_access","error_description":"Request refused or access is not allowed."}`)
+	c.Assert(w.Code, Equals, http.StatusUnauthorized)
 }
 
 func (s *S) TestAuthenticationMiddlewareWithValidHeader(c *C) {
@@ -177,19 +189,18 @@ func (s *S) TestAuthenticationMiddlewareWithValidHeader(c *C) {
 	}))
 	defer target.Close()
 
-	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test",
-		Middlewares: []string{"AuthenticationMiddleware"}}}
+	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Transformers: []string{"AddHeader", "AddHeaderVia"}}}
+
+	conf := configAuthenticationMiddleware(services[0])
+	defer conf.Delete()
 	gateway := NewGateway(s.Settings)
-	gateway.Middleware().Add("AuthenticationMiddleware", middleware.AuthenticationMiddleware)
 	gateway.LoadServices(services)
 	defer gateway.Close()
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
-
 	r, _ := http.NewRequest("GET", "http://test.backstage.dev", nil)
 	r.Header.Set("Authorization", auth.Token)
 	gateway.ServeHTTP(w, r)
-
 	c.Assert(w.Code, Equals, http.StatusOK)
 	c.Assert(w.Body.String(), Equals, "OK")
 }
@@ -206,19 +217,38 @@ func (s *S) TestAuthenticationMiddlewareWithValidHeaderForApp(c *C) {
 	}))
 	defer target.Close()
 
-	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test",
-		Middlewares: []string{"AuthenticationMiddleware"}}}
+	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Transformers: []string{"AddHeader", "AddHeaderVia"}}}
+
+	conf := configAuthenticationMiddleware(services[0])
+	defer conf.Delete()
 	gateway := NewGateway(s.Settings)
-	gateway.Middleware().Add("AuthenticationMiddleware", middleware.AuthenticationMiddleware)
 	gateway.LoadServices(services)
 	defer gateway.Close()
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
-
 	r, _ := http.NewRequest("GET", "http://test.backstage.dev", nil)
 	r.Header.Set("Authorization", auth.Token)
 	gateway.ServeHTTP(w, r)
-
 	c.Assert(w.Code, Equals, http.StatusOK)
 	c.Assert(w.Body.String(), Equals, "OK")
+}
+
+func (s *S) TestHasMiddleware(c *C) {
+	gateway := NewGateway(s.Settings)
+	defer gateway.Close()
+	c.Assert(gateway.HasMiddleware("oauth"), Equals, false)
+
+	gateway.Middleware().Add("oauth", middleware.NewAuthenticationMiddleware)
+	c.Assert(gateway.HasMiddleware("oauth"), Equals, true)
+}
+
+func configAuthenticationMiddleware(s *account.Service) *account.MiddlewareConfig {
+	conf := &account.MiddlewareConfig{
+		Name:    "authentication",
+		Service: s.Subdomain,
+		Config:  map[string]interface{}{},
+	}
+
+	conf.Save()
+	return conf
 }

@@ -13,7 +13,7 @@ type S struct {
 }
 
 func (s *S) SetUpTest(c *C) {
-	s.middlewares = make(map[string]Middleware)
+		s.middlewares =  map[string]func() Middleware{}
 }
 
 var _ = Suite(&S{})

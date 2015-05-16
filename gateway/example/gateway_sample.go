@@ -16,11 +16,20 @@ func main() {
 		ChannelName: "services",
 	}
 
-	services := []*account.Service{&account.Service{Endpoint: "http://gohttphelloworld.appspot.com", Subdomain: "tres", Timeout: 2, Middlewares: []string{"AuthenticationMiddleware"}, Transformers: []string{"FooTransformer"}}}
+	one := &account.Service{Endpoint: "http://localhost:9999", Subdomain: "one", Timeout: 2}
+	two := &account.Service{Endpoint: "http://localhost:8888", Subdomain: "two", Timeout: 2}
+	hw := &account.Service{Endpoint: "http://gohttphelloworld.appspot.com", Subdomain: "helloworld", Timeout: 2}
+	services := []*account.Service{one, two, hw}
+
+	confCors := &account.MiddlewareConfig{
+		Name:    "cors",
+		Service: hw.Subdomain,
+		Config:  map[string]interface{}{"allowed_origins": []string{"www"}, "debug": true, "allowed_methods": []string{"DELETE", "PUT"}, "allow_credentials": true, "max_age": 10},
+	}
+	confCors.Save()
 
 	gw := NewGateway(settings)
 	gw.Transformer().Add("FooTransformer", FooTransformer)
-	gw.Middleware().Add("AuthenticationMiddleware", AuthenticationMiddleware)
 	gw.LoadServices(services)
 	gw.RefreshServices()
 	gw.Run()

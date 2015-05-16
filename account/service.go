@@ -24,8 +24,7 @@ type Service struct {
 	Disabled      bool     `json:"disabled"`
 	Documentation string   `json:"documentation"`
 	Endpoint      string   `json:"endpoint"`
-	Transformers       []string `json:"transformers"`
-	Middlewares   []string `json:"middlewares"`
+	Transformers  []string `json:"transformers"`
 	Owner         string   `json:"owner"`
 	Team          string   `json:"team"`
 	Timeout       int      `json:"timeout"`
@@ -140,6 +139,21 @@ func FindServicesByTeam(teamAlias string) ([]*Service, error) {
 		return nil, err
 	}
 	return services, nil
+}
+
+func (service *Service) Middlewares() ([]*MiddlewareConfig, error) {
+	conn, err := db.Conn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	var midds []*MiddlewareConfig = []*MiddlewareConfig{}
+	err = conn.MiddlewaresConfig().Find(bson.M{"service": service.Subdomain}).All(&midds)
+	if err != nil {
+		return nil, err
+	}
+	return midds, nil
 }
 
 func (service *Service) publish() {

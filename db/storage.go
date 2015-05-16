@@ -48,6 +48,13 @@ func (storage *Storage) Services() *storage.Collection {
 	return collection
 }
 
+func (storage *Storage) MiddlewaresConfig() *storage.Collection {
+	index := mgo.Index{Key: []string{"service", "name"}, Unique: true, Background: false}
+	collection := storage.Collection("middlewares_config")
+	collection.EnsureIndex(index)
+	return collection
+}
+
 func (storage *Storage) Users() *storage.Collection {
 	emailIndex := mgo.Index{Key: []string{"email"}, Unique: true, Background: false}
 	usernameIndex := mgo.Index{Key: []string{"username"}, Unique: true, Background: false}

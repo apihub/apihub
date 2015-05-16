@@ -26,4 +26,10 @@ func (s *S) TestTeams(c *C) {
 	c.Assert(teams, DeepEquals, collection)
 }
 
-//TODO: cache test
+func (s *S) TestMiddlewaresConfig(c *C) {
+	storage, err := Conn()
+	c.Assert(err, IsNil)
+	midds := storage.MiddlewaresConfig()
+	collection := storage.Collection("middlewares_config")
+	c.Assert(midds, DeepEquals, collection)
+}

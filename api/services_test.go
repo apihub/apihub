@@ -26,7 +26,7 @@ func (s *S) TestCreateService(c *C) {
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
-	expected := `{"subdomain":"backstage","description":"Useful desc.","disabled":false,"documentation":"http://www.example.org/doc","endpoint":"http://github.com/backstage","transformers":[],"middlewares":[],"owner":"owner@example.org","team":"team","timeout":10}`
+	expected := `{"subdomain":"backstage","description":"Useful desc.","disabled":false,"documentation":"http://www.example.org/doc","endpoint":"http://github.com/backstage","transformers":[],"owner":"owner@example.org","team":"team","timeout":10}`
 	c.Assert(s.recorder.Code, Equals, http.StatusCreated)
 	c.Assert(s.recorder.Body.String(), Equals, expected)
 }
@@ -99,7 +99,7 @@ func (s *S) TestDeleteService(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, http.StatusOK)
-	c.Assert(s.recorder.Body.String(), Equals, `{"subdomain":"backstage","description":"","disabled":true,"documentation":"","endpoint":"http://example.org/api","transformers":[],"middlewares":[],"owner":"owner@example.org","team":"team","timeout":0}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"subdomain":"backstage","description":"","disabled":true,"documentation":"","endpoint":"http://example.org/api","transformers":[],"owner":"owner@example.org","team":"team","timeout":0}`)
 }
 
 func (s *S) TestDeleteServiceWhenUserIsNotOwner(c *C) {
@@ -151,7 +151,7 @@ func (s *S) TestGetServiceInfo(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, http.StatusOK)
-	c.Assert(s.recorder.Body.String(), Equals, `{"subdomain":"backstage","description":"","disabled":false,"documentation":"","endpoint":"http://example.org/api","transformers":[],"middlewares":[],"owner":"owner@example.org","team":"team","timeout":0}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"subdomain":"backstage","description":"","disabled":false,"documentation":"","endpoint":"http://example.org/api","transformers":[],"owner":"owner@example.org","team":"team","timeout":0}`)
 }
 
 func (s *S) TestGetServiceInfoWhenServiceIsNotFound(c *C) {
