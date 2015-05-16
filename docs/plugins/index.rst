@@ -77,7 +77,7 @@ After that, it's needed to add the middleware to the Gateway:
 
 ::
 
-  gw.Middleware().Add("AuthenticationMiddleware", AuthenticationMiddleware)
+  gw.Middleware().Add("cors", NewCorsMiddleware)
 
 
 The response:
@@ -86,24 +86,39 @@ The response:
 
 ::
 
-  HTTP/1.1 401 Unauthorized
-  date: Thu, 14 May 2015 10:48:27 GMT
-  content-length: 22
+  HTTP/1.1 200 OK
+  access-control-allow-credentials: true
+  access-control-allow-methods: PUT
+  access-control-allow-origin: http://helloworld.backstage.dev
+  access-control-max-age: 10
+  vary: Origin
+  date: Sat, 16 May 2015 13:40:44 GMT
+  content-length: 0
   content-type: text/plain; charset=utf-8
   Connection: keep-alive
-
-  You must be logged in.
 
 Using a Middleware
 ~~~~~~~~~~~~~~~~~~~~
 
-To use a Middleware, you just need to use the name you used when adding it to the Gateway:
+To use a Middleware, it's needed to create a config for each service and it's needed to use the name you used when adding it to the Gateway:
+
+.. highlight:: bash
+
+::
+
+  curl -XOPTIONS -H 'Access-Control-Request-Method: PUT' -H 'Origin: http://helloworld.backstage.dev' http://helloworld.backstage.dev/ -i
 
 .. highlight:: go
 
 ::
 
-  services := []*account.Service{&account.Service{Endpoint: "http://www.example.org", Subdomain: "example",Middlewares: []string{"AuthenticationMiddleware"}}}
+  services := []*account.Service{&account.Service{Endpoint: "http://www.example.org", Subdomain: "example"}}
+  confCors := &account.MiddlewareConfig{
+    Name:    "cors",
+    Service: services[0].Subdomain,
+    Config:  map[string]interface{}{"allowed_origins": []string{"http://helloworld.backstage.dev"}, "debug": true, "allowed_methods": []string{"DELETE", "PUT"}, "allow_credentials": true, "max_age": 10},
+  }
+  confCors.Save()
 
 
 Transformer
