@@ -124,6 +124,21 @@ func DeleteServiceBySubdomain(subdomain string) error {
 	return nil
 }
 
+func DeleteServicesByTeam(team string) error {
+	conn, err := db.Conn()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	_, err = conn.Services().RemoveAll(bson.M{"team": team})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Find all the services for a given team alias.
 // Return an empty list if nothing is found.
 func FindServicesByTeam(teamAlias string) ([]*Service, error) {

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
 
 	. "github.com/backstage/backstage/account"
@@ -40,6 +39,8 @@ func (handler *TeamsHandler) DeleteTeam(c *web.C, w http.ResponseWriter, r *http
 	team, err := DeleteTeamByAlias(c.URLParams["alias"], currentUser)
 	if err != nil {
 		switch err.(type) {
+		case *NotFoundError:
+			return NotFound(err.Error())
 		case *ForbiddenError:
 			return Forbidden(err.Error())
 		default:
@@ -56,8 +57,9 @@ func (handler *TeamsHandler) GetUserTeams(c *web.C, w http.ResponseWriter, r *ht
 	}
 
 	teams, _ := currentUser.GetTeams()
-	payload, _ := json.Marshal(teams)
-	return OK(string(payload))
+	s := CollectionSerializer{Items: teams, Count: len(teams)}
+	payload := s.Serializer()
+	return OK(payload)
 }
 
 func (handler *TeamsHandler) GetTeamInfo(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
@@ -69,6 +71,8 @@ func (handler *TeamsHandler) GetTeamInfo(c *web.C, w http.ResponseWriter, r *htt
 	team, err := FindTeamByAlias(c.URLParams["alias"], currentUser)
 	if err != nil {
 		switch err.(type) {
+		case *NotFoundError:
+			return NotFound(err.Error())
 		case *ForbiddenError:
 			return Forbidden(err.Error())
 		default:

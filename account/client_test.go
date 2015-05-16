@@ -121,6 +121,25 @@ func (s *S) TestDeleteClientByIdAndTeamWithInvalidNameAndTeam(c *C) {
 	c.Assert(e.Payload, Equals, "Client not found.")
 }
 
+func (s *S) TestDeleteClientByTeam(c *C) {
+	owner := &User{Email: "owner@example.org"}
+	team := &Team{Name: "Team", Alias: "team"}
+	client := &Client{
+		Name: "backstage",
+		Team: team.Alias,
+	}
+	defer client.Delete()
+	err := client.Save(owner, team)
+	c.Assert(err, IsNil)
+	err = DeleteClientByTeam(team.Alias)
+	c.Assert(err, IsNil)
+}
+
+func (s *S) TestDeleteClientByTeamWithInvalidTeam(c *C) {
+	err := DeleteClientByTeam("Invalid Team")
+	c.Assert(err, IsNil)
+}
+
 func (s *S) TestFindClientsByTeam(c *C) {
 	owner := &User{Email: "owner@example.org"}
 	team := &Team{Name: "Team", Alias: "team"}

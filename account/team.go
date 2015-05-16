@@ -86,10 +86,8 @@ func (team *Team) delete() error {
 		return &errors.ValidationError{Payload: "Team not found."}
 	}
 
-	_, err = conn.Services().RemoveAll(bson.M{"team": team.Alias})
-	if err != nil {
-		return err
-	}
+	DeleteServicesByTeam(team.Alias)
+	DeleteClientByTeam(team.Alias)
 	return nil
 }
 
@@ -215,7 +213,7 @@ func FindTeamByName(name string) (*Team, error) {
 func FindTeamByAlias(alias string, user *User) (*Team, error) {
 	team, err := findTeamByAlias(alias)
 	if err != nil {
-		return nil, errors.ErrTeamNotFound
+		return nil, &errors.NotFoundError{Payload: err.Error()}
 	}
 	_, err = team.ContainsUser(user)
 	if err != nil {

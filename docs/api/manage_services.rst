@@ -38,8 +38,6 @@ Payload Parameters
 +-------------------+--------------+-------------------+-------------------+
 | subdomain         |    string    | Yes               | Yes               |
 +-------------------+--------------+-------------------+-------------------+
-| allow_keyless_use |    boolean   | No                | No                |
-+-------------------+--------------+-------------------+-------------------+
 | description       |    string    | No                | No                |
 +-------------------+--------------+-------------------+-------------------+
 | disabled          |    boolean   | No                | No                |
@@ -68,7 +66,7 @@ Example Request
 
 ::
 
-  curl -XPOST -i http://localhost:8000/api/teams/backstage/services -H "Content-Type: application/json" -d '{"subdomain": "backstage", "allow_keyless_use": true, "description": "test this", "disabled": false, "documentation": "http://www.example.org/doc", "endpoint": "http://github.com/backstage", "timeout": 10}' -H "Authorization: Token r-fRrYtDJ0nMAQ3UvHGCZe6ASTal9LXu_PmdyZyGkTM="
+  curl -XPOST -i http://localhost:8000/api/teams/backstage/services -H "Content-Type: application/json" -d '{"subdomain": "backstage", "description": "test this", "disabled": false, "documentation": "http://www.example.org/doc", "endpoint": "http://github.com/backstage", "timeout": 10}' -H "Authorization: Token r-fRrYtDJ0nMAQ3UvHGCZe6ASTal9LXu_PmdyZyGkTM="
 
 
 Example Result
@@ -83,7 +81,7 @@ Example Result
   Date: Fri, 05 Dec 2014 19:44:39 GMT
   Content-Length: 309
 
-  {"subdomain":"backstage","created_at":"2014-12-05T17:44:39.462-02:00","updated_at":"2014-12-05T17:44:39.462-02:00","allow_keyless_use":true,"description":"test this","disabled":false,"documentation":"http://www.example.org/doc","endpoint":"http://github.com/backstage","owner":"alice@example.org","timeout":10,"team": "backstage"}
+  {"subdomain":"backstage","created_at":"2014-12-05T17:44:39.462-02:00","updated_at":"2014-12-05T17:44:39.462-02:00","description":"test this","disabled":false,"documentation":"http://www.example.org/doc","endpoint":"http://github.com/backstage","owner":"alice@example.org","timeout":10,"team": "backstage"}
 
 If any required field is missing, the result will be represented by `400 Bad Request`:
 
@@ -97,12 +95,23 @@ If any required field is missing, the result will be represented by `400 Bad Req
   Date: Tue, 23 Dec 2014 17:29:43 GMT
   Content-Length: 47
 
-  {"error":"bad_request","error_description":"Team not found."}
-  or
   {"error":"bad_request","error_description":"Subdomain cannot be empty."}
   or
   {"error":"bad_request","error_description":"Endpoint cannot be empty."}
 
+And when the team is not found:
+
+.. highlight:: bash
+
+::
+
+  HTTP/1.1 404 Not Found
+  Content-Type: application/json
+  Request-Id: aleal.local/Zh86HQSRtD-000016
+  Date: Tue, 23 Dec 2014 17:29:43 GMT
+  Content-Length: 47
+
+  {"error":"not_found","error_description":"Team not found."}
 
 Or, when trying to create a service for a service where you do not belong to, you'll get a `403 Forbidden`:
 
@@ -158,7 +167,7 @@ Example Request
 
 ::
 
-  curl -XDELETE -i http://localhost:8000/api/teams/backstage -H "Authorization: Token 1HnbxXIYMJzECiE-lpH0uIaailRdDurz2JL_5kgtMVc="
+  curl -XDELETE -i http://localhost:8000/api/teams/backstage/services/hello -H "Authorization: Token 1HnbxXIYMJzECiE-lpH0uIaailRdDurz2JL_5kgtMVc="
 
 
 Example Result
@@ -174,7 +183,7 @@ Example Result
   Content-Length: 237
   Content-Type: application/json; charset=utf-8
 
-  {"subdomain":"aasadata5","allow_keyless_use":true,"description":"test this","disabled":false,"documentation":"http://www.example.org/doc","endpoint":"http://github.com/backstage","owner":"ringo@gmail.com","team":"backstage","timeout":10}
+  {"subdomain":"hello","description":"test this","disabled":false,"documentation":"http://www.example.org/doc","endpoint":"http://github.com/backstage","owner":"ringo@gmail.com","team":"backstage","timeout":10}
 
 If the team does not exist, a not found error will be returned:
 

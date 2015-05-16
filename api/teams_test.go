@@ -141,7 +141,7 @@ func (s *S) TestGetUserTeams(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, http.StatusOK)
-	c.Assert(s.recorder.Body.String(), Matches, "^\\[{\"name\":\"Team\",\"alias\":\"team\",\"users\":\\[\"owner@example.org\"\\],\"owner\":\"owner@example.org\"}\\]$")
+	c.Assert(s.recorder.Body.String(), Equals, `{"items":[{"name":"Team","alias":"team","users":["owner@example.org"],"owner":"owner@example.org"}],"item_count":1}`)
 }
 
 func (s *S) TestGetUserTeamsWhenUserIsNotSignedIn(c *C) {
@@ -202,8 +202,8 @@ func (s *S) TestGetTeamInfoWhenTeamNotFound(c *C) {
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
-	c.Assert(s.recorder.Code, Equals, 400)
-	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"Team not found."}`)
+	c.Assert(s.recorder.Code, Equals, http.StatusNotFound)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"not_found","error_description":"Team not found."}`)
 }
 
 func (s *S) TestGetTeamInfoWhenIsNotMemberOfTheTeam(c *C) {

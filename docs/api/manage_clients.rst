@@ -99,13 +99,13 @@ If the team does not exist, an error will be returned:
 
 ::
 
-  HTTP/1.1 400 Bad Request
+  HTTP/1.1 404 Not Found
   Request-Id: aleal.local/uHApWzIKaU-000006
   Date: Sat, 03 Jan 2015 10:51:30 GMT
   Content-Length: 61
   Content-Type: application/json; charset=utf-8
 
-  {"error":"bad_request","error_description":"Team not found."}
+  {"error":"not_found","error_description":"Team not found."}
 
 Or, when trying to create a client for a team which you do not belong to, a forbidden error will be returned:
 

@@ -45,3 +45,11 @@ type ForbiddenError struct {
 func (err *ForbiddenError) Error() string {
 	return err.Payload
 }
+
+type NotFoundError struct {
+	Payload string
+}
+
+func (err *NotFoundError) Error() string {
+	return err.Payload
+}

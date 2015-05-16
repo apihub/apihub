@@ -33,6 +33,8 @@ func (handler *ServicesHandler) CreateService(c *web.C, w http.ResponseWriter, r
 	team, err := FindTeamByAlias(service.Team, currentUser)
 	if err != nil {
 		switch err.(type) {
+		case *NotFoundError:
+			return NotFound(err.Error())
 		case *ForbiddenError:
 			return Forbidden(err.Error())
 		default:

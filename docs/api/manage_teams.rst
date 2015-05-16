@@ -163,7 +163,7 @@ Example Result
   Date: Sat, 06 Dec 2014 02:33:37 GMT
   Content-Length: 179
 
-  [{"name":"backstage","alias":"backstage","users":["alice@example.org"],"owner":"alice@example.org"},{"name":"cli","alias":"cli","users":["alice@example.org"],"owner":"alice@example.org"}]
+  {"items":[{"name":"backstage","alias":"backstage","users":["alice@example.org"],"owner":"alice@example.org"},{"name":"cli","alias":"cli","users":["alice@example.org"],"owner":"alice@example.org"}],"item_count":2}
 
 
 If the user does not belong to any team, an empty list will be returned:
@@ -179,7 +179,7 @@ If the user does not belong to any team, an empty list will be returned:
   Date: Sat, 06 Dec 2014 02:35:37 GMT
   Content-Length: 179
 
-  []
+  {"items":[],"item_count":0}
 
 
 Retrieving team info

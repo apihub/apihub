@@ -29,6 +29,8 @@ func (handler *ClientsHandler) CreateClient(c *web.C, w http.ResponseWriter, r *
 	team, err := FindTeamByAlias(client.Team, currentUser)
 	if err != nil {
 		switch err.(type) {
+		case *NotFoundError:
+			return NotFound(err.Error())
 		case *ForbiddenError:
 			return Forbidden(err.Error())
 		default:

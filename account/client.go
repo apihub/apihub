@@ -121,6 +121,21 @@ func DeleteClientByIdAndTeam(id, team string) error {
 	return err
 }
 
+// DeleteClientByTeam removes an existing client from the server based on given id and team.
+func DeleteClientByTeam(team string) error {
+	conn, err := db.Conn()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	_, err = conn.Clients().RemoveAll(bson.M{"team": team})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Find all the clients for a given team alias.
 // Return an empty list if nothing is found.
 func FindClientsByTeam(team string) ([]*Client, error) {
