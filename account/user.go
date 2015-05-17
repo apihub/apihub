@@ -13,10 +13,12 @@ import (
 // The User type is an encapsulation of a user details.
 // A valid user is capable to interact with the API to manage teams and services.
 type User struct {
-	Name     string `json:"name,omitempty"`
-	Email    string `json:"email,omitempty"`
-	Username string `json:"username,omitempty"`
-	Password string `json:"password,omitempty"`
+	Name                 string `json:"name,omitempty"`
+	Email                string `json:"email,omitempty"`
+	Username             string `json:"username,omitempty"`
+	Password             string `json:"password,omitempty"`
+	NewPassword          string `json:"new_password,omitempty" bson:"-"`
+	ConfirmationPassword string `json:"confirmation_password,omitempty" bson:"-"`
 }
 
 // Save creates a new user account.
@@ -36,7 +38,7 @@ func (user *User) Save() error {
 	}
 
 	user.HashPassword()
-	err = conn.Users().Insert(user)
+	_, err = conn.Users().Upsert(bson.M{"email": user.Email, "username": user.Username}, user)
 	if mgo.IsDup(err) {
 		return &errors.ValidationError{Payload: "Someone already has that email/username. Could you try another?"}
 	}

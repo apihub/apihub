@@ -5,9 +5,9 @@ import (
 	"flag"
 	"io"
 	"net/http"
+	"path"
 	"reflect"
 	"runtime"
-	"path"
 	"strings"
 	"unicode"
 
@@ -120,6 +120,7 @@ func (api *Api) drawDefaultRoutes() {
 	// Public Routes
 	goji.Post("/api/users", api.route(usersHandler, "CreateUser"))
 	goji.Post("/api/login", api.route(usersHandler, "Login"))
+	goji.Put("/api/password", api.route(usersHandler, "ChangePassword"))
 	Logger.Info("Public routes registered.")
 
 	//OAuth 2.0 routes

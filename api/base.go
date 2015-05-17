@@ -55,6 +55,10 @@ func InternalServerError(errorDescription string) *HTTPResponse {
 	return &HTTPResponse{StatusCode: http.StatusInternalServerError, ErrorType: E_INTERNAL_SERVER_ERROR, ErrorDescription: errorDescription}
 }
 
+func NoContent() *HTTPResponse {
+	return &HTTPResponse{StatusCode: http.StatusNoContent}
+}
+
 func NotFound(errorDescription string) *HTTPResponse {
 	return &HTTPResponse{StatusCode: http.StatusNotFound, ErrorType: E_NOT_FOUND, ErrorDescription: errorDescription}
 }

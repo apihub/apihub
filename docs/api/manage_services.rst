@@ -183,7 +183,7 @@ Example Result
   Content-Length: 237
   Content-Type: application/json; charset=utf-8
 
-  {"subdomain":"hello","description":"test this","disabled":false,"documentation":"http://www.example.org/doc","endpoint":"http://github.com/backstage","owner":"ringo@gmail.com","team":"backstage","timeout":10}
+  {"subdomain":"hello","description":"test this","disabled":false,"documentation":"http://www.example.org/doc","endpoint":"http://github.com/backstage","owner":"backstage@example.org","team":"backstage","timeout":10}
 
 If the team does not exist, a not found error will be returned:
 

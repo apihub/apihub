@@ -50,3 +50,26 @@ func (handler *UsersHandler) Login(c *web.C, w http.ResponseWriter, r *http.Requ
 	payload, _ := json.Marshal(token)
 	return OK(string(payload))
 }
+
+func (handler *UsersHandler) ChangePassword(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+	user := &User{}
+	err := handler.parseBody(r.Body, user)
+	if err != nil {
+		return BadRequest(E_BAD_REQUEST, err.Error())
+	}
+
+	if user.NewPassword != user.ConfirmationPassword {
+		return BadRequest(E_BAD_REQUEST, ErrConfirmationPassword.Error())
+	}
+	u, err := Login(user)
+	if err != nil {
+		return BadRequest(E_BAD_REQUEST, ErrAuthenticationFailed.Error())
+	}
+
+	u.Password = user.NewPassword
+	err = u.Save()
+	if err != nil {
+		return BadRequest(E_BAD_REQUEST, err.Error())
+	}
+	return NoContent()
+}

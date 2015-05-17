@@ -14,17 +14,18 @@ const (
 )
 
 var (
-	ErrUserNotInTeam          = errors.New("You do not belong to this team!")
-	ErrOnlyOwnerHasPermission = errors.New("Only the owner has permission to perform this operation.")
-	ErrInvalidTokenFormat     = errors.New("Invalid token format.")
-	ErrTeamNotFound           = errors.New("Team not found.")
-	ErrServiceNotFound        = errors.New("Service not found.")
-	ErrClientNotFound         = errors.New("Client not found.")
-	ErrClientNotFoundOnTeam   = errors.New("Client not found on this team.")
-	ErrTokenNotFound          = errors.New("Token not found.")
 	ErrAuthenticationFailed   = errors.New("Authentication failed.")
 	ErrBadRequest             = errors.New("The request was invalid or cannot be served.")
+	ErrClientNotFound         = errors.New("Client not found.")
+	ErrClientNotFoundOnTeam   = errors.New("Client not found on this team.")
+	ErrInvalidTokenFormat     = errors.New("Invalid token format.")
 	ErrLoginRequired          = errors.New("Invalid or expired token. Please log in with your Backstage credentials.")
+	ErrOnlyOwnerHasPermission = errors.New("Only the owner has permission to perform this operation.")
+	ErrServiceNotFound        = errors.New("Service not found.")
+	ErrTeamNotFound           = errors.New("Team not found.")
+	ErrTokenNotFound          = errors.New("Token not found.")
+	ErrUserNotInTeam          = errors.New("You do not belong to this team!")
+	ErrConfirmationPassword   = errors.New("Your new password and confirmation password do not match.")
 )
 
 // The ValidationError type indicates that any validation has failed.
