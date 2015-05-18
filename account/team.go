@@ -23,7 +23,7 @@ type Team struct {
 	Clients  []*Client     `bson:"-" json:"clients,omitempty"`
 }
 
-// Save creates a new team.
+// Save a team.
 //
 // It requires to inform the owner and a name.
 // If the `alias` is not informed, it will be generate based on the team name.
@@ -45,9 +45,15 @@ func (team *Team) Save(owner *User) error {
 	} else {
 		team.Alias = GenerateSlug(team.Alias)
 	}
-	err = conn.Teams().Insert(team)
+	if team.Id != "" {
+		_, err = conn.Teams().UpsertId(team.Id, team)
+	} else {
+		err = conn.Teams().Insert(team)
+	}
 	if mgo.IsDup(err) {
 		return &errors.ValidationError{Payload: "Someone already has that team alias. Could you try another?"}
+	} else if err != nil {
+		return err
 	}
 
 	return nil

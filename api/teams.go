@@ -30,6 +30,35 @@ func (handler *TeamsHandler) CreateTeam(c *web.C, w http.ResponseWriter, r *http
 	return Created(team.ToString())
 }
 
+func (handler *TeamsHandler) UpdateTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+	currentUser, err := handler.getCurrentUser(c)
+	if err != nil {
+		return BadRequest(E_BAD_REQUEST, err.Error())
+	}
+
+	team, err := FindTeamByAlias(c.URLParams["alias"], currentUser)
+	if err != nil {
+		switch err.(type) {
+		case *NotFoundError:
+			return NotFound(err.Error())
+		case *ForbiddenError:
+			return Forbidden(err.Error())
+		default:
+			return BadRequest(E_BAD_REQUEST, err.Error())
+		}
+	}
+
+	err = handler.parseBody(r.Body, team)
+	if err != nil {
+		return BadRequest(E_BAD_REQUEST, err.Error())
+	}
+	err = team.Save(currentUser)
+	if err != nil {
+		return BadRequest(E_BAD_REQUEST, err.Error())
+	}
+	return OK(team.ToString())
+}
+
 func (handler *TeamsHandler) DeleteTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
