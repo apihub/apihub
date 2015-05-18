@@ -21,7 +21,7 @@ func NewCorsMiddleware() Middleware {
 	return &Cors{}
 }
 
-func (c *Cors) Serve(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+func (c *Cors) ProcessRequest(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	cors := cors.New(cors.Options{
 		AllowedOrigins:   c.AllowedOrigins,
 		AllowedMethods:   c.AllowedMethods,

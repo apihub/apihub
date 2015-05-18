@@ -79,7 +79,7 @@ func NewDispatcher(h *ServiceHandler) http.Handler {
 	//Load middlewares before adding the reverse proxy to the stack.
 	n := negroni.New()
 	for _, m := range h.middlewares {
-		n.Use(negroni.HandlerFunc(m.Serve))
+		n.Use(negroni.HandlerFunc(m.ProcessRequest))
 	}
 
 	rp.proxy = &ReverseProxy{

@@ -17,7 +17,7 @@ func NewAuthenticationMiddleware() Middleware {
 }
 func (m *AuthenticationMiddleware) Configure(cfg string) {}
 
-func (m *AuthenticationMiddleware) Serve(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+func (m *AuthenticationMiddleware) ProcessRequest(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	auth := r.Header.Get("Authorization")
 	a := strings.TrimSpace(auth)
 	if len(a) > 0 {

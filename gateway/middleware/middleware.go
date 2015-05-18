@@ -7,7 +7,7 @@ import (
 // Middleware which modify the request.
 type Middleware interface {
 	Configure(cfg string)
-	Serve(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc)
+	ProcessRequest(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc)
 }
 
 // An array of Middleware with key to be used by the gateway and service.
