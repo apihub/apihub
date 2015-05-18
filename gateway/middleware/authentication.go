@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/backstage/backstage/api"
+	"github.com/backstage/backstage/db"
 )
 
 // AuthenticationMiddleware authenticates the request by checking if there is
@@ -36,4 +37,10 @@ func (m *AuthenticationMiddleware) Serve(rw http.ResponseWriter, r *http.Request
 	rw.WriteHeader(err.StatusCode)
 	rw.Write([]byte(err.Output()))
 	return
+}
+
+// Get Token From Redis.
+func get(token string, t interface{}) error {
+	conn := &db.Storage{}
+	return conn.GetTokenValue(token, t)
 }

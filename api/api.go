@@ -120,6 +120,7 @@ func (api *Api) drawDefaultRoutes() {
 	// Public Routes
 	goji.Post("/api/users", api.route(usersHandler, "CreateUser"))
 	goji.Post("/api/login", api.route(usersHandler, "Login"))
+	goji.Delete("/api/logout", api.route(usersHandler, "Logout"))
 	goji.Put("/api/password", api.route(usersHandler, "ChangePassword"))
 	Logger.Info("Public routes registered.")
 

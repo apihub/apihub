@@ -51,6 +51,15 @@ func (handler *UsersHandler) Login(c *web.C, w http.ResponseWriter, r *http.Requ
 	return OK(string(payload))
 }
 
+func (handler *UsersHandler) Logout(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+	authorization := r.Header.Get("Authorization")
+	user, err := auth.GetUserFromToken(authorization)
+	if err == nil {
+		auth.RevokeTokensFor(user)
+	}
+	return NoContent()
+}
+
 func (handler *UsersHandler) ChangePassword(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	user := &User{}
 	err := handler.parseBody(r.Body, user)

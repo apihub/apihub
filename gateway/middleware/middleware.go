@@ -2,10 +2,6 @@ package middleware
 
 import (
 	"net/http"
-	//"strings"
-
-	//"github.com/backstage/backstage/api"
-	"github.com/backstage/backstage/db"
 )
 
 // Middleware which modify the request.
@@ -22,10 +18,4 @@ func (f Middlewares) Add(key string, value func() Middleware) {
 }
 func (f Middlewares) Get(key string) func() Middleware {
 	return f[key]
-}
-
-// Get Token From Redis.
-func get(token string, t interface{}) error {
-	conn := &db.Storage{}
-	return conn.GetTokenValue(token, t)
 }

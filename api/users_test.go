@@ -1,11 +1,13 @@
 package api
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 
 	"github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/auth"
 	"github.com/zenazn/goji/web"
 	. "gopkg.in/check.v1"
 )
@@ -128,6 +130,31 @@ func (s *S) TestLoginUserWithMalformedRequest(c *C) {
 
 	c.Assert(s.recorder.Code, Equals, http.StatusBadRequest)
 	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"The request was invalid or cannot be served."}`)
+}
+
+func (s *S) TestLogout(c *C) {
+	bob.Save()
+	defer bob.Delete()
+	payload := `{"email":"bob@example.org", "password":"123456"}`
+	b := strings.NewReader(payload)
+
+	s.router.Post("/api/login", s.Api.route(usersHandler, "Login"))
+	req, _ := http.NewRequest("POST", "/api/login", b)
+	req.Header.Set("Content-Type", "application/json")
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	dec := json.NewDecoder(strings.NewReader(s.recorder.Body.String()))
+	var t auth.TokenInfo
+	dec.Decode(&t)
+
+	s.router.Delete("/api/logout", s.Api.route(usersHandler, "Logout"))
+	req, _ = http.NewRequest("DELETE", "/api/logout", b)
+	req.Header.Set("Authorization", t.Type+"  "+t.Token)
+	webC = web.C{Env: s.env}
+	s.recorder = httptest.NewRecorder()
+	s.router.ServeHTTPC(webC, s.recorder, req)
+	c.Assert(s.recorder.Code, Equals, http.StatusNoContent)
 }
 
 func (s *S) TestChangePassword(c *C) {
