@@ -20,6 +20,23 @@ func (s *S) TestCreateServiceNewService(c *C) {
 	c.Check(ok, Equals, false)
 }
 
+func (s *S) TestSaveExistingService(c *C) {
+	owner := &User{Email: "owner@example.org"}
+	team := &Team{Name: "Team", Alias: "team"}
+	service := Service{
+		Endpoint:  "http://example.org/api",
+		Subdomain: "_test_update_service",
+	}
+	err := service.Save(owner, team)
+
+	service.Subdomain = "baas"
+	err = service.Save(owner, team)
+	defer DeleteServicesByTeam(team.Alias)
+
+	c.Assert(service.Subdomain, Equals, "baas")
+	c.Check(err, IsNil)
+}
+
 func (s *S) TestCannotCreateServiceWhenSubdomainAlreadyExists(c *C) {
 	owner := &User{Email: "owner@example.org"}
 	team := &Team{Name: "Team", Alias: "team"}

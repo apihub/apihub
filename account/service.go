@@ -52,7 +52,11 @@ func (service *Service) Save(owner *User, team *Team) error {
 	service.Owner = owner.Email
 	service.Team = team.Alias
 
-	err = conn.Services().Insert(service)
+	if team.Id != "" {
+		_, err = conn.Services().UpsertId(service.Subdomain, service)
+	} else {
+		err = conn.Services().Insert(service)
+	}
 	if mgo.IsDup(err) {
 		return &errors.ValidationError{Payload: "There is another service with this subdomain."}
 	}

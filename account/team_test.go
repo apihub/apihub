@@ -7,8 +7,21 @@ import (
 
 func (s *S) TestCreateTeam(c *C) {
 	err := team.Save(owner)
-	defer DeleteTeamByName("Team")
+	defer DeleteTeamByName(team.Name)
 	c.Assert(err, IsNil)
+}
+
+func (s *S) TestSaveExistingTeam(c *C) {
+	t := &Team{Name: "My Team", Alias: "myteam"}
+	err := t.Save(owner)
+	c.Assert(err, IsNil)
+	defer DeleteTeamByName(t.Name)
+
+	t, _ = FindTeamByAlias(t.Alias, owner)
+	t.Name = "New Name"
+	t.Save(owner)
+	defer DeleteTeamByName(t.Name)
+	c.Assert(t.Name, Equals, "New Name")
 }
 
 func (s *S) TestCreateTeamWithoutRequiredFields(c *C) {
@@ -20,7 +33,7 @@ func (s *S) TestCreateTeamWithoutRequiredFields(c *C) {
 
 func (s *S) TestCreateTeamWhenAliasAlreadyExists(c *C) {
 	err := team.Save(owner)
-	defer DeleteTeamByName("Team")
+	defer DeleteTeamByName(team.Name)
 	c.Assert(err, IsNil)
 
 	team = &Team{Name: "Another Team Name", Alias: team.Alias}
@@ -42,7 +55,7 @@ func (s *S) TestDeleteTeam(c *C) {
 
 func (s *S) TestAddUsersWithInvalidUser(c *C) {
 	err := team.Save(owner)
-	defer DeleteTeamByName("Team")
+	defer DeleteTeamByName(team.Name)
 	g, _ := FindTeamByName("Team")
 
 	err = g.AddUsers([]string{"owner@example.org", "bob@example.org"})

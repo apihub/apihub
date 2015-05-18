@@ -154,6 +154,7 @@ func (api *Api) drawDefaultRoutes() {
 
 	api.privateRoutes.Post("/teams/:team/services", api.route(servicesHandler, "CreateService"))
 	api.privateRoutes.Delete("/teams/:team/services/:subdomain", api.route(servicesHandler, "DeleteService"))
+	api.privateRoutes.Put("/teams/:team/services/:subdomain", api.route(servicesHandler, "UpdateService"))
 	api.privateRoutes.Get("/teams/:team/services/:subdomain", api.route(servicesHandler, "GetServiceInfo"))
 
 	Logger.Info("Private routes registered.")

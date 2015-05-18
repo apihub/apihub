@@ -54,6 +54,46 @@ func (handler *ServicesHandler) CreateService(c *web.C, w http.ResponseWriter, r
 	return Created(string(payload))
 }
 
+func (handler *ServicesHandler) UpdateService(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+	currentUser, err := handler.getCurrentUser(c)
+	if err != nil {
+		return BadRequest(E_BAD_REQUEST, err.Error())
+	}
+
+	service := &Service{
+		Team: c.URLParams["team"],
+	}
+	team, err := FindTeamByAlias(service.Team, currentUser)
+	if err != nil {
+		switch err.(type) {
+		case *NotFoundError:
+			return NotFound(err.Error())
+		case *ForbiddenError:
+			return Forbidden(err.Error())
+		default:
+			return BadRequest(E_BAD_REQUEST, err.Error())
+		}
+	}
+
+	service, err = FindServiceBySubdomain(c.URLParams["subdomain"])
+	if err != nil || service.Team != team.Alias {
+		return NotFound(ErrServiceNotFound.Error())
+	}
+
+	err = handler.parseBody(r.Body, service)
+	if err != nil {
+		return BadRequest(E_BAD_REQUEST, err.Error())
+	}
+
+	err = service.Save(currentUser, team)
+	if err != nil {
+		return BadRequest(E_BAD_REQUEST, err.Error())
+	}
+
+	payload, _ := json.Marshal(service)
+	return OK(string(payload))
+}
+
 func (handler *ServicesHandler) DeleteService(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
