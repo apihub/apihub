@@ -75,11 +75,6 @@ func (handler *ServicesHandler) UpdateService(c *web.C, w http.ResponseWriter, r
 		}
 	}
 
-	service, err = FindServiceBySubdomain(c.URLParams["subdomain"])
-	if err != nil || service.Team != team.Alias {
-		return NotFound(ErrServiceNotFound.Error())
-	}
-
 	err = handler.parseBody(r.Body, service)
 	if err != nil {
 		return BadRequest(E_BAD_REQUEST, err.Error())

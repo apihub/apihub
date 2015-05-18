@@ -16,7 +16,7 @@ func (s *S) TestCreateService(c *C) {
 	defer owner.Delete()
 	defer account.DeleteServiceBySubdomain("backstage")
 
-	payload := `{"subdomain": "backstage", "description": "Useful desc.", "disabled": false, "documentation": "http://www.example.org/doc", "endpoint": "http://github.com/backstage", "timeout": 10}`
+	payload := `{"subdomain": "backstage", "description": "Useful desc.", "disabled": false, "documentation": "http://www.example.org/doc", "endpoint": "http://github.com/backstage", "timeout": 10, "transformers": ["test"]}`
 	b := strings.NewReader(payload)
 
 	s.router.Post("/api/teams/:team/services", s.Api.route(servicesHandler, "CreateService"))
@@ -26,7 +26,7 @@ func (s *S) TestCreateService(c *C) {
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
-	expected := `{"subdomain":"backstage","description":"Useful desc.","disabled":false,"documentation":"http://www.example.org/doc","endpoint":"http://github.com/backstage","transformers":[],"owner":"owner@example.org","team":"team","timeout":10}`
+	expected := `{"subdomain":"backstage","description":"Useful desc.","disabled":false,"documentation":"http://www.example.org/doc","endpoint":"http://github.com/backstage","transformers":["test"],"owner":"owner@example.org","team":"team","timeout":10}`
 	c.Assert(s.recorder.Code, Equals, http.StatusCreated)
 	c.Assert(s.recorder.Body.String(), Equals, expected)
 }
@@ -102,7 +102,7 @@ func (s *S) TestUpdateService(c *C) {
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
-	expected := `{"subdomain":"backstage","description":"New DESC","disabled":true,"documentation":"http://backstage.example.org/doc","endpoint":"http://github.com/backstage/backstage","transformers":[],"owner":"owner@example.org","team":"team","timeout":1}`
+	expected := `{"subdomain":"backstage","description":"New DESC","disabled":true,"documentation":"http://backstage.example.org/doc","endpoint":"http://github.com/backstage/backstage","owner":"owner@example.org","team":"team","timeout":1}`
 	c.Assert(s.recorder.Code, Equals, http.StatusOK)
 	c.Assert(s.recorder.Body.String(), Equals, expected)
 }
@@ -210,7 +210,7 @@ func (s *S) TestDeleteService(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, http.StatusOK)
-	c.Assert(s.recorder.Body.String(), Equals, `{"subdomain":"backstage","description":"","disabled":true,"documentation":"","endpoint":"http://example.org/api","transformers":[],"owner":"owner@example.org","team":"team","timeout":0}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"subdomain":"backstage","description":"","disabled":true,"documentation":"","endpoint":"http://example.org/api","owner":"owner@example.org","team":"team","timeout":0}`)
 }
 
 func (s *S) TestDeleteServiceWhenUserIsNotOwner(c *C) {
@@ -262,7 +262,7 @@ func (s *S) TestGetServiceInfo(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, http.StatusOK)
-	c.Assert(s.recorder.Body.String(), Equals, `{"subdomain":"backstage","description":"","disabled":false,"documentation":"","endpoint":"http://example.org/api","transformers":[],"owner":"owner@example.org","team":"team","timeout":0}`)
+	c.Assert(s.recorder.Body.String(), Equals, `{"subdomain":"backstage","description":"","disabled":false,"documentation":"","endpoint":"http://example.org/api","owner":"owner@example.org","team":"team","timeout":0}`)
 }
 
 func (s *S) TestGetServiceInfoWhenServiceIsNotFound(c *C) {

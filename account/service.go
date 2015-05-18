@@ -24,7 +24,7 @@ type Service struct {
 	Disabled      bool     `json:"disabled"`
 	Documentation string   `json:"documentation"`
 	Endpoint      string   `json:"endpoint"`
-	Transformers  []string `json:"transformers"`
+	Transformers  []string `json:"transformers,omitempty"`
 	Owner         string   `json:"owner"`
 	Team          string   `json:"team"`
 	Timeout       int      `json:"timeout"`
@@ -52,7 +52,8 @@ func (service *Service) Save(owner *User, team *Team) error {
 	service.Owner = owner.Email
 	service.Team = team.Alias
 
-	if team.Id != "" {
+	es, err := FindServiceBySubdomain(service.Subdomain)
+	if err == nil && service.Team == es.Team {
 		_, err = conn.Services().UpsertId(service.Subdomain, service)
 	} else {
 		err = conn.Services().Insert(service)

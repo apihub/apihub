@@ -37,7 +37,7 @@ func (s *S) TestSaveExistingService(c *C) {
 	c.Check(err, IsNil)
 }
 
-func (s *S) TestCannotCreateServiceWhenSubdomainAlreadyExists(c *C) {
+func (s *S) TestCanUpdateServiceWhenSubdomainAlreadyExistsWithSameTeam(c *C) {
 	owner := &User{Email: "owner@example.org"}
 	team := &Team{Name: "Team", Alias: "team"}
 	service := Service{
@@ -52,6 +52,26 @@ func (s *S) TestCannotCreateServiceWhenSubdomainAlreadyExists(c *C) {
 		Subdomain: "backstage",
 		Endpoint:  "http://example.org/api",
 	}
+	err = service2.Save(owner, team)
+	c.Check(err, IsNil)
+}
+
+func (s *S) TestCannotCreateServiceWhenSubdomainAlreadyExistsWithDiffTeam(c *C) {
+	owner := &User{Email: "owner@example.org"}
+	team := &Team{Name: "Team", Alias: "team"}
+	service := Service{
+		Endpoint:  "http://example.org/api",
+		Subdomain: "backstage",
+	}
+	err := service.Save(owner, team)
+	defer service.Delete()
+	c.Check(err, IsNil)
+
+	service2 := Service{
+		Subdomain: "backstage",
+		Endpoint:  "http://example.org/api",
+	}
+	team = &Team{Name: "Diff Team", Alias: "diffteam"}
 	err = service2.Save(owner, team)
 	c.Check(err, NotNil)
 
