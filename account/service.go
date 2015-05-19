@@ -61,7 +61,7 @@ func (service *Service) Save(owner *User, team *Team) error {
 	if mgo.IsDup(err) {
 		return &errors.ValidationError{Payload: "There is another service with this subdomain."}
 	}
-	service.publish()
+	go service.publish()
 	return err
 }
 
@@ -80,7 +80,7 @@ func (service *Service) Delete() error {
 	if err != nil {
 		return &errors.ValidationError{Payload: err.Error()}
 	}
-	service.unpublish()
+	go service.unpublish()
 	return err
 }
 
@@ -121,6 +121,11 @@ func DeleteServiceBySubdomain(subdomain string) error {
 	}
 	defer conn.Close()
 
+	service, err := FindServiceBySubdomain(subdomain)
+	if err != nil {
+		return &errors.ValidationError{Payload: "Service not found."}
+	}
+	go service.unpublish()
 	err = conn.Services().Remove(bson.M{"_id": subdomain})
 	if err == mgo.ErrNotFound {
 		return &errors.ValidationError{Payload: "Service not found."}
@@ -135,6 +140,16 @@ func DeleteServicesByTeam(team string) error {
 		return err
 	}
 	defer conn.Close()
+
+	go func() {
+		services, err := FindServicesByTeam([]string{team})
+		if err != nil {
+			return
+		}
+		for _, service := range services {
+			service.unpublish()
+		}
+	}()
 
 	_, err = conn.Services().RemoveAll(bson.M{"team": team})
 	if err != nil {

@@ -210,7 +210,6 @@ func (s *S) TestDeleteService(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	c.Assert(s.recorder.Code, Equals, http.StatusOK)
-	c.Assert(s.recorder.Body.String(), Equals, `{"subdomain":"backstage","description":"","disabled":true,"documentation":"","endpoint":"http://example.org/api","owner":"owner@example.org","team":"team","timeout":0}`)
 }
 
 func (s *S) TestDeleteServiceWhenUserIsNotOwner(c *C) {
