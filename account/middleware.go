@@ -9,7 +9,7 @@ import (
 
 type MiddlewareConfig struct {
 	Name    string                 `json:"name"`
-	Service string                 `json:"-"`
+	Service string                 `json:"service"`
 	Config  map[string]interface{} `json:"config,omitempty"`
 }
 

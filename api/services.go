@@ -126,26 +126,26 @@ func (handler *ServicesHandler) GetUserServices(c *web.C, w http.ResponseWriter,
 	return OK(payload)
 }
 
-func (handler *ServicesHandler) ConfigurePlugin(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+func (handler *ServicesHandler) SubscribePlugin(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
 		return handler.handleError(err)
 	}
 
-	_, err = FindTeamByAlias(c.URLParams["team"], currentUser)
-	if err != nil {
-		return handler.handleError(err)
-	}
-
 	conf := &MiddlewareConfig{
-		Service: c.URLParams["subdomain"],
+		Name: c.URLParams["name"],
 	}
 	err = handler.parseBody(r.Body, conf)
 	if err != nil {
 		return handler.handleError(err)
 	}
 
-	_, err = FindServiceBySubdomain(conf.Service)
+	service, err := FindServiceBySubdomain(conf.Service)
+	if err != nil {
+		return handler.handleError(err)
+	}
+
+	_, err = FindTeamByAlias(service.Team, currentUser)
 	if err != nil {
 		return handler.handleError(err)
 	}
