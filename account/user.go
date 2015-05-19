@@ -143,6 +143,25 @@ func (user *User) GetTeams() ([]*Team, error) {
 	return teams, nil
 }
 
+// Return a list of all the services which the user belongs to.
+// FIXME: test
+func (user *User) GetServices() ([]*Service, error) {
+	conn, err := db.Conn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	teams, _ := user.GetTeams()
+	var st []string = make([]string, len(teams))
+	for i, team := range teams {
+		st[i] = team.Alias
+	}
+	var services []*Service = []*Service{}
+	err = conn.Services().Find(bson.M{"team": bson.M{"$in": st}}).All(&services)
+	return services, nil
+}
+
 //Return a representation of user but without sensitive data.
 func (user *User) ToString() string {
 	user.Password = ""

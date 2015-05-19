@@ -132,3 +132,15 @@ func (handler *ServicesHandler) GetServiceInfo(c *web.C, w http.ResponseWriter, 
 	result, _ := json.Marshal(service)
 	return OK(string(result))
 }
+
+func (handler *ServicesHandler) GetUserServices(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+	currentUser, err := handler.getCurrentUser(c)
+	if err != nil {
+		return BadRequest(E_BAD_REQUEST, err.Error())
+	}
+
+	services, _ := currentUser.GetServices()
+	s := CollectionSerializer{Items: services, Count: len(services)}
+	payload := s.Serializer()
+	return OK(payload)
+}

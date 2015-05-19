@@ -69,7 +69,7 @@ func DeleteTeamByAlias(alias string, user *User) (*Team, error) {
 	if err != nil || team.Owner != user.Email {
 		return nil, &errors.ForbiddenError{Payload: errors.ErrOnlyOwnerHasPermission.Error()}
 	}
-	team.Services, err = FindServicesByTeam(alias)
+	team.Services, err = FindServicesByTeam([]string{alias})
 	if err != nil {
 		return nil, err
 	}
@@ -201,7 +201,7 @@ func FindTeamByName(name string) (*Team, error) {
 	if err == mgo.ErrNotFound {
 		return nil, &errors.ValidationError{Payload: "Team not found."}
 	}
-	team.Services, err = FindServicesByTeam(team.Alias)
+	team.Services, err = FindServicesByTeam([]string{team.Alias})
 	if err != nil {
 		return nil, err
 	}
@@ -225,7 +225,7 @@ func FindTeamByAlias(alias string, user *User) (*Team, error) {
 	if err != nil {
 		return nil, &errors.ForbiddenError{Payload: err.Error()}
 	}
-	team.Services, err = FindServicesByTeam(alias)
+	team.Services, err = FindServicesByTeam([]string{alias})
 	if err != nil {
 		return nil, err
 	}
@@ -273,7 +273,7 @@ func FindTeamById(id string) (*Team, error) {
 		return nil, errNotFound
 	}
 
-	team.Services, err = FindServicesByTeam(team.Alias)
+	team.Services, err = FindServicesByTeam([]string{team.Alias})
 	if err != nil {
 		return nil, err
 	}

@@ -1,9 +1,10 @@
 package account
 
 import (
-	. "gopkg.in/check.v1"
+	"encoding/json"
 
 	"github.com/backstage/backstage/errors"
+	. "gopkg.in/check.v1"
 )
 
 func (s *S) TestCreateUser(c *C) {
@@ -100,6 +101,23 @@ func (s *S) TestGetTeams(c *C) {
 	g, err := user.GetTeams()
 	c.Assert(err, IsNil)
 	c.Assert(g[0].Name, Equals, "Team")
+}
+
+func (s *S) TestGetServices(c *C) {
+	user := &User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
+	defer user.Delete()
+	user.Save()
+	team := &Team{Name: "Team"}
+	team.Save(user)
+	defer DeleteTeamByAlias(team.Alias, user)
+	service := &Service{Endpoint: "http://example.org/api", Subdomain: "_get_services", Transformers: []string{}}
+	service.Save(user, team)
+	defer DeleteServiceBySubdomain(service.Subdomain)
+	g, err := user.GetServices()
+	cj, _ := json.Marshal(service)
+	exp, _ := json.Marshal(g[0])
+	c.Assert(err, IsNil)
+	c.Assert(string(cj), Equals, string(exp))
 }
 
 func (s *S) TestUserToString(c *C) {

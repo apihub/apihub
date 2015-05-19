@@ -146,7 +146,7 @@ func DeleteServicesByTeam(team string) error {
 
 // Find all the services for a given team alias.
 // Return an empty list if nothing is found.
-func FindServicesByTeam(teamAlias string) ([]*Service, error) {
+func FindServicesByTeam(teams []string) ([]*Service, error) {
 	conn, err := db.Conn()
 	if err != nil {
 		return nil, err
@@ -154,7 +154,7 @@ func FindServicesByTeam(teamAlias string) ([]*Service, error) {
 	defer conn.Close()
 
 	var services []*Service = []*Service{}
-	err = conn.Services().Find(bson.M{"team": teamAlias}).All(&services)
+	err = conn.Services().Find(bson.M{"team": bson.M{"$in": teams}}).All(&services)
 	if err != nil {
 		return nil, err
 	}

@@ -197,13 +197,13 @@ func (s *S) TestFindServicesByTeam(c *C) {
 
 	defer service.Delete()
 	service.Save(owner, team)
-	se, _ := FindServicesByTeam(team.Alias)
+	se, _ := FindServicesByTeam([]string{team.Alias})
 	c.Assert(len(se), Equals, 1)
 	c.Assert(se[0].Subdomain, Equals, "backstage")
 }
 
 func (s *S) TestFindServicesByTeamWithoutElements(c *C) {
-	se, _ := FindServicesByTeam("non-existing-team")
+	se, _ := FindServicesByTeam([]string{"non-existing-team"})
 	c.Assert(len(se), Equals, 0)
 }
 

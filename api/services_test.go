@@ -298,3 +298,32 @@ func (s *S) TestGetServiceInfoWhenIsNotInTeam(c *C) {
 	c.Assert(s.recorder.Code, Equals, http.StatusForbidden)
 	c.Assert(s.recorder.Body.String(), Equals, `{"error":"access_denied","error_description":"You do not belong to this team!"}`)
 }
+
+func (s *S) TestGetUserServices(c *C) {
+	owner.Save()
+	team.Save(owner)
+	service := &account.Service{Endpoint: "http://example.org/api", Subdomain: "_get_user_services", Transformers: []string{}}
+	service.Save(owner, team)
+	defer owner.Delete()
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+	defer account.DeleteServiceBySubdomain(service.Subdomain)
+
+	s.router.Get("/api/teams/services", s.Api.route(servicesHandler, "GetUserServices"))
+	req, _ := http.NewRequest("GET", "/api/teams/services", nil)
+	s.env[CurrentUser] = owner
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, http.StatusOK)
+	c.Assert(s.recorder.Body.String(), Equals, `{"items":[{"subdomain":"_get_user_services","description":"","disabled":false,"documentation":"","endpoint":"http://example.org/api","owner":"owner@example.org","team":"team","timeout":0}],"item_count":1}`)
+}
+
+func (s *S) TestGetUserServicesWhenUserIsNotSignedIn(c *C) {
+	s.router.Get("/api/teams/services", s.Api.route(servicesHandler, "GetUserServices"))
+	req, _ := http.NewRequest("GET", "/api/teams/services", nil)
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, http.StatusBadRequest)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
+}
