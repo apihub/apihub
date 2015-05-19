@@ -18,11 +18,11 @@ func (handler *UsersHandler) CreateUser(c *web.C, w http.ResponseWriter, r *http
 	user := &User{}
 	err := handler.parseBody(r.Body, user)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 	err = user.Save()
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 	return Created(user.ToString())
 }
@@ -30,7 +30,7 @@ func (handler *UsersHandler) CreateUser(c *web.C, w http.ResponseWriter, r *http
 func (handler *UsersHandler) DeleteUser(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	user, err := GetCurrentUser(c)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 	auth.RevokeTokensFor(user)
 	user.Delete()
@@ -41,7 +41,7 @@ func (handler *UsersHandler) Login(c *web.C, w http.ResponseWriter, r *http.Requ
 	user := &User{}
 	err := handler.parseBody(r.Body, user)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 	token, err := LoginAndGetToken(user)
 	if err != nil {
@@ -64,7 +64,7 @@ func (handler *UsersHandler) ChangePassword(c *web.C, w http.ResponseWriter, r *
 	user := &User{}
 	err := handler.parseBody(r.Body, user)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	if user.NewPassword != user.ConfirmationPassword {

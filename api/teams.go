@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	. "github.com/backstage/backstage/account"
-	. "github.com/backstage/backstage/errors"
 	"github.com/zenazn/goji/web"
 )
 
@@ -15,17 +14,17 @@ type TeamsHandler struct {
 func (handler *TeamsHandler) CreateTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	team := &Team{}
 	err = handler.parseBody(r.Body, team)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 	err = team.Save(currentUser)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 	return Created(team.ToString())
 }
@@ -33,28 +32,21 @@ func (handler *TeamsHandler) CreateTeam(c *web.C, w http.ResponseWriter, r *http
 func (handler *TeamsHandler) UpdateTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	team, err := FindTeamByAlias(c.URLParams["alias"], currentUser)
 	if err != nil {
-		switch err.(type) {
-		case *NotFoundError:
-			return NotFound(err.Error())
-		case *ForbiddenError:
-			return Forbidden(err.Error())
-		default:
-			return BadRequest(E_BAD_REQUEST, err.Error())
-		}
+		return handler.handleError(err)
 	}
 
 	err = handler.parseBody(r.Body, team)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 	err = team.Save(currentUser)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 	return OK(team.ToString())
 }
@@ -62,19 +54,12 @@ func (handler *TeamsHandler) UpdateTeam(c *web.C, w http.ResponseWriter, r *http
 func (handler *TeamsHandler) DeleteTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	team, err := DeleteTeamByAlias(c.URLParams["alias"], currentUser)
 	if err != nil {
-		switch err.(type) {
-		case *NotFoundError:
-			return NotFound(err.Error())
-		case *ForbiddenError:
-			return Forbidden(err.Error())
-		default:
-			return BadRequest(E_BAD_REQUEST, err.Error())
-		}
+		return handler.handleError(err)
 	}
 	return OK(team.ToString())
 }
@@ -82,7 +67,7 @@ func (handler *TeamsHandler) DeleteTeam(c *web.C, w http.ResponseWriter, r *http
 func (handler *TeamsHandler) GetUserTeams(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	teams, _ := currentUser.GetTeams()
@@ -94,19 +79,12 @@ func (handler *TeamsHandler) GetUserTeams(c *web.C, w http.ResponseWriter, r *ht
 func (handler *TeamsHandler) GetTeamInfo(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	team, err := FindTeamByAlias(c.URLParams["alias"], currentUser)
 	if err != nil {
-		switch err.(type) {
-		case *NotFoundError:
-			return NotFound(err.Error())
-		case *ForbiddenError:
-			return Forbidden(err.Error())
-		default:
-			return BadRequest(E_BAD_REQUEST, err.Error())
-		}
+		return handler.handleError(err)
 	}
 
 	return OK(team.ToString())
@@ -115,27 +93,22 @@ func (handler *TeamsHandler) GetTeamInfo(c *web.C, w http.ResponseWriter, r *htt
 func (handler *TeamsHandler) AddUsersToTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	team, err := FindTeamByAlias(c.URLParams["alias"], currentUser)
 	if err != nil {
-		switch err.(type) {
-		case *ForbiddenError:
-			return Forbidden(err.Error())
-		default:
-			return BadRequest(E_BAD_REQUEST, err.Error())
-		}
+		return handler.handleError(err)
 	}
 
 	var t *Team
 	err = handler.parseBody(r.Body, &t)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 	err = team.AddUsers(t.Users)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 	return OK(team.ToString())
 }
@@ -143,23 +116,18 @@ func (handler *TeamsHandler) AddUsersToTeam(c *web.C, w http.ResponseWriter, r *
 func (handler *TeamsHandler) RemoveUsersFromTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	team, err := FindTeamByAlias(c.URLParams["alias"], currentUser)
 	if err != nil {
-		switch err.(type) {
-		case *ForbiddenError:
-			return Forbidden(err.Error())
-		default:
-			return BadRequest(E_BAD_REQUEST, err.Error())
-		}
+		return handler.handleError(err)
 	}
 
 	var t *Team
 	err = handler.parseBody(r.Body, &t)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 	err = team.RemoveUsers(t.Users)
 	if err != nil {

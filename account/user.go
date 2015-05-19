@@ -144,7 +144,6 @@ func (user *User) GetTeams() ([]*Team, error) {
 }
 
 // Return a list of all the services which the user belongs to.
-// FIXME: test
 func (user *User) GetServices() ([]*Service, error) {
 	conn, err := db.Conn()
 	if err != nil {

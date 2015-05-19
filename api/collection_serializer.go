@@ -2,7 +2,6 @@ package api
 
 import "encoding/json"
 
-//FIXME: Add test
 type CollectionSerializer struct {
 	Items interface{} `json:"items"`
 	Count int         `json:"item_count"`

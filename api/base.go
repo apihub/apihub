@@ -35,6 +35,17 @@ func (api *ApiHandler) parseBody(body io.ReadCloser, r interface{}) error {
 	return nil
 }
 
+func (api *ApiHandler) handleError(err error) *HTTPResponse {
+	switch err.(type) {
+	case *NotFoundError:
+		return NotFound(err.Error())
+	case *ForbiddenError:
+		return Forbidden(err.Error())
+	default:
+		return BadRequest(E_BAD_REQUEST, err.Error())
+	}
+}
+
 func BadRequest(errorType, errorDescription string) *HTTPResponse {
 	return &HTTPResponse{StatusCode: http.StatusBadRequest, ErrorType: errorType, ErrorDescription: errorDescription}
 }

@@ -28,23 +28,16 @@ func (handler *ClientsHandler) CreateClient(c *web.C, w http.ResponseWriter, r *
 
 	team, err := FindTeamByAlias(client.Team, currentUser)
 	if err != nil {
-		switch err.(type) {
-		case *NotFoundError:
-			return NotFound(err.Error())
-		case *ForbiddenError:
-			return Forbidden(err.Error())
-		default:
-			return BadRequest(E_BAD_REQUEST, err.Error())
-		}
+		return handler.handleError(err)
 	}
 
 	err = client.Save(currentUser, team)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 	client, err = FindClientByIdAndTeam(client.Id, client.Team)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 	payload, _ := json.Marshal(client)
 	return Created(string(payload))
@@ -53,7 +46,7 @@ func (handler *ClientsHandler) CreateClient(c *web.C, w http.ResponseWriter, r *
 func (handler *ClientsHandler) DeleteClient(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	client, err := FindClientByIdAndTeam(c.URLParams["id"], c.URLParams["team"])
@@ -62,7 +55,7 @@ func (handler *ClientsHandler) DeleteClient(c *web.C, w http.ResponseWriter, r *
 	}
 	err = client.Delete()
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	payload, _ := json.Marshal(client)
@@ -72,7 +65,7 @@ func (handler *ClientsHandler) DeleteClient(c *web.C, w http.ResponseWriter, r *
 func (handler *ClientsHandler) GetClientInfo(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	client, err := FindClientByIdAndTeam(c.URLParams["id"], c.URLParams["team"])
@@ -82,12 +75,7 @@ func (handler *ClientsHandler) GetClientInfo(c *web.C, w http.ResponseWriter, r 
 
 	_, err = FindTeamByAlias(client.Team, currentUser)
 	if err != nil {
-		switch err.(type) {
-		case *ForbiddenError:
-			return Forbidden(err.Error())
-		default:
-			return BadRequest(E_BAD_REQUEST, err.Error())
-		}
+		return handler.handleError(err)
 	}
 
 	result, _ := json.Marshal(client)

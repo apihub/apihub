@@ -20,35 +20,28 @@ func (handler *ServicesHandler) Index(c *web.C, w http.ResponseWriter, r *http.R
 func (handler *ServicesHandler) CreateService(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 	service := &Service{
 		Team: c.URLParams["team"],
 	}
 	err = handler.parseBody(r.Body, service)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	team, err := FindTeamByAlias(service.Team, currentUser)
 	if err != nil {
-		switch err.(type) {
-		case *NotFoundError:
-			return NotFound(err.Error())
-		case *ForbiddenError:
-			return Forbidden(err.Error())
-		default:
-			return BadRequest(E_BAD_REQUEST, err.Error())
-		}
+		return handler.handleError(err)
 	}
 
 	err = service.Save(currentUser, team)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 	service, err = FindServiceBySubdomain(service.Subdomain)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 	payload, _ := json.Marshal(service)
 	return Created(string(payload))
@@ -57,7 +50,7 @@ func (handler *ServicesHandler) CreateService(c *web.C, w http.ResponseWriter, r
 func (handler *ServicesHandler) UpdateService(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	service := &Service{
@@ -65,24 +58,17 @@ func (handler *ServicesHandler) UpdateService(c *web.C, w http.ResponseWriter, r
 	}
 	team, err := FindTeamByAlias(service.Team, currentUser)
 	if err != nil {
-		switch err.(type) {
-		case *NotFoundError:
-			return NotFound(err.Error())
-		case *ForbiddenError:
-			return Forbidden(err.Error())
-		default:
-			return BadRequest(E_BAD_REQUEST, err.Error())
-		}
+		return handler.handleError(err)
 	}
 
 	err = handler.parseBody(r.Body, service)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	err = service.Save(currentUser, team)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	payload, _ := json.Marshal(service)
@@ -92,7 +78,7 @@ func (handler *ServicesHandler) UpdateService(c *web.C, w http.ResponseWriter, r
 func (handler *ServicesHandler) DeleteService(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	service, err := FindServiceBySubdomain(c.URLParams["subdomain"])
@@ -101,7 +87,7 @@ func (handler *ServicesHandler) DeleteService(c *web.C, w http.ResponseWriter, r
 	}
 	err = service.Delete()
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	payload, _ := json.Marshal(service)
@@ -111,7 +97,7 @@ func (handler *ServicesHandler) DeleteService(c *web.C, w http.ResponseWriter, r
 func (handler *ServicesHandler) GetServiceInfo(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	service, err := FindServiceBySubdomain(c.URLParams["subdomain"])
@@ -121,12 +107,7 @@ func (handler *ServicesHandler) GetServiceInfo(c *web.C, w http.ResponseWriter, 
 
 	_, err = FindTeamByAlias(service.Team, currentUser)
 	if err != nil {
-		switch err.(type) {
-		case *ForbiddenError:
-			return Forbidden(err.Error())
-		default:
-			return BadRequest(E_BAD_REQUEST, err.Error())
-		}
+		return handler.handleError(err)
 	}
 
 	result, _ := json.Marshal(service)
@@ -136,7 +117,7 @@ func (handler *ServicesHandler) GetServiceInfo(c *web.C, w http.ResponseWriter, 
 func (handler *ServicesHandler) GetUserServices(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	services, _ := currentUser.GetServices()
@@ -148,19 +129,12 @@ func (handler *ServicesHandler) GetUserServices(c *web.C, w http.ResponseWriter,
 func (handler *ServicesHandler) ConfigurePlugin(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	_, err = FindTeamByAlias(c.URLParams["team"], currentUser)
 	if err != nil {
-		switch err.(type) {
-		case *NotFoundError:
-			return NotFound(err.Error())
-		case *ForbiddenError:
-			return Forbidden(err.Error())
-		default:
-			return BadRequest(E_BAD_REQUEST, err.Error())
-		}
+		return handler.handleError(err)
 	}
 
 	conf := &MiddlewareConfig{
@@ -168,19 +142,12 @@ func (handler *ServicesHandler) ConfigurePlugin(c *web.C, w http.ResponseWriter,
 	}
 	err = handler.parseBody(r.Body, conf)
 	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
+		return handler.handleError(err)
 	}
 
 	_, err = FindServiceBySubdomain(conf.Service)
 	if err != nil {
-		switch err.(type) {
-		case *NotFoundError:
-			return NotFound(err.Error())
-		case *ForbiddenError:
-			return Forbidden(err.Error())
-		default:
-			return BadRequest(E_BAD_REQUEST, err.Error())
-		}
+		return handler.handleError(err)
 	}
 
 	conf.Save()
