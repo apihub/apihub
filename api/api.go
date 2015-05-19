@@ -141,7 +141,7 @@ func (api *Api) drawDefaultRoutes() {
 	api.privateRoutes.Delete("/users", api.route(usersHandler, "DeleteUser"))
 
 	api.privateRoutes.Post("/teams", api.route(teamsHandler, "CreateTeam"))
-	api.privateRoutes.Get("/teams/services", api.route(servicesHandler, "GetUserServices"))
+	api.privateRoutes.Get("/services", api.route(servicesHandler, "GetUserServices"))
 	api.privateRoutes.Get("/teams", api.route(teamsHandler, "GetUserTeams"))
 	api.privateRoutes.Delete("/teams/:alias", api.route(teamsHandler, "DeleteTeam"))
 	api.privateRoutes.Put("/teams/:alias", api.route(teamsHandler, "UpdateTeam"))

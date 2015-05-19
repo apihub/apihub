@@ -307,8 +307,8 @@ func (s *S) TestGetUserServices(c *C) {
 	defer account.DeleteTeamByAlias(team.Alias, owner)
 	defer account.DeleteServiceBySubdomain(service.Subdomain)
 
-	s.router.Get("/api/teams/services", s.Api.route(servicesHandler, "GetUserServices"))
-	req, _ := http.NewRequest("GET", "/api/teams/services", nil)
+	s.router.Get("/api/services", s.Api.route(servicesHandler, "GetUserServices"))
+	req, _ := http.NewRequest("GET", "/api/services", nil)
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -318,8 +318,8 @@ func (s *S) TestGetUserServices(c *C) {
 }
 
 func (s *S) TestGetUserServicesWhenUserIsNotSignedIn(c *C) {
-	s.router.Get("/api/teams/services", s.Api.route(servicesHandler, "GetUserServices"))
-	req, _ := http.NewRequest("GET", "/api/teams/services", nil)
+	s.router.Get("/api/services", s.Api.route(servicesHandler, "GetUserServices"))
+	req, _ := http.NewRequest("GET", "/api/services", nil)
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
