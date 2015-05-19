@@ -2,15 +2,23 @@ package gateway
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 
 	"github.com/backstage/backstage/account"
 	. "gopkg.in/check.v1"
 )
 
 func (s *S) TestServer(c *C) {
+	hostname, err := os.Hostname()
+	var via string
 	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err == nil {
+			via = fmt.Sprintf("%d.%d %s", r.ProtoMajor, r.ProtoMinor, hostname)
+		}
+		c.Assert(r.Header.Get("Via"), Equals, via)
 		w.Write([]byte("OK"))
 	}))
 	defer target.Close()
@@ -24,4 +32,5 @@ func (s *S) TestServer(c *C) {
 	dispatcher.ServeHTTP(w, r)
 	c.Assert(w.Code, Equals, http.StatusOK)
 	c.Assert(w.Body.String(), Equals, "OK")
+	c.Assert(w.Header().Get("Via"), Equals, via)
 }

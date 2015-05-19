@@ -2,12 +2,14 @@ package gateway
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -50,6 +52,10 @@ func (rp *Dispatcher) RoundTrip(r *http.Request) (*http.Response, error) {
 		w   *http.Response
 	)
 
+	via := headerVia(r.Header.Get("Via"), r.ProtoMajor, r.ProtoMinor)
+	if via != "" {
+		r.Header.Set("Via", via)
+	}
 	w, err = rp.Transport.RoundTrip(r)
 	if e, ok := err.(*net.OpError); ok {
 		if e.Timeout() {
@@ -60,7 +66,10 @@ func (rp *Dispatcher) RoundTrip(r *http.Request) (*http.Response, error) {
 		log.Printf("Error while accessing %s: %s.", r.Header.Get("X-Forwarded-Host"), err.Error())
 		w = ErrorResponse(r, api.InternalServerError(err.Error()))
 	}
-
+	via = headerVia(w.Header.Get("Via"), r.ProtoMajor, r.ProtoMinor)
+	if via != "" {
+		w.Header.Set("Via", via)
+	}
 	return w, nil
 }
 
@@ -93,6 +102,32 @@ func NewDispatcher(h *ServiceHandler) http.Handler {
 	return n
 }
 
+func ErrorResponse(r *http.Request, httpResponse *api.HTTPResponse) *http.Response {
+	out := httpResponse.Output()
+	var closerBuffer io.ReadCloser = ioutil.NopCloser(bytes.NewBufferString(out))
+	w := &http.Response{
+		Request:       r,
+		StatusCode:    httpResponse.StatusCode,
+		ProtoMajor:    r.ProtoMajor,
+		ProtoMinor:    r.ProtoMinor,
+		ContentLength: int64(len(out)),
+		Body:          closerBuffer,
+	}
+	w.Header = make(map[string][]string)
+	w.Header.Add("Content-Type", "application/json")
+	return w
+}
+
+func headerVia(original string, protoMajor, protoMinor int) string {
+	hostname, err := os.Hostname()
+	if err == nil {
+		via := strings.Join([]string{original, fmt.Sprintf("%d.%d %s", protoMajor, protoMinor, hostname)}, ", ")
+		via = strings.TrimPrefix(via, ", ")
+		return strings.TrimSuffix(via, ", ")
+	}
+	return ""
+}
+
 func timeoutDialer(cTimeout time.Duration, rwTimeout time.Duration) func(net, addr string) (c net.Conn, err error) {
 	return func(netw, addr string) (net.Conn, error) {
 		conn, err := net.DialTimeout(netw, addr, cTimeout)
@@ -109,20 +144,4 @@ func joinSlash(target, path string) string {
 	path = strings.TrimPrefix(path, "/")
 	s := []string{target, path}
 	return strings.Join(s, "/")
-}
-
-func ErrorResponse(r *http.Request, httpResponse *api.HTTPResponse) *http.Response {
-	out := httpResponse.Output()
-	var closerBuffer io.ReadCloser = ioutil.NopCloser(bytes.NewBufferString(out))
-	w := &http.Response{
-		Request:       r,
-		StatusCode:    httpResponse.StatusCode,
-		ProtoMajor:    r.ProtoMajor,
-		ProtoMinor:    r.ProtoMinor,
-		ContentLength: int64(len(out)),
-		Body:          closerBuffer,
-	}
-	w.Header = make(map[string][]string)
-	w.Header.Add("Content-Type", "application/json")
-	return w
 }
