@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/backstage/backstage/api"
+	"github.com/backstage/backstage/gateway/middleware"
 	. "github.com/backstage/backstage/gateway/transformer"
 	"github.com/codegangsta/negroni"
 )
@@ -78,6 +79,7 @@ func NewDispatcher(h *ServiceHandler) http.Handler {
 	}
 	//Load middlewares before adding the reverse proxy to the stack.
 	n := negroni.New()
+	n.Use(middleware.NewRequestIdMiddleware())
 	for _, m := range h.middlewares {
 		n.Use(negroni.HandlerFunc(m.ProcessRequest))
 	}

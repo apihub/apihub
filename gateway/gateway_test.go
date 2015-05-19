@@ -29,6 +29,7 @@ func (s *S) TestGatewayNotFound(c *C) {
 func (s *S) TestGatewayExistingService(c *C) {
 	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
+		c.Assert(len(r.Header.Get("X-Request-Id")), Not(Equals), 0)
 	}))
 	defer target.Close()
 
