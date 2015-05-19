@@ -44,15 +44,3 @@ func (s *S) TestDeleteMiddConfigANonExistingMidd(c *C) {
 	c.Assert(ok, Equals, true)
 	c.Assert(e.Payload, Equals, "Middleware Config not found.")
 }
-
-// FIXME: ?
-func (s *S) TestDeleteMiddCfgAnExisting(c *C) {
-	config := &MiddlewareConfig{
-		Name:    "cors",
-		Service: "_test_midd",
-		Config:  map[string]interface{}{"allow_origins": []string{"www"}, "debug": true},
-	}
-	err := config.Save()
-	err = config.Delete()
-	c.Check(err, IsNil)
-}

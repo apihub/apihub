@@ -143,7 +143,7 @@ func (s *S) TestFindServiceBySubdomainByAlias(c *C) {
 func (s *S) TestFindServiceBySubdomainWithInvalidName(c *C) {
 	_, err := FindServiceBySubdomain("Non Existing Service")
 	c.Assert(err, NotNil)
-	e := err.(*errors.ValidationError)
+	e := err.(*errors.NotFoundError)
 	c.Assert(e.Payload, Equals, "Service not found.")
 }
 

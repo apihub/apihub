@@ -327,3 +327,81 @@ func (s *S) TestGetUserServicesWhenUserIsNotSignedIn(c *C) {
 	c.Assert(s.recorder.Code, Equals, http.StatusBadRequest)
 	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
 }
+
+func (s *S) TestConfigurePlugin(c *C) {
+	owner.Save()
+	team.Save(owner)
+	service.Save(owner, team)
+	defer owner.Delete()
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+	defer account.DeleteServiceBySubdomain(service.Subdomain)
+
+	payload := `{"name":"cors","config":{"timeout":123}}`
+	b := strings.NewReader(payload)
+
+	s.router.Put("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "ConfigurePlugin"))
+	req, _ := http.NewRequest("PUT", "/api/teams/"+team.Alias+"/services/"+service.Subdomain, b)
+	req.Header.Set("Content-Type", "application/json")
+	s.env[CurrentUser] = owner
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	expected := `{"name":"cors","config":{"timeout":123}}`
+	c.Assert(s.recorder.Header().Get("Content-Type"), Equals, "application/json")
+	c.Assert(s.recorder.Body.String(), Equals, expected)
+	c.Assert(s.recorder.Code, Equals, http.StatusOK)
+}
+
+func (s *S) TestConfigurePluginWhenUserIsNotSignedIn(c *C) {
+	payload := `{}`
+	b := strings.NewReader(payload)
+
+	s.router.Put("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "ConfigurePlugin"))
+	req, _ := http.NewRequest("PUT", "/api/teams/"+team.Alias+"/services/"+service.Subdomain, b)
+	req.Header.Set("Content-Type", "application/json")
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, http.StatusBadRequest)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
+}
+
+func (s *S) TestConfigurePluginWhenTeamDoesNotExist(c *C) {
+	owner.Save()
+	team.Save(owner)
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+	defer owner.Delete()
+
+	payload := `{"name":"cors","config":{"timeout":123}}`
+	b := strings.NewReader(payload)
+
+	s.router.Put("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "ConfigurePlugin"))
+	req, _ := http.NewRequest("PUT", "/api/teams/invalid-team/services/"+service.Subdomain, b)
+	req.Header.Set("Content-Type", "application/json")
+	s.env[CurrentUser] = owner
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, http.StatusNotFound)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"not_found","error_description":"Team not found."}`)
+}
+
+func (s *S) TestConfigurePluginWhenServiceDoesNotExist(c *C) {
+	owner.Save()
+	team.Save(owner)
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+	defer owner.Delete()
+
+	payload := `{"name":"cors","config":{"timeout":123}}`
+	b := strings.NewReader(payload)
+
+	s.router.Put("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "ConfigurePlugin"))
+	req, _ := http.NewRequest("PUT", "/api/teams/"+team.Alias+"/services/invalid-service", b)
+	req.Header.Set("Content-Type", "application/json")
+	s.env[CurrentUser] = owner
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, http.StatusNotFound)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"not_found","error_description":"Service not found."}`)
+}

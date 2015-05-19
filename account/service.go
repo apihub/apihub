@@ -107,7 +107,7 @@ func FindServiceBySubdomain(subdomain string) (*Service, error) {
 	var service Service
 	err = conn.Services().FindId(subdomain).One(&service)
 	if err == mgo.ErrNotFound {
-		return nil, &errors.ValidationError{Payload: "Service not found."}
+		return nil, &errors.NotFoundError{Payload: "Service not found."}
 	}
 
 	return &service, nil

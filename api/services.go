@@ -144,3 +144,46 @@ func (handler *ServicesHandler) GetUserServices(c *web.C, w http.ResponseWriter,
 	payload := s.Serializer()
 	return OK(payload)
 }
+
+func (handler *ServicesHandler) ConfigurePlugin(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+	currentUser, err := handler.getCurrentUser(c)
+	if err != nil {
+		return BadRequest(E_BAD_REQUEST, err.Error())
+	}
+
+	_, err = FindTeamByAlias(c.URLParams["team"], currentUser)
+	if err != nil {
+		switch err.(type) {
+		case *NotFoundError:
+			return NotFound(err.Error())
+		case *ForbiddenError:
+			return Forbidden(err.Error())
+		default:
+			return BadRequest(E_BAD_REQUEST, err.Error())
+		}
+	}
+
+	conf := &MiddlewareConfig{
+		Service: c.URLParams["subdomain"],
+	}
+	err = handler.parseBody(r.Body, conf)
+	if err != nil {
+		return BadRequest(E_BAD_REQUEST, err.Error())
+	}
+
+	_, err = FindServiceBySubdomain(conf.Service)
+	if err != nil {
+		switch err.(type) {
+		case *NotFoundError:
+			return NotFound(err.Error())
+		case *ForbiddenError:
+			return Forbidden(err.Error())
+		default:
+			return BadRequest(E_BAD_REQUEST, err.Error())
+		}
+	}
+
+	conf.Save()
+	payload, _ := json.Marshal(conf)
+	return OK(string(payload))
+}

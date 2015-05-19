@@ -10,7 +10,7 @@ import (
 type MiddlewareConfig struct {
 	Name    string                 `json:"name"`
 	Service string                 `json:"-""`
-	Config  map[string]interface{} `json:"config"`
+	Config  map[string]interface{} `json:"config,omitempty"`
 }
 
 // Save associates a middleware with a service.
