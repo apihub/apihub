@@ -107,6 +107,57 @@ func (s *S) TestUpdateService(c *C) {
 	c.Assert(s.recorder.Body.String(), Equals, expected)
 }
 
+func (s *S) TestUpdateServiceUseTeamProvidedOnTheUrl(c *C) {
+	owner.Save()
+	team.Save(owner)
+	service.Save(owner, team)
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+	defer owner.Delete()
+	defer service.Delete()
+
+	bob.Save()
+	unauthorized_team := &account.Team{Name: "Authorized"}
+	unauthorized_team.Save(bob)
+	defer bob.Delete()
+	defer account.DeleteTeamByAlias(unauthorized_team.Alias, bob)
+
+	payload := `{"subdomain": "backstage", "description": "New DESC", "disabled": true, "documentation": "http://backstage.example.org/doc", "endpoint": "http://github.com/backstage/backstage", "timeout": 1, "team": "` + unauthorized_team.Alias + `"}`
+	b := strings.NewReader(payload)
+
+	s.router.Put("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "UpdateService"))
+	req, _ := http.NewRequest("PUT", "/api/teams/"+team.Alias+"/services/"+service.Subdomain, b)
+	req.Header.Set("Content-Type", "application/json")
+	s.env[CurrentUser] = owner
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	expected := `{"subdomain":"backstage","description":"New DESC","disabled":true,"documentation":"http://backstage.example.org/doc","endpoint":"http://github.com/backstage/backstage","owner":"owner@example.org","team":"team","timeout":1}`
+	c.Assert(s.recorder.Code, Equals, http.StatusOK)
+	c.Assert(s.recorder.Body.String(), Equals, expected)
+}
+
+func (s *S) TestUpdateServiceUseSubdomainProvidedOnTheUrl(c *C) {
+	owner.Save()
+	team.Save(owner)
+	service.Save(owner, team)
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+	defer owner.Delete()
+	defer service.Delete()
+
+	payload := `{"subdomain": "another_subdomain", "description": "New DESC", "disabled": true, "documentation": "http://backstage.example.org/doc", "endpoint": "http://github.com/backstage/backstage", "timeout": 1, "team": "team"}`
+	b := strings.NewReader(payload)
+
+	s.router.Put("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "UpdateService"))
+	req, _ := http.NewRequest("PUT", "/api/teams/"+team.Alias+"/services/"+service.Subdomain, b)
+	req.Header.Set("Content-Type", "application/json")
+	s.env[CurrentUser] = owner
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	expected := `{"subdomain":"backstage","description":"New DESC","disabled":true,"documentation":"http://backstage.example.org/doc","endpoint":"http://github.com/backstage/backstage","owner":"owner@example.org","team":"team","timeout":1}`
+	c.Assert(s.recorder.Code, Equals, http.StatusOK)
+	c.Assert(s.recorder.Body.String(), Equals, expected)
+}
 func (s *S) TestUpdateServiceWhenUserIsNotSignedIn(c *C) {
 	owner.Save()
 	team.Save(owner)

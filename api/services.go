@@ -66,6 +66,7 @@ func (handler *ServicesHandler) UpdateService(c *web.C, w http.ResponseWriter, r
 		return handler.handleError(err)
 	}
 
+	service.Subdomain = c.URLParams["subdomain"]
 	err = service.Save(currentUser, team)
 	if err != nil {
 		return handler.handleError(err)
