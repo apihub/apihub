@@ -7,7 +7,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-type MiddlewareConfig struct {
+type PluginConfig struct {
 	Name    string                 `json:"name"`
 	Service string                 `json:"service"`
 	Config  map[string]interface{} `json:"config,omitempty"`
@@ -17,7 +17,7 @@ type MiddlewareConfig struct {
 //
 // It requires to inform the fields: Subdomain and Middleware name.
 // It is not allowed to associates two middlewares with the same subdomain.
-func (m *MiddlewareConfig) Save() error {
+func (m *PluginConfig) Save() error {
 	conn, err := db.Conn()
 	if err != nil {
 		return err
@@ -36,7 +36,7 @@ func (m *MiddlewareConfig) Save() error {
 }
 
 // Delete removes an existing middleware config from the server.
-func (m *MiddlewareConfig) Delete() error {
+func (m *PluginConfig) Delete() error {
 	conn, err := db.Conn()
 	if err != nil {
 		return err

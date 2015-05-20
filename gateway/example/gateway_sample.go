@@ -21,7 +21,7 @@ func main() {
 	hw := &account.Service{Endpoint: "http://gohttphelloworld.appspot.com", Subdomain: "helloworld", Timeout: 2}
 	services := []*account.Service{one, two, hw}
 
-	confCors := &account.MiddlewareConfig{
+	confCors := &account.PluginConfig{
 		Name:    "cors",
 		Service: hw.Subdomain,
 		Config:  map[string]interface{}{"allowed_origins": []string{"www"}, "debug": true, "allowed_methods": []string{"DELETE", "PUT"}, "allow_credentials": true, "max_age": 10},

@@ -212,7 +212,7 @@ func (s *S) TestMiddlewares(c *C) {
 		Subdomain: "_test_middlewares",
 		Endpoint:  "http://example.org/api",
 	}
-	config := &MiddlewareConfig{
+	config := &PluginConfig{
 		Name:    "cors",
 		Service: service.Subdomain,
 		Config:  map[string]interface{}{"allow_origins": []string{"www"}, "debug": true},

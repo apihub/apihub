@@ -111,6 +111,7 @@ func (api *Api) drawDefaultRoutes() {
 	usersHandler := &UsersHandler{}
 	teamsHandler := &TeamsHandler{}
 	oauthHandler := &OAuthHandler{}
+	pluginsHandler := &PluginsHandler{}
 
 	//Assets
 	_, filename, _, _ := runtime.Caller(1)
@@ -157,7 +158,7 @@ func (api *Api) drawDefaultRoutes() {
 	api.privateRoutes.Put("/teams/:team/services/:subdomain", api.route(servicesHandler, "UpdateService"))
 	api.privateRoutes.Get("/teams/:team/services/:subdomain", api.route(servicesHandler, "GetServiceInfo"))
 
-	api.privateRoutes.Put("/plugins/:name/subscriptions", api.route(servicesHandler, "SubscribePlugin"))
+	api.privateRoutes.Put("/plugins/:name/subscriptions", api.route(pluginsHandler, "SubscribePlugin"))
 	Logger.Info("Private routes registered.")
 }
 

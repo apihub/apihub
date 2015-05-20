@@ -176,14 +176,14 @@ func FindServicesByTeam(teams []string) ([]*Service, error) {
 	return services, nil
 }
 
-func (service *Service) Middlewares() ([]*MiddlewareConfig, error) {
+func (service *Service) Middlewares() ([]*PluginConfig, error) {
 	conn, err := db.Conn()
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Close()
 
-	var midds []*MiddlewareConfig = []*MiddlewareConfig{}
+	var midds []*PluginConfig = []*PluginConfig{}
 	err = conn.MiddlewaresConfig().Find(bson.M{"service": service.Subdomain}).All(&midds)
 	if err != nil {
 		return nil, err

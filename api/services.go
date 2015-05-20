@@ -125,32 +125,3 @@ func (handler *ServicesHandler) GetUserServices(c *web.C, w http.ResponseWriter,
 	payload := s.Serializer()
 	return OK(payload)
 }
-
-func (handler *ServicesHandler) SubscribePlugin(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
-	currentUser, err := handler.getCurrentUser(c)
-	if err != nil {
-		return handler.handleError(err)
-	}
-
-	conf := &MiddlewareConfig{
-		Name: c.URLParams["name"],
-	}
-	err = handler.parseBody(r.Body, conf)
-	if err != nil {
-		return handler.handleError(err)
-	}
-
-	service, err := FindServiceBySubdomain(conf.Service)
-	if err != nil {
-		return handler.handleError(err)
-	}
-
-	_, err = FindTeamByAlias(service.Team, currentUser)
-	if err != nil {
-		return handler.handleError(err)
-	}
-
-	conf.Save()
-	payload, _ := json.Marshal(conf)
-	return OK(string(payload))
-}

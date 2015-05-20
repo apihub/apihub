@@ -32,7 +32,7 @@ type ServiceHandler struct {
 	middlewares  []Middleware
 }
 
-func (s *ServiceHandler) addMiddleware(m Middleware, mc *account.MiddlewareConfig) {
+func (s *ServiceHandler) addMiddleware(m Middleware, mc *account.PluginConfig) {
 	marshal, err := json.Marshal(mc.Config)
 	if err != nil {
 		log.Printf("Wasnt possible to register middleware `%s`. Error: %s", mc.Name, err)

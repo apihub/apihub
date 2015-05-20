@@ -243,8 +243,8 @@ func (s *S) TestHasMiddleware(c *C) {
 	c.Assert(gateway.HasMiddleware("oauth"), Equals, true)
 }
 
-func configAuthenticationMiddleware(s *account.Service) *account.MiddlewareConfig {
-	conf := &account.MiddlewareConfig{
+func configAuthenticationMiddleware(s *account.Service) *account.PluginConfig {
+	conf := &account.PluginConfig{
 		Name:    "authentication",
 		Service: s.Subdomain,
 		Config:  map[string]interface{}{},

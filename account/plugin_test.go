@@ -5,12 +5,12 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-func (s *S) TestCreateMiddlewareConfigNewService(c *C) {
+func (s *S) TestCreatePluginConfigNewService(c *C) {
 	service := Service{
 		Endpoint:  "http://example.org/api",
 		Subdomain: "_test_middleware_config_new_service",
 	}
-	config := &MiddlewareConfig{
+	config := &PluginConfig{
 		Name:    "cors",
 		Service: service.Subdomain,
 		Config:  map[string]interface{}{"allow_origins": []string{"www"}, "debug": true},
@@ -21,20 +21,20 @@ func (s *S) TestCreateMiddlewareConfigNewService(c *C) {
 	c.Check(ok, Equals, false)
 }
 
-func (s *S) TestCannotCreateMiddlewareConfigWithoutRequiredFields(c *C) {
-	midd := &MiddlewareConfig{}
+func (s *S) TestCannotCreatePluginConfigWithoutRequiredFields(c *C) {
+	midd := &PluginConfig{}
 	err := midd.Save()
 	e := err.(*errors.ValidationError)
 	c.Assert(e.Payload, Equals, "Name cannot be empty.")
 
-	midd = &MiddlewareConfig{Name: "foo"}
+	midd = &PluginConfig{Name: "foo"}
 	err = midd.Save()
 	e = err.(*errors.ValidationError)
 	c.Assert(e.Payload, Equals, "Service cannot be empty.")
 }
 
 func (s *S) TestDeleteMiddConfigANonExistingMidd(c *C) {
-	config := &MiddlewareConfig{
+	config := &PluginConfig{
 		Name:    "foo",
 		Service: "backstage",
 	}

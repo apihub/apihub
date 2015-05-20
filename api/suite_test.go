@@ -20,6 +20,7 @@ var servicesHandler *ServicesHandler
 var teamsHandler *TeamsHandler
 var usersHandler *UsersHandler
 var clientsHandler *ClientsHandler
+var pluginsHandler *PluginsHandler
 
 var alice *account.User
 var bob *account.User
@@ -76,6 +77,7 @@ func (s *S) SetUpTest(c *C) {
 	servicesHandler = &ServicesHandler{}
 	clientsHandler = &ClientsHandler{}
 	oAuthHandler = &OAuthHandler{}
+	pluginsHandler = &PluginsHandler{}
 
 	s.recorder = httptest.NewRecorder()
 	s.env = map[string]interface{}{}
