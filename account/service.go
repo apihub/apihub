@@ -75,7 +75,7 @@ func (service *Service) Delete() error {
 
 	err = conn.Services().Remove(service)
 	if err == mgo.ErrNotFound {
-		return &errors.ValidationError{Payload: "Service not found."}
+		return &errors.NotFoundError{Payload: "Service not found."}
 	}
 	if err != nil {
 		return &errors.ValidationError{Payload: err.Error()}
@@ -123,12 +123,12 @@ func DeleteServiceBySubdomain(subdomain string) error {
 
 	service, err := FindServiceBySubdomain(subdomain)
 	if err != nil {
-		return &errors.ValidationError{Payload: "Service not found."}
+		return &errors.NotFoundError{Payload: "Service not found."}
 	}
 	go service.unpublish()
 	err = conn.Services().Remove(bson.M{"_id": subdomain})
 	if err == mgo.ErrNotFound {
-		return &errors.ValidationError{Payload: "Service not found."}
+		return &errors.NotFoundError{Payload: "Service not found."}
 	}
 
 	return nil

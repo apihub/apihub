@@ -16,6 +16,24 @@ func (s *S) TestCreateClient(c *C) {
 	c.Assert(err, IsNil)
 }
 
+func (s *S) TestSaveExistingClient(c *C) {
+	owner := &User{Email: "owner@example.org"}
+	team := &Team{Name: "Team", Alias: "team"}
+	client := Client{
+		Name: "Backstage App.",
+	}
+	err := client.Save(owner, team)
+	defer client.Delete()
+	c.Assert(err, IsNil)
+
+	client.Name = "New name"
+	err = client.Save(owner, team)
+	defer DeleteClientByIdAndTeam(client.Id, team.Alias)
+
+	c.Assert(client.Name, Equals, "New name")
+	c.Check(err, IsNil)
+}
+
 func (s *S) TestCannotCreateClientWithoutRequiredFields(c *C) {
 	owner := &User{Email: "owner@example.org"}
 	team := &Team{Name: "Team", Alias: "team"}
@@ -40,7 +58,7 @@ func (s *S) TestDeleteClientWhenClientDoesNotExist(c *C) {
 	client := &Client{}
 	err := client.Delete()
 
-	e, ok := err.(*errors.ValidationError)
+	e, ok := err.(*errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 	c.Assert(e.Payload, Equals, "Client not found.")
 }
@@ -96,7 +114,7 @@ func (s *S) TestFindClientByIdAndTeam(c *C) {
 func (s *S) TestFindClientByIdAndTeamWithInvalidName(c *C) {
 	_, err := FindClientByIdAndTeam("Non Existing Client", "Invalid Team")
 	c.Assert(err, NotNil)
-	e := err.(*errors.ValidationError)
+	e := err.(*errors.NotFoundError)
 	c.Assert(e.Payload, Equals, "Client not found.")
 }
 
@@ -117,7 +135,7 @@ func (s *S) TestDeleteClientByIdAndTeam(c *C) {
 func (s *S) TestDeleteClientByIdAndTeamWithInvalidNameAndTeam(c *C) {
 	err := DeleteClientByIdAndTeam("Non existing client", "Invalid Team")
 	c.Assert(err, NotNil)
-	e := err.(*errors.ValidationError)
+	e := err.(*errors.NotFoundError)
 	c.Assert(e.Payload, Equals, "Client not found.")
 }
 

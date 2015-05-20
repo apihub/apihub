@@ -43,6 +43,39 @@ func (handler *ClientsHandler) CreateClient(c *web.C, w http.ResponseWriter, r *
 	return Created(string(payload))
 }
 
+func (handler *ClientsHandler) UpdateClient(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
+	currentUser, err := handler.getCurrentUser(c)
+	if err != nil {
+		return BadRequest(E_BAD_REQUEST, err.Error())
+	}
+
+	client, err := FindClientById(c.URLParams["id"])
+	if err != nil {
+		return handler.handleError(err)
+	}
+	if client.Team != c.URLParams["team"] {
+		return NotFound(ErrClientNotFoundOnTeam.Error())
+	}
+
+	err = handler.parseBody(r.Body, client)
+	if err != nil {
+		return BadRequest(E_BAD_REQUEST, err.Error())
+	}
+
+	team, err := FindTeamByAlias(client.Team, currentUser)
+	if err != nil {
+		return handler.handleError(err)
+	}
+
+	client.Id = c.URLParams["id"]
+	err = client.Save(currentUser, team)
+	if err != nil {
+		return handler.handleError(err)
+	}
+	payload, _ := json.Marshal(client)
+	return OK(string(payload))
+}
+
 func (handler *ClientsHandler) DeleteClient(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
 	currentUser, err := handler.getCurrentUser(c)
 	if err != nil {

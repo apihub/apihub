@@ -101,7 +101,7 @@ func (s *S) TestDeleteServiceANonExistingService(c *C) {
 	}
 	err := service.Delete()
 
-	e, ok := err.(*errors.ValidationError)
+	e, ok := err.(*errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 	c.Assert(e.Payload, Equals, "Service not found.")
 }
@@ -164,7 +164,7 @@ func (s *S) TestDeleteServiceBySubdomain(c *C) {
 func (s *S) TestDeleteServiceBySubdomainWithInvalidSubdomain(c *C) {
 	err := DeleteServiceBySubdomain("Non existing service")
 	c.Assert(err, NotNil)
-	e := err.(*errors.ValidationError)
+	e := err.(*errors.NotFoundError)
 	c.Assert(e.Payload, Equals, "Service not found.")
 }
 

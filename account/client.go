@@ -44,7 +44,7 @@ func (client *Client) Save(owner *User, team *Team) error {
 
 	client.Owner = owner.Email
 	client.Team = team.Alias
-	err = conn.Clients().Insert(client)
+	_, err = conn.Clients().Upsert(bson.M{"id": client.Id}, client)
 	if mgo.IsDup(err) {
 		return &errors.ValidationError{Payload: "There is another client with this name."}
 	}
@@ -61,7 +61,7 @@ func (client *Client) Delete() error {
 
 	err = conn.Clients().Remove(client)
 	if err == mgo.ErrNotFound {
-		return &errors.ValidationError{Payload: "Client not found."}
+		return &errors.NotFoundError{Payload: "Client not found."}
 	}
 	if err != nil {
 		return &errors.ValidationError{Payload: err.Error()}
@@ -81,7 +81,7 @@ func FindClientById(id string) (*Client, error) {
 	var client Client
 	err = conn.Clients().Find(bson.M{"id": id}).One(&client)
 	if err == mgo.ErrNotFound {
-		return nil, &errors.ValidationError{Payload: "Client not found."}
+		return nil, &errors.NotFoundError{Payload: "Client not found."}
 	}
 
 	return &client, nil
@@ -99,7 +99,7 @@ func FindClientByIdAndTeam(id, team string) (*Client, error) {
 	var client Client
 	err = conn.Clients().Find(bson.M{"id": id, "team": team}).One(&client)
 	if err == mgo.ErrNotFound {
-		return nil, &errors.ValidationError{Payload: "Client not found."}
+		return nil, &errors.NotFoundError{Payload: "Client not found."}
 	}
 
 	return &client, nil
@@ -115,8 +115,7 @@ func DeleteClientByIdAndTeam(id, team string) error {
 
 	err = conn.Clients().Remove(bson.M{"id": id, "team": team})
 	if err == mgo.ErrNotFound {
-		return &errors.ValidationError{Payload: "Client not found."}
-		return nil
+		return &errors.NotFoundError{Payload: "Client not found."}
 	}
 	return err
 }

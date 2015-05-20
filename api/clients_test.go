@@ -104,6 +104,139 @@ func (s *S) TestCreateClientWithInvalidPayloadFormat(c *C) {
 	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"The request was invalid or cannot be served."}`)
 }
 
+func (s *S) TestUpdateClient(c *C) {
+	owner.Save()
+	team.Save(owner)
+	client.Save(owner, team)
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+	defer account.DeleteClientByIdAndTeam(client.Id, team.Alias)
+	defer owner.Delete()
+
+	payload := `{"name": "New Name"}`
+	b := strings.NewReader(payload)
+
+	s.router.Put("/api/teams/:team/clients/:id", s.Api.route(clientsHandler, "UpdateClient"))
+	req, _ := http.NewRequest("PUT", "/api/teams/"+team.Alias+"/clients/"+client.Id, b)
+	s.env[CurrentUser] = owner
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, http.StatusOK)
+	c.Assert(s.recorder.Body.String(), Equals, `{"id":"backstage","secret":"SuperSecret","name":"New Name","redirect_uri":"http://example.org/auth","owner":"owner@example.org","team":"team"}`)
+}
+
+func (s *S) TestUpdateClientWhenTeamDoesNotMatch(c *C) {
+	owner.Save()
+	team.Save(owner)
+	client.Save(owner, team)
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+	defer account.DeleteClientByIdAndTeam(client.Id, team.Alias)
+	defer owner.Delete()
+
+	payload := `{"name": "New Name", "team": "anotherteam"}`
+	b := strings.NewReader(payload)
+
+	s.router.Put("/api/teams/:team/clients/:id", s.Api.route(clientsHandler, "UpdateClient"))
+	req, _ := http.NewRequest("PUT", "/api/teams/anotherteam/clients/"+client.Id, b)
+	s.env[CurrentUser] = owner
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, http.StatusNotFound)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"not_found","error_description":"Client not found on this team."}`)
+}
+
+func (s *S) TestUpdateClientUseIdProvidedOnTheUrl(c *C) {
+	owner.Save()
+	team.Save(owner)
+	client.Save(owner, team)
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+	defer account.DeleteClientByIdAndTeam(client.Id, team.Alias)
+	defer owner.Delete()
+
+	payload := `{"name": "New Name", "id": "new_name"}`
+	b := strings.NewReader(payload)
+
+	s.router.Put("/api/teams/:team/clients/:id", s.Api.route(clientsHandler, "UpdateClient"))
+	req, _ := http.NewRequest("PUT", "/api/teams/"+team.Alias+"/clients/"+client.Id, b)
+	s.env[CurrentUser] = owner
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, http.StatusOK)
+	c.Assert(s.recorder.Body.String(), Equals, `{"id":"backstage","secret":"SuperSecret","name":"New Name","redirect_uri":"http://example.org/auth","owner":"owner@example.org","team":"team"}`)
+}
+
+func (s *S) TestUpdateClientWhenUserIsNotSignedIn(c *C) {
+	owner.Save()
+	team.Save(owner)
+	client.Save(owner, team)
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+	defer account.DeleteClientByIdAndTeam(client.Id, team.Alias)
+	defer owner.Delete()
+
+	payload := `{}`
+	b := strings.NewReader(payload)
+
+	s.router.Put("/api/teams/:team/clients/:id", s.Api.route(clientsHandler, "UpdateClient"))
+	req, _ := http.NewRequest("PUT", "/api/teams/"+team.Alias+"/clients/"+client.Id, b)
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, http.StatusBadRequest)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
+}
+
+func (s *S) TestUpdateClientWhenTeamDoesNotExist(c *C) {
+	owner.Save()
+	team.Save(owner)
+	client.Save(owner, team)
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+	defer account.DeleteClientByIdAndTeam(client.Id, team.Alias)
+	defer owner.Delete()
+
+	payload := `{"name": "New Name"}`
+	b := strings.NewReader(payload)
+
+	s.router.Put("/api/teams/:team/clients/:id", s.Api.route(clientsHandler, "UpdateClient"))
+	req, _ := http.NewRequest("PUT", "/api/teams/notfound/clients/"+client.Id, b)
+	s.env[CurrentUser] = owner
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, http.StatusNotFound)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"not_found","error_description":"Client not found on this team."}`)
+}
+
+func (s *S) TestUpdateClientWhenIdDoesNotExist(c *C) {
+	owner.Save()
+	team.Save(owner)
+	client.Save(owner, team)
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+	defer account.DeleteClientByIdAndTeam(client.Id, team.Alias)
+	defer owner.Delete()
+
+	payload := `{"name": "New Name"}`
+	b := strings.NewReader(payload)
+
+	s.router.Put("/api/teams/:team/clients/:id", s.Api.route(clientsHandler, "UpdateClient"))
+	req, _ := http.NewRequest("PUT", "/api/teams/"+team.Alias+"/clients/invalid_id", b)
+	s.env[CurrentUser] = owner
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, http.StatusNotFound)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"not_found","error_description":"Client not found."}`)
+}
+
+func (s *S) TestUpdateClientWithInvalidPayloadFormat(c *C) {
+	//c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"The request was invalid or cannot be served."}`)
+}
+
+func (s *S) TestUpdateClientWhenDoesNotBelongToTeam(c *C) {
+
+}
+
 func (s *S) TestDeleteClient(c *C) {
 	owner.Save()
 	team.Save(owner)
