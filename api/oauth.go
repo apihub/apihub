@@ -10,9 +10,12 @@ import (
 
 	"github.com/RangelReale/osin"
 	. "github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/db"
 	. "github.com/backstage/backstage/errors"
 	. "github.com/backstage/backstage/log"
+	"github.com/fatih/structs"
 	"github.com/zenazn/goji/web"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type OAuthHandler struct {
@@ -28,12 +31,22 @@ type PageForm struct {
 }
 
 type AuthenticationInfo struct {
-	ClientId  string `json:"client_id"`
-	CreatedAt string `bson:"created_at" json:"created_at"`
-	Expires   int    `json:"expires"`
-	Token     string `json:"access_token"`
-	Type      string `json:"token_type"`
-	UserId    string `json:"user_id"`
+	ClientId     string `json:"client_id"`
+	Expires      int    `json:"expires_in"`
+	Token        string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	Type         string `json:"token_type"`
+	User         string `json:"user"`
+}
+
+func (a *AuthenticationInfo) save() {
+	conn, err := db.Conn()
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer conn.Close()
+	tokenKey := a.Type + " " + a.Token
+	go conn.Tokens(tokenKey, a.Expires, structs.Map(a))
 }
 
 func (handler *OAuthHandler) Token(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
@@ -41,7 +54,8 @@ func (handler *OAuthHandler) Token(c *web.C, w http.ResponseWriter, r *http.Requ
 	resp := api.oAuthServer.NewResponse()
 	defer resp.Close()
 
-	if ar := api.oAuthServer.HandleAccessRequest(resp, r); ar != nil {
+	ar := api.oAuthServer.HandleAccessRequest(resp, r)
+	if ar != nil {
 		switch ar.Type {
 		case osin.AUTHORIZATION_CODE:
 			ar.Authorized = true
@@ -54,12 +68,33 @@ func (handler *OAuthHandler) Token(c *web.C, w http.ResponseWriter, r *http.Requ
 			Logger.Debug("Grant Type: Client Credentials")
 		}
 		api.oAuthServer.FinishAccessRequest(resp, r, ar)
+		saveAuthenticationAccessInfo(ar, resp)
 	}
 	if resp.IsError && resp.InternalError != nil {
 		Logger.Error("ERROR: %s\n", resp.InternalError)
 	}
 	osin.OutputJSON(resp, w, r)
 	return nil
+}
+
+func saveAuthenticationAccessInfo(ar *osin.AccessRequest, resp *osin.Response) {
+	go func() {
+		auth := &AuthenticationInfo{}
+		auth.ClientId = ar.Client.GetId()
+		// There is no UserData for client credentials.
+		if ar.UserData != nil {
+			u := ar.UserData.(bson.M)
+			auth.User = u["email"].(string)
+		}
+		auth.Token = resp.Output["access_token"].(string)
+		auth.Expires = int(resp.Output["expires_in"].(int32))
+		auth.Type = resp.Output["token_type"].(string)
+		// There is no refresh_token for client credentials.
+		if resp.Output["refresh_token"] != nil {
+			auth.RefreshToken = resp.Output["refresh_token"].(string)
+		}
+		auth.save()
+	}()
 }
 
 func HandleLoginPage(ar *osin.AuthorizeRequest, w http.ResponseWriter, r *http.Request) *User {

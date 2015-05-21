@@ -25,8 +25,8 @@ func (m *AuthenticationMiddleware) ProcessRequest(rw http.ResponseWriter, r *htt
 		e := api.AuthenticationInfo{}
 		get(a, &tokenInfo)
 		if tokenInfo != e {
-			if tokenInfo.UserId != "" {
-				r.Header.Set("Backstage-User", tokenInfo.UserId)
+			if tokenInfo.User != "" {
+				r.Header.Set("Backstage-User", tokenInfo.User)
 			}
 			r.Header.Set("Backstage-ClientId", tokenInfo.ClientId)
 			next(rw, r)

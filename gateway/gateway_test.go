@@ -179,12 +179,12 @@ func (s *S) TestAuthenticationMiddlewareWithInvalidHeader(c *C) {
 }
 
 func (s *S) TestAuthenticationMiddlewareWithValidHeader(c *C) {
-	auth := &api.AuthenticationInfo{ClientId: "123", Token: "test-123", Type: "Bearer", CreatedAt: "now", UserId: "alice", Expires: 10}
+	auth := &api.AuthenticationInfo{ClientId: "123", Token: "test-123", Type: "Bearer", User: "alice@example.org", Expires: 10}
 	s.AddToken(auth.Token, auth.Expires, structs.Map(auth))
 	defer s.DeleteToken(auth.Token)
 
 	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c.Assert(r.Header.Get("Backstage-User"), Equals, auth.UserId)
+		c.Assert(r.Header.Get("Backstage-User"), Equals, auth.User)
 		c.Assert(r.Header.Get("Backstage-ClientId"), Equals, auth.ClientId)
 		w.Write([]byte("OK"))
 	}))
@@ -207,7 +207,7 @@ func (s *S) TestAuthenticationMiddlewareWithValidHeader(c *C) {
 }
 
 func (s *S) TestAuthenticationMiddlewareWithValidHeaderForApp(c *C) {
-	auth := &api.AuthenticationInfo{ClientId: "123", Token: "test-123", Type: "Bearer", CreatedAt: "now", Expires: 10}
+	auth := &api.AuthenticationInfo{ClientId: "123", Token: "test-123", Type: "Bearer", Expires: 10}
 	s.AddToken(auth.Token, auth.Expires, structs.Map(auth))
 	defer s.DeleteToken(auth.Token)
 
