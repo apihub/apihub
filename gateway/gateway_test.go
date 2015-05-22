@@ -134,15 +134,26 @@ func (s *S) TestGatewayWithTransformer(c *C) {
 }
 
 func (s *S) TestAuthenticationMiddlewareWithoutHeader(c *C) {
+	owner.Save()
+	team.Save(owner)
+	defer owner.Delete()
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+
+	owner.Save()
+	defer owner.Delete()
 	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
 	}))
 	defer target.Close()
 
-	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Transformers: []string{"AddHeader", "AddHeaderVia"}}}
+	service = &account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Transformers: []string{"AddHeader", "AddHeaderVia"}}
+	services := []*account.Service{service}
 
-	conf := configAuthenticationMiddleware(services[0])
-	defer conf.Delete()
+	service.Save(owner, team)
+	defer service.Delete()
+
+	conf := configAuthenticationMiddleware(service, owner)
+	defer conf.Delete(owner)
 	gateway := NewGateway(s.Settings)
 	gateway.LoadServices(services)
 	defer gateway.Close()
@@ -156,15 +167,24 @@ func (s *S) TestAuthenticationMiddlewareWithoutHeader(c *C) {
 }
 
 func (s *S) TestAuthenticationMiddlewareWithInvalidHeader(c *C) {
+	owner.Save()
+	team.Save(owner)
+	defer owner.Delete()
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+
 	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
 	}))
 	defer target.Close()
 
-	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Transformers: []string{"AddHeader", "AddHeaderVia"}}}
+	service = &account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Transformers: []string{"AddHeader", "AddHeaderVia"}, Team: team.Alias}
+	service.Save(owner, team)
+	defer service.Delete()
 
-	conf := configAuthenticationMiddleware(services[0])
-	defer conf.Delete()
+	services := []*account.Service{service}
+
+	conf := configAuthenticationMiddleware(service, owner)
+	defer conf.Delete(owner)
 	gateway := NewGateway(s.Settings)
 	gateway.LoadServices(services)
 	defer gateway.Close()
@@ -179,6 +199,11 @@ func (s *S) TestAuthenticationMiddlewareWithInvalidHeader(c *C) {
 }
 
 func (s *S) TestAuthenticationMiddlewareWithValidHeader(c *C) {
+	owner.Save()
+	team.Save(owner)
+	defer owner.Delete()
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+
 	auth := &api.AuthenticationInfo{ClientId: "123", Token: "test-123", Type: "Bearer", User: "alice@example.org", Expires: 10}
 	s.AddToken(auth.Token, auth.Expires, structs.Map(auth))
 	defer s.DeleteToken(auth.Token)
@@ -190,10 +215,14 @@ func (s *S) TestAuthenticationMiddlewareWithValidHeader(c *C) {
 	}))
 	defer target.Close()
 
-	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Transformers: []string{"AddHeader", "AddHeaderVia"}}}
+	service = &account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Transformers: []string{"AddHeader", "AddHeaderVia"}}
+	services := []*account.Service{service}
 
-	conf := configAuthenticationMiddleware(services[0])
-	defer conf.Delete()
+	service.Save(owner, team)
+	defer service.Delete()
+
+	conf := configAuthenticationMiddleware(service, owner)
+	defer conf.Delete(owner)
 	gateway := NewGateway(s.Settings)
 	gateway.LoadServices(services)
 	defer gateway.Close()
@@ -207,6 +236,11 @@ func (s *S) TestAuthenticationMiddlewareWithValidHeader(c *C) {
 }
 
 func (s *S) TestAuthenticationMiddlewareWithValidHeaderForApp(c *C) {
+	owner.Save()
+	team.Save(owner)
+	defer owner.Delete()
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+
 	auth := &api.AuthenticationInfo{ClientId: "123", Token: "test-123", Type: "Bearer", Expires: 10}
 	s.AddToken(auth.Token, auth.Expires, structs.Map(auth))
 	defer s.DeleteToken(auth.Token)
@@ -218,10 +252,13 @@ func (s *S) TestAuthenticationMiddlewareWithValidHeaderForApp(c *C) {
 	}))
 	defer target.Close()
 
-	services := []*account.Service{&account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Transformers: []string{"AddHeader", "AddHeaderVia"}}}
+	service = &account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Transformers: []string{"AddHeader", "AddHeaderVia"}}
+	service.Save(owner, team)
+	defer service.Delete()
+	services := []*account.Service{service}
 
-	conf := configAuthenticationMiddleware(services[0])
-	defer conf.Delete()
+	conf := configAuthenticationMiddleware(service, owner)
+	defer conf.Delete(owner)
 	gateway := NewGateway(s.Settings)
 	gateway.LoadServices(services)
 	defer gateway.Close()
@@ -243,13 +280,16 @@ func (s *S) TestHasMiddleware(c *C) {
 	c.Assert(gateway.HasMiddleware("oauth"), Equals, true)
 }
 
-func configAuthenticationMiddleware(s *account.Service) *account.PluginConfig {
+func configAuthenticationMiddleware(s *account.Service, user *account.User) *account.PluginConfig {
 	conf := &account.PluginConfig{
 		Name:    "authentication",
 		Service: s.Subdomain,
 		Config:  map[string]interface{}{},
 	}
 
-	conf.Save()
+	err := conf.Save(user)
+	if err != nil {
+		panic(err)
+	}
 	return conf
 }

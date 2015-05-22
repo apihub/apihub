@@ -160,6 +160,7 @@ func (api *Api) drawDefaultRoutes() {
 	api.privateRoutes.Get("/teams/:team/services/:subdomain", api.route(servicesHandler, "GetServiceInfo"))
 
 	api.privateRoutes.Put("/plugins/:name/subscriptions", api.route(pluginsHandler, "SubscribePlugin"))
+	api.privateRoutes.Delete("/plugins/:name/subscriptions", api.route(pluginsHandler, "UnsubscribePlugin"))
 	Logger.Info("Private routes registered.")
 }
 

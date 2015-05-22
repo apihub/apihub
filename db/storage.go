@@ -50,7 +50,7 @@ func (storage *Storage) Services() *storage.Collection {
 
 func (storage *Storage) PluginsConfig() *storage.Collection {
 	index := mgo.Index{Key: []string{"service", "name"}, Unique: true, Background: false}
-	collection := storage.Collection("middlewares_config")
+	collection := storage.Collection("plugins_config")
 	collection.EnsureIndex(index)
 	return collection
 }

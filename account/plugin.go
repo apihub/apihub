@@ -17,26 +17,29 @@ type PluginConfig struct {
 //
 // It requires to inform the fields: Subdomain and Middleware name.
 // It is not allowed to associates two middlewares with the same subdomain.
-func (m *PluginConfig) Save() error {
+func (m *PluginConfig) Save(user *User) error {
+	err := m.validate(user)
+	if err != nil {
+		return err
+	}
+
 	conn, err := db.Conn()
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
-	if m.Name == "" {
-		return &errors.ValidationError{Payload: "Name cannot be empty."}
-	}
-	if m.Service == "" {
-		return &errors.ValidationError{Payload: "Service cannot be empty."}
-	}
-
 	_, err = conn.PluginsConfig().Upsert(bson.M{"service": m.Service, "name": m.Name}, m)
 	return err
 }
 
 // Delete removes an existing middleware config from the server.
-func (m *PluginConfig) Delete() error {
+func (m *PluginConfig) Delete(user *User) error {
+	err := m.validate(user)
+	if err != nil {
+		return err
+	}
+
 	conn, err := db.Conn()
 	if err != nil {
 		return err
@@ -45,10 +48,30 @@ func (m *PluginConfig) Delete() error {
 
 	err = conn.PluginsConfig().Remove(m)
 	if err == mgo.ErrNotFound {
-		return &errors.ValidationError{Payload: "Middleware Config not found."}
+		return &errors.ValidationError{Payload: "Configuration not found."}
 	}
 	if err != nil {
 		return &errors.ValidationError{Payload: err.Error()}
 	}
 	return err
+}
+
+func (m *PluginConfig) validate(user *User) error {
+	if m.Name == "" {
+		return &errors.ValidationError{Payload: "Name cannot be empty."}
+	}
+	if m.Service == "" {
+		return &errors.ValidationError{Payload: "Service cannot be empty."}
+	}
+
+	service, err := FindServiceBySubdomain(m.Service)
+	if err != nil {
+		return err
+	}
+
+	_, err = FindTeamByAlias(service.Team, user)
+	if err != nil {
+		return err
+	}
+	return nil
 }

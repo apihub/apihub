@@ -30,6 +30,6 @@ func (s *S) TestPluginsConfig(c *C) {
 	storage, err := Conn()
 	c.Assert(err, IsNil)
 	midds := storage.PluginsConfig()
-	collection := storage.Collection("middlewares_config")
+	collection := storage.Collection("plugins_config")
 	c.Assert(midds, DeepEquals, collection)
 }

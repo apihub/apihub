@@ -206,20 +206,3 @@ func (s *S) TestFindServicesByTeamWithoutElements(c *C) {
 	se, _ := FindServicesByTeam([]string{"non-existing-team"})
 	c.Assert(len(se), Equals, 0)
 }
-
-func (s *S) TestMiddlewares(c *C) {
-	service := &Service{
-		Subdomain: "_test_middlewares",
-		Endpoint:  "http://example.org/api",
-	}
-	config := &PluginConfig{
-		Name:    "cors",
-		Service: service.Subdomain,
-		Config:  map[string]interface{}{"allow_origins": []string{"www"}, "debug": true},
-	}
-	defer config.Delete()
-	err := config.Save()
-	c.Check(err, IsNil)
-	midds, _ := service.Middlewares()
-	c.Assert(len(midds), Equals, 1)
-}
