@@ -30,6 +30,34 @@ func (s *S) TestCreateClient(c *C) {
 	c.Assert(s.recorder.Code, Equals, http.StatusCreated)
 }
 
+func (s *S) TestCreateClientWhenAlreadyExists(c *C) {
+	alice.Save()
+	owner.Save()
+	team.Save(owner)
+	client.Save(owner, team)
+	aliceTeam := &account.Team{Name: "Alice Team"}
+	aliceTeam.Save(alice)
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+	defer account.DeleteTeamByAlias(aliceTeam.Alias, alice)
+	defer owner.Delete()
+	defer alice.Delete()
+	defer account.DeleteClientByIdAndTeam("backstage", team.Alias)
+	defer account.DeleteClientByIdAndTeam(client.Id, team.Alias)
+
+	payload := `{"name": "Backstage", "redirect_uri": "http://alice.example.org"}`
+	b := strings.NewReader(payload)
+
+	s.router.Post("/api/teams/:team/clients", s.Api.route(clientsHandler, "CreateClient"))
+	req, _ := http.NewRequest("POST", "/api/teams/"+aliceTeam.Alias+"/clients", b)
+	req.Header.Set("Content-Type", "application/json")
+	s.env[CurrentUser] = alice
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, http.StatusBadRequest)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"There is another client with this name."}`)
+}
+
 func (s *S) TestCreateClientWithIdAndSecret(c *C) {
 	owner.Save()
 	team.Save(owner)
@@ -230,11 +258,47 @@ func (s *S) TestUpdateClientWhenIdDoesNotExist(c *C) {
 }
 
 func (s *S) TestUpdateClientWithInvalidPayloadFormat(c *C) {
-	//c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"The request was invalid or cannot be served."}`)
+	owner.Save()
+	team.Save(owner)
+	client.Save(owner, team)
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+	defer account.DeleteClientByIdAndTeam(client.Id, team.Alias)
+	defer owner.Delete()
+
+	payload := `"name": "New Name"`
+	b := strings.NewReader(payload)
+
+	s.router.Put("/api/teams/:team/clients/:id", s.Api.route(clientsHandler, "UpdateClient"))
+	req, _ := http.NewRequest("PUT", "/api/teams/"+team.Alias+"/clients/"+client.Id, b)
+	s.env[CurrentUser] = owner
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, http.StatusBadRequest)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"The request was invalid or cannot be served."}`)
 }
 
 func (s *S) TestUpdateClientWhenDoesNotBelongToTeam(c *C) {
+	alice.Save()
+	owner.Save()
+	team.Save(owner)
+	client.Save(owner, team)
+	defer alice.Delete()
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+	defer account.DeleteClientByIdAndTeam(client.Id, team.Alias)
+	defer owner.Delete()
 
+	payload := `{}`
+	b := strings.NewReader(payload)
+
+	s.router.Put("/api/teams/:team/clients/:id", s.Api.route(clientsHandler, "UpdateClient"))
+	req, _ := http.NewRequest("PUT", "/api/teams/"+team.Alias+"/clients/"+client.Id, b)
+	s.env[CurrentUser] = alice
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, http.StatusForbidden)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"access_denied","error_description":"You do not belong to this team!"}`)
 }
 
 func (s *S) TestDeleteClient(c *C) {

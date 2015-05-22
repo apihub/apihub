@@ -184,7 +184,7 @@ func (service *Service) Middlewares() ([]*PluginConfig, error) {
 	defer conn.Close()
 
 	var midds []*PluginConfig = []*PluginConfig{}
-	err = conn.MiddlewaresConfig().Find(bson.M{"service": service.Subdomain}).All(&midds)
+	err = conn.PluginsConfig().Find(bson.M{"service": service.Subdomain}).All(&midds)
 	if err != nil {
 		return nil, err
 	}

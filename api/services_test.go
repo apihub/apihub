@@ -31,6 +31,33 @@ func (s *S) TestCreateService(c *C) {
 	c.Assert(s.recorder.Body.String(), Equals, expected)
 }
 
+func (s *S) TestCreateServiceWhenAlreadyExists(c *C) {
+	alice.Save()
+	owner.Save()
+	team.Save(owner)
+	service.Save(owner, team)
+	aliceTeam := &account.Team{Name: "Alice Team"}
+	aliceTeam.Save(alice)
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+	defer account.DeleteTeamByAlias(aliceTeam.Alias, alice)
+	defer owner.Delete()
+	defer alice.Delete()
+	defer account.DeleteServiceBySubdomain("backstage")
+
+	payload := `{"subdomain": "backstage", "description": "Useful desc.", "disabled": false, "documentation": "http://www.example.org/doc", "endpoint": "http://github.com/backstage", "timeout": 10, "transformers": ["test"]}`
+	b := strings.NewReader(payload)
+
+	s.router.Post("/api/teams/:team/services", s.Api.route(servicesHandler, "CreateService"))
+	req, _ := http.NewRequest("POST", "/api/teams/"+aliceTeam.Alias+"/services", b)
+	req.Header.Set("Content-Type", "application/json")
+	s.env[CurrentUser] = alice
+	webC := web.C{Env: s.env}
+	s.router.ServeHTTPC(webC, s.recorder, req)
+
+	c.Assert(s.recorder.Code, Equals, http.StatusBadRequest)
+	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"There is another service with this subdomain."}`)
+}
+
 func (s *S) TestCreateServiceWhenUserIsNotSignedIn(c *C) {
 	payload := `{}`
 	b := strings.NewReader(payload)
