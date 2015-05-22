@@ -12,7 +12,7 @@ import (
 func main() {
 	settings := &Settings{
 		Host:        "backstage.example.org",
-		Port:        ":8080",
+		Port:        ":8001",
 		ChannelName: "services",
 	}
 

@@ -31,7 +31,7 @@ func (m *PluginConfig) Save() error {
 		return &errors.ValidationError{Payload: "Service cannot be empty."}
 	}
 
-	_, err = conn.MiddlewaresConfig().Upsert(bson.M{"service": m.Service, "name": m.Name}, m)
+	_, err = conn.PluginsConfig().Upsert(bson.M{"service": m.Service, "name": m.Name}, m)
 	return err
 }
 
@@ -43,7 +43,7 @@ func (m *PluginConfig) Delete() error {
 	}
 	defer conn.Close()
 
-	err = conn.MiddlewaresConfig().Remove(m)
+	err = conn.PluginsConfig().Remove(m)
 	if err == mgo.ErrNotFound {
 		return &errors.ValidationError{Payload: "Middleware Config not found."}
 	}

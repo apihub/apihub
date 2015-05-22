@@ -117,7 +117,7 @@ func delCache(key string) (interface{}, error) {
 	defer conn.Close()
 	result, err := conn.Do("DEL", key)
 	if err != nil {
-		fmt.Println("ERROR:", err)
+		fmt.Println("ERROR REDIS:", err)
 		return nil, err
 	}
 	return result, nil
@@ -128,7 +128,7 @@ func getHCache(key string) ([]interface{}, error) {
 	defer conn.Close()
 	keyValue, err := conn.Do("HGETALL", key)
 	if err != nil {
-		fmt.Println("ERROR:", err)
+		fmt.Println("ERROR REDIS:", err)
 		return nil, err
 	}
 	return keyValue.([]interface{}), nil

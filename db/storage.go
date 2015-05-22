@@ -48,7 +48,7 @@ func (storage *Storage) Services() *storage.Collection {
 	return collection
 }
 
-func (storage *Storage) MiddlewaresConfig() *storage.Collection {
+func (storage *Storage) PluginsConfig() *storage.Collection {
 	index := mgo.Index{Key: []string{"service", "name"}, Unique: true, Background: false}
 	collection := storage.Collection("middlewares_config")
 	collection.EnsureIndex(index)

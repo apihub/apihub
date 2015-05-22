@@ -123,6 +123,7 @@ func (api *Api) drawDefaultRoutes() {
 	goji.Post("/api/login", api.route(usersHandler, "Login"))
 	goji.Delete("/api/logout", api.route(usersHandler, "Logout"))
 	goji.Put("/api/password", api.route(usersHandler, "ChangePassword"))
+	goji.Get("/helloworld", api.route(debugHandler, "HelloWorld"))
 	Logger.Info("Public routes registered.")
 
 	//OAuth 2.0 routes
@@ -138,7 +139,6 @@ func (api *Api) drawDefaultRoutes() {
 	api.privateRoutes.Use(middleware.SubRouter)
 	api.privateRoutes.NotFound(NotFoundHandler)
 	api.privateRoutes.Use(AuthorizationMiddleware)
-	api.privateRoutes.Get("/helloworld", api.route(debugHandler, "HelloWorld"))
 	api.privateRoutes.Delete("/users", api.route(usersHandler, "DeleteUser"))
 
 	api.privateRoutes.Post("/teams", api.route(teamsHandler, "CreateTeam"))

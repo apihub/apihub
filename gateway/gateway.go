@@ -137,6 +137,7 @@ func (g *Gateway) wrapServices(services []*account.Service) {
 		}
 		//Extract transformers
 		for _, f := range serv.Transformers {
+			// Need to confirm if the transformer is registered in the Gateway.
 			if transformer := g.Transformer().Get(f); transformer != nil {
 				h.addTransformer(f, transformer)
 			}

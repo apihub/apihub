@@ -26,10 +26,10 @@ func (s *S) TestTeams(c *C) {
 	c.Assert(teams, DeepEquals, collection)
 }
 
-func (s *S) TestMiddlewaresConfig(c *C) {
+func (s *S) TestPluginsConfig(c *C) {
 	storage, err := Conn()
 	c.Assert(err, IsNil)
-	midds := storage.MiddlewaresConfig()
+	midds := storage.PluginsConfig()
 	collection := storage.Collection("middlewares_config")
 	c.Assert(midds, DeepEquals, collection)
 }
