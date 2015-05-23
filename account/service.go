@@ -73,6 +73,7 @@ func (service *Service) Delete() error {
 	}
 	defer conn.Close()
 
+	go DeletePluginsByService(service.Subdomain)
 	err = conn.Services().Remove(service)
 	if err == mgo.ErrNotFound {
 		return &errors.NotFoundError{Payload: "Service not found."}
@@ -126,6 +127,7 @@ func DeleteServiceBySubdomain(subdomain string) error {
 		return &errors.NotFoundError{Payload: "Service not found."}
 	}
 	go service.unpublish()
+	go DeletePluginsByService(service.Subdomain)
 	err = conn.Services().Remove(bson.M{"_id": subdomain})
 	if err == mgo.ErrNotFound {
 		return &errors.NotFoundError{Payload: "Service not found."}
@@ -147,6 +149,7 @@ func DeleteServicesByTeam(team string) error {
 			return
 		}
 		for _, service := range services {
+			DeletePluginsByService(service.Subdomain)
 			service.unpublish()
 		}
 	}()

@@ -56,6 +56,22 @@ func (m *PluginConfig) Delete(user *User) error {
 	return err
 }
 
+// DeletePluginsByService removes an existing plugin config from the server based on given subdomain.
+func DeletePluginsByService(subdomain string) error {
+	conn, err := db.Conn()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	_, err = conn.PluginsConfig().RemoveAll(bson.M{"service": subdomain})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *PluginConfig) validate(user *User) error {
 	if m.Name == "" {
 		return &errors.ValidationError{Payload: "Name cannot be empty."}

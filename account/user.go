@@ -76,18 +76,11 @@ func (user *User) remove() error {
 	if err != nil {
 		return err
 	}
-	var teams []string
 	for _, t := range ts {
-		teams = append(teams, t.Alias)
+		DeleteServicesByTeam(t.Alias)
+		DeleteClientByTeam(t.Alias)
 	}
-	_, err = conn.Services().RemoveAll(bson.M{"team": bson.M{"$in": teams}})
-	if err != nil {
-		return err
-	}
-	_, err = conn.Teams().RemoveAll(bson.M{"alias": bson.M{"$in": teams}})
-	if err != nil {
-		return err
-	}
+
 	err = conn.Users().Remove(user)
 	if err != nil {
 		return err

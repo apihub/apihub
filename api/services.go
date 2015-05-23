@@ -83,7 +83,7 @@ func (handler *ServicesHandler) DeleteService(c *web.C, w http.ResponseWriter, r
 	}
 
 	service, err := FindServiceBySubdomain(c.URLParams["subdomain"])
-	if err != nil || service.Owner != currentUser.Email {
+	if err != nil || service.Owner != currentUser.Email || service.Team != c.URLParams["team"] {
 		return NotFound(ErrServiceNotFound.Error())
 	}
 	err = service.Delete()
