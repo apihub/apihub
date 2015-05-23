@@ -379,8 +379,8 @@ func (s *S) TestGetClientInfo(c *C) {
 	defer account.DeleteClientByIdAndTeam(client.Id, team.Alias)
 	defer owner.Delete()
 
-	s.router.Get("/api/teams/:team/clients/:id", s.Api.route(clientsHandler, "GetClientInfo"))
-	req, _ := http.NewRequest("GET", "/api/teams/"+team.Alias+"/clients/"+client.Id, nil)
+	s.router.Get("/api/teams/clients/:id", s.Api.route(clientsHandler, "GetClientInfo"))
+	req, _ := http.NewRequest("GET", "/api/teams/clients/"+client.Id, nil)
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -393,8 +393,8 @@ func (s *S) TestGetClientInfoWhenClientIsNotFound(c *C) {
 	bob.Save()
 	defer bob.Delete()
 
-	s.router.Get("/api/teams/:team/clients/:id", s.Api.route(clientsHandler, "GetClientInfo"))
-	req, _ := http.NewRequest("GET", "/api/teams/"+team.Alias+"/clients/invalid-client", nil)
+	s.router.Get("/api/teams/clients/:id", s.Api.route(clientsHandler, "GetClientInfo"))
+	req, _ := http.NewRequest("GET", "/api/teams/clients/invalid-client", nil)
 	s.env[CurrentUser] = bob
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -413,8 +413,8 @@ func (s *S) TestGetClientInfoWhenIsNotInTeam(c *C) {
 	defer bob.Delete()
 	defer owner.Delete()
 
-	s.router.Get("/api/teams/:team/clients/:id", s.Api.route(clientsHandler, "GetClientInfo"))
-	req, _ := http.NewRequest("GET", "/api/teams/"+team.Alias+"/clients/"+client.Id, nil)
+	s.router.Get("/api/teams/clients/:id", s.Api.route(clientsHandler, "GetClientInfo"))
+	req, _ := http.NewRequest("GET", "/api/teams/clients/"+client.Id, nil)
 	s.env[CurrentUser] = bob
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)

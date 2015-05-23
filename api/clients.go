@@ -101,7 +101,7 @@ func (handler *ClientsHandler) GetClientInfo(c *web.C, w http.ResponseWriter, r 
 		return handler.handleError(err)
 	}
 
-	client, err := FindClientByIdAndTeam(c.URLParams["id"], c.URLParams["team"])
+	client, err := FindClientById(c.URLParams["id"])
 	if err != nil {
 		return NotFound(ErrClientNotFoundOnTeam.Error())
 	}
