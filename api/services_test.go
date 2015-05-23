@@ -119,7 +119,7 @@ func (s *S) TestUpdateService(c *C) {
 	defer owner.Delete()
 	defer service.Delete()
 
-	payload := `{"subdomain": "backstage", "description": "New DESC", "disabled": true, "documentation": "http://backstage.example.org/doc", "endpoint": "http://github.com/backstage/backstage", "timeout": 1}`
+	payload := `{"description": "New DESC", "disabled": true, "documentation": "http://backstage.example.org/doc", "endpoint": "http://github.com/backstage/backstage", "timeout": 1}`
 	b := strings.NewReader(payload)
 
 	s.router.Put("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "UpdateService"))
@@ -159,8 +159,8 @@ func (s *S) TestUpdateServiceUseTeamProvidedOnTheUrl(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	expected := `{"subdomain":"backstage","description":"New DESC","disabled":true,"documentation":"http://backstage.example.org/doc","endpoint":"http://github.com/backstage/backstage","owner":"owner@example.org","team":"team","timeout":1}`
-	c.Assert(s.recorder.Code, Equals, http.StatusOK)
 	c.Assert(s.recorder.Body.String(), Equals, expected)
+	c.Assert(s.recorder.Code, Equals, http.StatusOK)
 }
 
 func (s *S) TestUpdateServiceUseSubdomainProvidedOnTheUrl(c *C) {

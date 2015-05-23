@@ -94,8 +94,8 @@ func (s *S) TestUpdateTeam(c *C) {
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
-	c.Assert(s.recorder.Code, Equals, http.StatusOK)
 	c.Assert(s.recorder.Body.String(), Equals, `{"name":"New Name","alias":"team","users":["owner@example.org"],"owner":"owner@example.org"}`)
+	c.Assert(s.recorder.Code, Equals, http.StatusOK)
 }
 
 func (s *S) TestUpdateTeamWhenUserIsNotOwner(c *C) {

@@ -53,25 +53,28 @@ func (handler *ServicesHandler) UpdateService(c *web.C, w http.ResponseWriter, r
 		return handler.handleError(err)
 	}
 
-	service := &Service{
-		Team: c.URLParams["team"],
-	}
-	team, err := FindTeamByAlias(service.Team, currentUser)
+	team, err := FindTeamByAlias(c.URLParams["team"], currentUser)
 	if err != nil {
 		return handler.handleError(err)
 	}
 
+	service := &Service{}
 	err = handler.parseBody(r.Body, service)
 	if err != nil {
 		return handler.handleError(err)
 	}
 
 	service.Subdomain = c.URLParams["subdomain"]
+	service.Team = c.URLParams["team"]
 	err = service.Save(currentUser, team)
 	if err != nil {
 		return handler.handleError(err)
 	}
 
+	service, err = FindServiceBySubdomain(service.Subdomain)
+	if err != nil {
+		return handler.handleError(err)
+	}
 	payload, _ := json.Marshal(service)
 	return OK(string(payload))
 }

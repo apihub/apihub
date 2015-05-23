@@ -20,14 +20,14 @@ const CHANNEL_NAME = "services"
 // The `Timeout` field represents how milliseconds the proxy wait for the response, before returning an error.
 type Service struct {
 	Subdomain     string   `bson:"_id" json:"subdomain"`
-	Description   string   `json:"description"`
-	Disabled      bool     `json:"disabled"`
-	Documentation string   `json:"documentation"`
-	Endpoint      string   `json:"endpoint"`
-	Transformers  []string `json:"transformers,omitempty"`
-	Owner         string   `json:"owner"`
+	Description   string   `json:"description" bson:",omitempty"`
+	Disabled      bool     `json:"disabled" bson:",omitempty"`
+	Documentation string   `json:"documentation" bson:",omitempty"`
+	Endpoint      string   `json:"endpoint" bson:",omitempty"`
+	Transformers  []string `json:"transformers,omitempty" bson:",omitempty"`
+	Owner         string   `json:"owner" bson:",omitempty"`
 	Team          string   `json:"team"`
-	Timeout       int      `json:"timeout"`
+	Timeout       int      `json:"timeout" bson:",omitempty"`
 }
 
 // Save creates a new service.
@@ -41,21 +41,20 @@ func (service *Service) Save(owner *User, team *Team) error {
 	}
 	defer conn.Close()
 
-	if service.Subdomain == "" {
-		return &errors.ValidationError{Payload: "Subdomain cannot be empty."}
-	}
-	if service.Endpoint == "" {
-		return &errors.ValidationError{Payload: "Endpoint cannot be empty."}
-	}
-
-	service.Subdomain = strings.ToLower(service.Subdomain)
-	service.Owner = owner.Email
-	service.Team = team.Alias
-
 	es, err := FindServiceBySubdomain(service.Subdomain)
 	if err == nil && service.Team == es.Team {
-		_, err = conn.Services().UpsertId(service.Subdomain, service)
+		err = conn.Services().Update(bson.M{"_id": es.Subdomain}, bson.M{"$set": service})
 	} else {
+		if service.Subdomain == "" {
+			return &errors.ValidationError{Payload: "Subdomain cannot be empty."}
+		}
+		if service.Endpoint == "" {
+			return &errors.ValidationError{Payload: "Endpoint cannot be empty."}
+		}
+
+		service.Subdomain = strings.ToLower(service.Subdomain)
+		service.Owner = owner.Email
+		service.Team = team.Alias
 		err = conn.Services().Insert(service)
 	}
 	if mgo.IsDup(err) {

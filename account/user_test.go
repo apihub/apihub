@@ -110,7 +110,7 @@ func (s *S) TestGetServices(c *C) {
 	team := &Team{Name: "Team"}
 	team.Save(user)
 	defer DeleteTeamByAlias(team.Alias, user)
-	service := &Service{Endpoint: "http://example.org/api", Subdomain: "_get_services", Transformers: []string{}}
+	service := &Service{Endpoint: "http://example.org/api", Subdomain: "_get_services", Transformers: []string{"cors"}}
 	service.Save(user, team)
 	defer DeleteServiceBySubdomain(service.Subdomain)
 	g, err := user.GetServices()

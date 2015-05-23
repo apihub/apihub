@@ -46,7 +46,7 @@ func (client *Client) Save(owner *User, team *Team) error {
 	client.Team = team.Alias
 	es, err := FindClientById(client.Id)
 	if err == nil && client.Team == es.Team {
-		_, err = conn.Clients().Upsert(bson.M{"id": client.Id}, client)
+		err = conn.Clients().Update(bson.M{"id": client.Id}, bson.M{"$set": client})
 	} else {
 		err = conn.Clients().Insert(client)
 	}

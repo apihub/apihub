@@ -46,7 +46,7 @@ func (team *Team) Save(owner *User) error {
 		team.Alias = GenerateSlug(team.Alias)
 	}
 	if team.Id != "" {
-		_, err = conn.Teams().UpsertId(team.Id, team)
+		err = conn.Teams().Update(bson.M{"_id": team.Id}, bson.M{"$set": team})
 	} else {
 		err = conn.Teams().Insert(team)
 	}
