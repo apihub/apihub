@@ -19,20 +19,6 @@ const (
 	TokenType         = "Token"
 )
 
-type Token interface {
-	GetUserFromToken(auth string) (user *account.User, error error)
-	TokenFor(user *account.User) *TokenInfo
-	RevokeTokensFor(user *account.User)
-	GenerateToken(user *account.User) *TokenInfo
-}
-
-type TokenInfo struct {
-	Token     string `json:"access_token"`
-	Type      string `json:"token_type"`
-	Expires   int    `json:"expires"`
-	CreatedAt string `bson:"created_at" json:"created_at"`
-}
-
 // Convert a Token in a user.
 // Given a token, find the user.
 func GetUserFromToken(auth string) (user *account.User, error error) {
@@ -61,9 +47,9 @@ func GetUserFromToken(auth string) (user *account.User, error error) {
 // Return an auth token for the given user.
 // This token should be used when calling the HTTP Api.
 // First, try to retrieve an existing token for the user. Return a new one if not found.
-func TokenFor(user *account.User) *TokenInfo {
+func TokenFor(user *account.User) *account.TokenInfo {
 	tokenKey := "token:" + user.Email
-	var t TokenInfo
+	var t account.TokenInfo
 	err := get(tokenKey, &t)
 	if err != nil {
 		fmt.Print(err.Error())
@@ -88,7 +74,7 @@ func RevokeTokensFor(user *account.User) {
 	conn, err := db.Conn()
 	defer conn.Close()
 	ti := "token:" + user.Email
-	var t TokenInfo
+	var t account.TokenInfo
 	err = get(ti, &t)
 	if err != nil {
 		fmt.Print(err.Error())
@@ -98,9 +84,10 @@ func RevokeTokensFor(user *account.User) {
 }
 
 // Generate a token for given user.
-func GenerateToken(user *account.User) *TokenInfo {
+//FIXME: private
+func GenerateToken(user *account.User) *account.TokenInfo {
 	tok := util.GenerateRandomStr(32)
-	token := &TokenInfo{
+	token := &account.TokenInfo{
 		Token:     tok,
 		Expires:   ExpiresInSeconds,
 		CreatedAt: time.Now().In(time.UTC).Format("2006-01-02T15:04:05Z07:00"),

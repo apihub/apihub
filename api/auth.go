@@ -21,7 +21,7 @@ func Login(u *User) (*User, error) {
 	return user, nil
 }
 
-func LoginAndGetToken(u *User) (*auth.TokenInfo, error) {
+func LoginAndGetToken(u *User) (*TokenInfo, error) {
 	user, err := Login(u)
 	if err != nil {
 		return nil, err

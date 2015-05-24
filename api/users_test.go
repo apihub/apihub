@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/backstage/backstage/account"
-	"github.com/backstage/backstage/auth"
 	"github.com/zenazn/goji/web"
 	. "gopkg.in/check.v1"
 )
@@ -145,7 +144,7 @@ func (s *S) TestLogout(c *C) {
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
 	dec := json.NewDecoder(strings.NewReader(s.recorder.Body.String()))
-	var t auth.TokenInfo
+	var t account.TokenInfo
 	dec.Decode(&t)
 
 	s.router.Delete("/api/logout", s.Api.route(usersHandler, "Logout"))
