@@ -2,37 +2,37 @@
 package mem
 
 import (
-	. "github.com/backstage/backstage/account"
-	"github.com/backstage/backstage/errors"
+	"encoding/json"
+
+	"github.com/backstage/backstage/account"
 )
 
 type Mem struct {
-	Tokens map[TokenKey]interface{}
+	Tokens map[account.TokenKey][]byte
 }
 
-func New() Storable {
+func New() account.Storable {
 	return &Mem{
-		Tokens: map[TokenKey]interface{}{},
+		Tokens: map[account.TokenKey][]byte{},
 	}
 }
 
-func (m *Mem) SaveToken(k TokenKey, d interface{}) error {
-	m.Tokens[k] = d
+func (m *Mem) SaveToken(k account.TokenKey, expires int, d interface{}) error {
+	data, _ := json.Marshal(d)
+	m.Tokens[k] = data
 	return nil
 }
 
-func (m *Mem) GetToken(k TokenKey) (interface{}, error) {
-	t, ok := m.Tokens[k]
-	if !ok {
-		return nil, &errors.NotFoundError{Payload: "Token not found."}
+func (m *Mem) GetToken(k account.TokenKey, t interface{}) error {
+	if token, ok := m.Tokens[k]; ok {
+		if err := json.Unmarshal(token, &t); err != nil {
+			panic(err)
+		}
 	}
-	return t, nil
+	return nil
 }
 
-func (m *Mem) DeleteToken(k TokenKey) error {
-	if _, ok := m.Tokens[k]; !ok {
-		return &errors.NotFoundError{Payload: "Token not found."}
-	}
+func (m *Mem) DeleteToken(k account.TokenKey) error {
 	delete(m.Tokens, k)
 	return nil
 }

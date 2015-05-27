@@ -38,7 +38,7 @@ var _ = Describe("Token", func() {
 				Type:      "Token",
 			}
 
-			err := authToken.storage.SaveToken(account.TokenKey{Name: token.Token}, &user)
+			err := authToken.storage.SaveToken(account.TokenKey{Name: token.Token}, token.Expires, &user)
 			if err != nil {
 				panic(err)
 			}

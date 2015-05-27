@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	"github.com/backstage/backstage/account"
-	"github.com/backstage/backstage/errors"
 	. "gopkg.in/check.v1"
 )
 
 var user *account.User
+var expires int
 
 //Hook up gocheck into the "go test" runner.
 func Test(t *testing.T) { TestingT(t) }
@@ -17,41 +17,42 @@ type StorableSuite struct {
 	Storage account.Storable
 }
 
-func (s *StorageSuite) SetUpTest(c *C) {
+func (s *StorableSuite) SetUpTest(c *C) {
+	expires = 10
 	user = &account.User{Name: "Alice", Username: "alice", Email: "alice@example.org", Password: "123456"}
 }
 
-func (s *StorageSuite) TestSaveToken(c *C) {
+func (s *StorableSuite) TestSaveToken(c *C) {
 	key := account.TokenKey{Name: "key"}
-	c.Check(s.Storage.SaveToken(key, user), IsNil)
+	c.Check(s.Storage.SaveToken(key, expires, user), IsNil)
 }
 
-func (s *StorageSuite) TestGetToken(c *C) {
+func (s *StorableSuite) TestGetToken(c *C) {
 	key := account.TokenKey{Name: "keys"}
-	s.Storage.SaveToken(key, user)
-	u, err := s.Storage.GetToken(key)
+	s.Storage.SaveToken(key, expires, user)
+	var u account.User
+	err := s.Storage.GetToken(key, &u)
 	c.Check(err, IsNil)
-	c.Assert(u, Equals, user)
+	c.Assert(u.Email, Equals, user.Email)
 }
 
-func (s *StorageSuite) TestGetTokenWithNonExistingKey(c *C) {
+func (s *StorableSuite) TestGetTokenWithNonExistingKey(c *C) {
 	key := account.TokenKey{Name: "Non-Existing-Key"}
-	u, err := s.Storage.GetToken(key)
-	c.Check(u, IsNil)
-	e := err.(*errors.NotFoundError)
-	c.Check(e, Not(IsNil))
+	var u account.User
+	err := s.Storage.GetToken(key, &u)
+	c.Assert(u, Equals, account.User{})
+	c.Check(err, IsNil)
 }
 
-func (s *StorageSuite) TestDeleteToken(c *C) {
+func (s *StorableSuite) TestDeleteToken(c *C) {
 	key := account.TokenKey{Name: "keys"}
-	s.Storage.SaveToken(key, user)
+	s.Storage.SaveToken(key, expires, user)
 	err := s.Storage.DeleteToken(key)
 	c.Check(err, IsNil)
 }
 
-func (s *StorageSuite) TestDeleteTokenWithNonExistingKey(c *C) {
+func (s *StorableSuite) TestDeleteTokenWithNonExistingKey(c *C) {
 	key := account.TokenKey{Name: "Non-Existing-Key"}
 	err := s.Storage.DeleteToken(key)
-	e := err.(*errors.NotFoundError)
-	c.Check(e, Not(IsNil))
+	c.Check(err, IsNil)
 }

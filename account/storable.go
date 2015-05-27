@@ -5,9 +5,9 @@ package account
 // in the folder account/test/suite.go.
 type Storable interface {
 	//SaveToken inserts new content in the storage. i.e: User, TokenInfo.
-	SaveToken(TokenKey, interface{}) error
+	SaveToken(TokenKey, int, interface{}) error
 	// GetToken returns the content in the storage by given key.
-	GetToken(TokenKey) (interface{}, error)
+	GetToken(TokenKey, interface{}) error
 	//DeleteToken deletes a content by given ley.
 	DeleteToken(TokenKey) error
 }

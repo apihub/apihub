@@ -53,11 +53,11 @@ func (at *AuthenticationToken) TokenFor(user *account.User) (*account.TokenInfo,
 		if err != nil {
 			return &account.TokenInfo{}, err
 		}
-		err = at.storage.SaveToken(tokenKey, t)
+		err = at.storage.SaveToken(tokenKey, t.Expires, t)
 		if err != nil {
 			return &account.TokenInfo{}, err
 		}
-		err = at.storage.SaveToken(account.TokenKey{Name: t.Token}, user)
+		err = at.storage.SaveToken(account.TokenKey{Name: t.Token}, ExpiresTokenCache, user)
 		if err != nil {
 			return &account.TokenInfo{}, err
 		}
