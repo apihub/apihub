@@ -1,9 +1,9 @@
 package account
 
-// Storage is an interface for "storage".
+// Storable is an interface for "storage".
 // To be compatible, the Storage which implements this interface must pass the acceptance suite that could be found
 // in the folder account/test/suite.go.
-type Storage interface {
+type Storable interface {
 	//SaveToken inserts new content in the storage. i.e: User, TokenInfo.
 	SaveToken(TokenKey, interface{}) error
 	// GetToken returns the content in the storage by given key.

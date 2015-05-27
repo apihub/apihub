@@ -10,7 +10,7 @@ type Mem struct {
 	Tokens map[TokenKey]interface{}
 }
 
-func New() Storage {
+func New() Storable {
 	return &Mem{
 		Tokens: map[TokenKey]interface{}{},
 	}

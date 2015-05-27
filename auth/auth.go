@@ -10,10 +10,10 @@ import (
 )
 
 type AuthenticationToken struct {
-	storage account.Storage
+	storage account.Storable
 }
 
-func NewAuthenticationToken(storage account.Storage) *AuthenticationToken {
+func NewAuthenticationToken(storage account.Storable) *AuthenticationToken {
 	return &AuthenticationToken{
 		storage: storage,
 	}

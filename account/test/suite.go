@@ -13,8 +13,8 @@ var user *account.User
 //Hook up gocheck into the "go test" runner.
 func Test(t *testing.T) { TestingT(t) }
 
-type StorageSuite struct {
-	Storage account.Storage
+type StorableSuite struct {
+	Storage account.Storable
 }
 
 func (s *StorageSuite) SetUpTest(c *C) {
