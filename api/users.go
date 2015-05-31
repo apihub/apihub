@@ -76,7 +76,7 @@ func (handler *UsersHandler) ChangePassword(c *web.C, w http.ResponseWriter, r *
 	}
 
 	u.Password = user.NewPassword
-	err = u.Save()
+	err = u.ChangePassword()
 	if err != nil {
 		return BadRequest(E_BAD_REQUEST, err.Error())
 	}

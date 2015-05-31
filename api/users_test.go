@@ -159,7 +159,11 @@ func (s *S) TestLogout(c *C) {
 
 func (s *S) TestChangePassword(c *C) {
 	bob.Save()
-	defer bob.Delete()
+	defer func() {
+		user, _ := account.FindUserByEmail(bob.Email)
+		user.Delete()
+	}()
+
 	payload := `{"email":"bob@example.org", "password":"123456", "new_password": "654321", "confirmation_password": "654321"}`
 	b := strings.NewReader(payload)
 

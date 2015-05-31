@@ -38,9 +38,25 @@ func (user *User) Save() error {
 	}
 
 	user.HashPassword()
-	_, err = conn.Users().Upsert(bson.M{"email": user.Email, "username": user.Username}, user)
+	err = conn.Users().Insert(user)
 	if mgo.IsDup(err) {
 		return &errors.ValidationError{Payload: "Someone already has that email/username. Could you try another?"}
+	}
+	return err
+}
+
+// Updates the password for an existing account
+func (user *User) ChangePassword() error {
+	conn, err := db.Conn()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	user.HashPassword()
+	err = conn.Users().Update(bson.M{"email": user.Email}, bson.M{"$set": user})
+	if err != nil {
+		return err
 	}
 	return err
 }
