@@ -16,11 +16,10 @@ func (s *S) TestCreateService(c *C) {
 	defer owner.Delete()
 	defer account.DeleteServiceBySubdomain("backstage")
 
-	payload := `{"subdomain": "backstage", "description": "Useful desc.", "disabled": false, "documentation": "http://www.example.org/doc", "endpoint": "http://github.com/backstage", "timeout": 10, "transformers": ["test"]}`
+	payload := `{"subdomain": "backstage", "team": "` + team.Alias + `", "description": "Useful desc.", "disabled": false, "documentation": "http://www.example.org/doc", "endpoint": "http://github.com/backstage", "timeout": 10, "transformers": ["test"]}`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/teams/:team/services", s.Api.route(servicesHandler, "CreateService"))
-	req, _ := http.NewRequest("POST", "/api/teams/"+team.Alias+"/services", b)
+	req, _ := http.NewRequest("POST", "/api/services", b)
 	req.Header.Set("Content-Type", "application/json")
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
@@ -44,11 +43,10 @@ func (s *S) TestCreateServiceWhenAlreadyExists(c *C) {
 	defer alice.Delete()
 	defer account.DeleteServiceBySubdomain("backstage")
 
-	payload := `{"subdomain": "backstage", "description": "Useful desc.", "disabled": false, "documentation": "http://www.example.org/doc", "endpoint": "http://github.com/backstage", "timeout": 10, "transformers": ["test"]}`
+	payload := `{"subdomain": "backstage", "team": "` + aliceTeam.Alias + `", "description": "Useful desc.", "disabled": false, "documentation": "http://www.example.org/doc", "endpoint": "http://github.com/backstage", "timeout": 10, "transformers": ["test"]}`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/teams/:team/services", s.Api.route(servicesHandler, "CreateService"))
-	req, _ := http.NewRequest("POST", "/api/teams/"+aliceTeam.Alias+"/services", b)
+	req, _ := http.NewRequest("POST", "/api/services", b)
 	req.Header.Set("Content-Type", "application/json")
 	s.env[CurrentUser] = alice
 	webC := web.C{Env: s.env}
@@ -62,8 +60,7 @@ func (s *S) TestCreateServiceWhenUserIsNotSignedIn(c *C) {
 	payload := `{}`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/teams/:team/services", s.Api.route(servicesHandler, "CreateService"))
-	req, _ := http.NewRequest("POST", "/api/teams/"+team.Alias+"/services", b)
+	req, _ := http.NewRequest("POST", "/api/services", b)
 	req.Header.Set("Content-Type", "application/json")
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -78,11 +75,10 @@ func (s *S) TestCreateServiceWhenTeamDoesNotExist(c *C) {
 	defer account.DeleteTeamByAlias(team.Alias, owner)
 	defer owner.Delete()
 
-	payload := `{"subdomain": "backstage", "description": "Useful desc.", "disabled": false, "documentation": "http://www.example.org/doc", "endpoint": "http://github.com/backstage", "timeout": 10}`
+	payload := `{"subdomain": "backstage", "team": "invalid-team", "description": "Useful desc.", "disabled": false, "documentation": "http://www.example.org/doc", "endpoint": "http://github.com/backstage", "timeout": 10}`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/teams/:team/services", s.Api.route(servicesHandler, "CreateService"))
-	req, _ := http.NewRequest("POST", "/api/teams/invalid-team/services", b)
+	req, _ := http.NewRequest("POST", "/api/services", b)
 	req.Header.Set("Content-Type", "application/json")
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
@@ -93,16 +89,10 @@ func (s *S) TestCreateServiceWhenTeamDoesNotExist(c *C) {
 }
 
 func (s *S) TestCreateServiceWithInvalidPayloadFormat(c *C) {
-	owner.Save()
-	team.Save(owner)
-	defer account.DeleteTeamByAlias(team.Alias, owner)
-	defer owner.Delete()
-
 	payload := `"subdomain": "backstage"`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/teams/:team/services", s.Api.route(servicesHandler, "CreateService"))
-	req, _ := http.NewRequest("POST", "/api/teams/invalid-team/services", b)
+	req, _ := http.NewRequest("POST", "/api/services", b)
 	req.Header.Set("Content-Type", "application/json")
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
@@ -119,72 +109,20 @@ func (s *S) TestUpdateService(c *C) {
 	defer owner.Delete()
 	defer service.Delete()
 
-	payload := `{"description": "New DESC", "disabled": true, "documentation": "http://backstage.example.org/doc", "endpoint": "http://github.com/backstage/backstage", "timeout": 1}`
+	payload := `{"description": "New DESC", "team":"` + team.Alias + `", "disabled": true, "documentation": "http://backstage.example.org/doc", "endpoint": "http://github.com/backstage/backstage", "timeout": 1}`
 	b := strings.NewReader(payload)
 
-	s.router.Put("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "UpdateService"))
-	req, _ := http.NewRequest("PUT", "/api/teams/"+team.Alias+"/services/"+service.Subdomain, b)
+	req, _ := http.NewRequest("PUT", "/api/services/"+service.Subdomain, b)
 	req.Header.Set("Content-Type", "application/json")
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 
-	expected := `{"subdomain":"backstage","description":"New DESC","disabled":true,"documentation":"http://backstage.example.org/doc","endpoint":"http://github.com/backstage/backstage","owner":"owner@example.org","team":"team","timeout":1}`
+	expected := `{"subdomain":"backstage","description":"New DESC","disabled":true,"documentation":"http://backstage.example.org/doc","endpoint":"http://github.com/backstage/backstage","owner":"owner@example.org","team":"` + team.Alias + `","timeout":1}`
 	c.Assert(s.recorder.Code, Equals, http.StatusOK)
 	c.Assert(s.recorder.Body.String(), Equals, expected)
 }
 
-func (s *S) TestUpdateServiceUseTeamProvidedOnTheUrl(c *C) {
-	owner.Save()
-	team.Save(owner)
-	service.Save(owner, team)
-	defer account.DeleteTeamByAlias(team.Alias, owner)
-	defer owner.Delete()
-	defer service.Delete()
-
-	bob.Save()
-	unauthorized_team := &account.Team{Name: "Authorized"}
-	unauthorized_team.Save(bob)
-	defer bob.Delete()
-	defer account.DeleteTeamByAlias(unauthorized_team.Alias, bob)
-
-	payload := `{"subdomain": "backstage", "description": "New DESC", "disabled": true, "documentation": "http://backstage.example.org/doc", "endpoint": "http://github.com/backstage/backstage", "timeout": 1, "team": "` + unauthorized_team.Alias + `"}`
-	b := strings.NewReader(payload)
-
-	s.router.Put("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "UpdateService"))
-	req, _ := http.NewRequest("PUT", "/api/teams/"+team.Alias+"/services/"+service.Subdomain, b)
-	req.Header.Set("Content-Type", "application/json")
-	s.env[CurrentUser] = owner
-	webC := web.C{Env: s.env}
-	s.router.ServeHTTPC(webC, s.recorder, req)
-
-	expected := `{"subdomain":"backstage","description":"New DESC","disabled":true,"documentation":"http://backstage.example.org/doc","endpoint":"http://github.com/backstage/backstage","owner":"owner@example.org","team":"team","timeout":1}`
-	c.Assert(s.recorder.Body.String(), Equals, expected)
-	c.Assert(s.recorder.Code, Equals, http.StatusOK)
-}
-
-func (s *S) TestUpdateServiceUseSubdomainProvidedOnTheUrl(c *C) {
-	owner.Save()
-	team.Save(owner)
-	service.Save(owner, team)
-	defer account.DeleteTeamByAlias(team.Alias, owner)
-	defer owner.Delete()
-	defer service.Delete()
-
-	payload := `{"subdomain": "another_subdomain", "description": "New DESC", "disabled": true, "documentation": "http://backstage.example.org/doc", "endpoint": "http://github.com/backstage/backstage", "timeout": 1, "team": "team"}`
-	b := strings.NewReader(payload)
-
-	s.router.Put("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "UpdateService"))
-	req, _ := http.NewRequest("PUT", "/api/teams/"+team.Alias+"/services/"+service.Subdomain, b)
-	req.Header.Set("Content-Type", "application/json")
-	s.env[CurrentUser] = owner
-	webC := web.C{Env: s.env}
-	s.router.ServeHTTPC(webC, s.recorder, req)
-
-	expected := `{"subdomain":"backstage","description":"New DESC","disabled":true,"documentation":"http://backstage.example.org/doc","endpoint":"http://github.com/backstage/backstage","owner":"owner@example.org","team":"team","timeout":1}`
-	c.Assert(s.recorder.Code, Equals, http.StatusOK)
-	c.Assert(s.recorder.Body.String(), Equals, expected)
-}
 func (s *S) TestUpdateServiceWhenUserIsNotSignedIn(c *C) {
 	owner.Save()
 	team.Save(owner)
@@ -196,8 +134,7 @@ func (s *S) TestUpdateServiceWhenUserIsNotSignedIn(c *C) {
 	payload := `{}`
 	b := strings.NewReader(payload)
 
-	s.router.Put("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "UpdateService"))
-	req, _ := http.NewRequest("PUT", "/api/teams/"+team.Alias+"/services/"+service.Subdomain, b)
+	req, _ := http.NewRequest("PUT", "/api/services/"+service.Subdomain, b)
 	req.Header.Set("Content-Type", "application/json")
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -214,11 +151,10 @@ func (s *S) TestUpdateServiceWhenTeamDoesNotExist(c *C) {
 	defer owner.Delete()
 	defer service.Delete()
 
-	payload := `{}`
+	payload := `{"team": "invalid-team"}`
 	b := strings.NewReader(payload)
 
-	s.router.Put("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "UpdateService"))
-	req, _ := http.NewRequest("PUT", "/api/teams/invalid-team/services/"+service.Subdomain, b)
+	req, _ := http.NewRequest("PUT", "/api/services/"+service.Subdomain, b)
 	req.Header.Set("Content-Type", "application/json")
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
@@ -229,18 +165,10 @@ func (s *S) TestUpdateServiceWhenTeamDoesNotExist(c *C) {
 }
 
 func (s *S) TestUpdateServiceWithInvalidPayloadFormat(c *C) {
-	owner.Save()
-	team.Save(owner)
-	service.Save(owner, team)
-	defer account.DeleteTeamByAlias(team.Alias, owner)
-	defer owner.Delete()
-	defer service.Delete()
-
 	payload := `"subdomain": "backstage"`
 	b := strings.NewReader(payload)
 
-	s.router.Put("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "UpdateService"))
-	req, _ := http.NewRequest("PUT", "/api/teams/"+team.Alias+"/services/"+service.Subdomain, b)
+	req, _ := http.NewRequest("PUT", "/api/services/"+service.Subdomain, b)
 	req.Header.Set("Content-Type", "application/json")
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
@@ -259,11 +187,10 @@ func (s *S) TestUpdateServiceWhenDoesNotBelongToTeam(c *C) {
 	defer owner.Delete()
 	defer service.Delete()
 
-	payload := `{}`
+	payload := `{"team":"` + team.Alias + `"}`
 	b := strings.NewReader(payload)
 
-	s.router.Put("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "UpdateService"))
-	req, _ := http.NewRequest("PUT", "/api/teams/"+team.Alias+"/services/"+service.Subdomain, b)
+	req, _ := http.NewRequest("PUT", "/api/services/"+service.Subdomain, b)
 	req.Header.Set("Content-Type", "application/json")
 	s.env[CurrentUser] = alice
 	webC := web.C{Env: s.env}
@@ -281,8 +208,7 @@ func (s *S) TestDeleteService(c *C) {
 	defer owner.Delete()
 	defer service.Delete()
 
-	s.router.Delete("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "DeleteService"))
-	req, _ := http.NewRequest("DELETE", "/api/teams/"+team.Alias+"/services/"+service.Subdomain, nil)
+	req, _ := http.NewRequest("DELETE", "/api/services/"+service.Subdomain, nil)
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -300,8 +226,7 @@ func (s *S) TestDeleteServiceWhenUserIsNotOwner(c *C) {
 	defer owner.Delete()
 	defer service.Delete()
 
-	s.router.Delete("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "DeleteService"))
-	req, _ := http.NewRequest("DELETE", "/api/teams/"+team.Alias+"/services/"+service.Subdomain, nil)
+	req, _ := http.NewRequest("DELETE", "/api/services/"+service.Subdomain, nil)
 	s.env[CurrentUser] = alice
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -314,8 +239,7 @@ func (s *S) TestDeleteServiceIsNotFound(c *C) {
 	bob.Save()
 	defer bob.Delete()
 
-	s.router.Delete("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "DeleteService"))
-	req, _ := http.NewRequest("DELETE", "/api/teams/"+team.Alias+"/services/invalid-service", nil)
+	req, _ := http.NewRequest("DELETE", "/api/services/invalid-service", nil)
 	s.env[CurrentUser] = bob
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -332,8 +256,7 @@ func (s *S) TestGetServiceInfo(c *C) {
 	defer owner.Delete()
 	defer service.Delete()
 
-	s.router.Get("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "GetServiceInfo"))
-	req, _ := http.NewRequest("GET", "/api/teams/"+team.Alias+"/services/"+service.Subdomain, nil)
+	req, _ := http.NewRequest("GET", "/api/services/"+service.Subdomain, nil)
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -346,8 +269,7 @@ func (s *S) TestGetServiceInfoWhenServiceIsNotFound(c *C) {
 	bob.Save()
 	defer bob.Delete()
 
-	s.router.Get("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "GetServiceInfo"))
-	req, _ := http.NewRequest("GET", "/api/teams/"+team.Alias+"/services/"+service.Subdomain, nil)
+	req, _ := http.NewRequest("GET", "/api/services/"+service.Subdomain, nil)
 	s.env[CurrentUser] = bob
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -366,8 +288,7 @@ func (s *S) TestGetServiceInfoWhenIsNotInTeam(c *C) {
 	defer owner.Delete()
 	defer service.Delete()
 
-	s.router.Get("/api/teams/:team/services/:subdomain", s.Api.route(servicesHandler, "GetServiceInfo"))
-	req, _ := http.NewRequest("GET", "/api/teams/"+team.Alias+"/services/"+service.Subdomain, nil)
+	req, _ := http.NewRequest("GET", "/api/services/"+service.Subdomain, nil)
 	s.env[CurrentUser] = bob
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
@@ -385,7 +306,6 @@ func (s *S) TestGetUserServices(c *C) {
 	defer account.DeleteTeamByAlias(team.Alias, owner)
 	defer account.DeleteServiceBySubdomain(service.Subdomain)
 
-	s.router.Get("/api/services", s.Api.route(servicesHandler, "GetUserServices"))
 	req, _ := http.NewRequest("GET", "/api/services", nil)
 	s.env[CurrentUser] = owner
 	webC := web.C{Env: s.env}
@@ -396,7 +316,6 @@ func (s *S) TestGetUserServices(c *C) {
 }
 
 func (s *S) TestGetUserServicesWhenUserIsNotSignedIn(c *C) {
-	s.router.Get("/api/services", s.Api.route(servicesHandler, "GetUserServices"))
 	req, _ := http.NewRequest("GET", "/api/services", nil)
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)

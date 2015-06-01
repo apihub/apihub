@@ -18,9 +18,8 @@ func (handler *ClientsHandler) CreateClient(c *web.C, w http.ResponseWriter, r *
 	if err != nil {
 		return BadRequest(E_BAD_REQUEST, err.Error())
 	}
-	client := &Client{
-		Team: c.URLParams["team"],
-	}
+
+	client := &Client{}
 	err = handler.parseBody(r.Body, client)
 	if err != nil {
 		return BadRequest(E_BAD_REQUEST, err.Error())
@@ -53,9 +52,6 @@ func (handler *ClientsHandler) UpdateClient(c *web.C, w http.ResponseWriter, r *
 	if err != nil {
 		return handler.handleError(err)
 	}
-	if client.Team != c.URLParams["team"] {
-		return NotFound(ErrClientNotFoundOnTeam.Error())
-	}
 
 	err = handler.parseBody(r.Body, client)
 	if err != nil {
@@ -82,7 +78,7 @@ func (handler *ClientsHandler) DeleteClient(c *web.C, w http.ResponseWriter, r *
 		return handler.handleError(err)
 	}
 
-	client, err := FindClientByIdAndTeam(c.URLParams["id"], c.URLParams["team"])
+	client, err := FindClientById(c.URLParams["id"])
 	if err != nil || client.Owner != currentUser.Email {
 		return NotFound(ErrClientNotFoundOnTeam.Error())
 	}

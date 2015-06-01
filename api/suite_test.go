@@ -81,7 +81,19 @@ func (s *S) SetUpTest(c *C) {
 
 	s.recorder = httptest.NewRecorder()
 	s.env = map[string]interface{}{}
+
 	s.router = web.New()
+	s.router.Post("/api/clients", s.Api.route(clientsHandler, "CreateClient"))
+	s.router.Put("/api/clients/:id", s.Api.route(clientsHandler, "UpdateClient"))
+	s.router.Get("/api/clients/:id", s.Api.route(clientsHandler, "GetClientInfo"))
+	s.router.Delete("/api/clients/:id", s.Api.route(clientsHandler, "DeleteClient"))
+
+	s.router.Post("/api/services", s.Api.route(servicesHandler, "CreateService"))
+	s.router.Get("/api/services", s.Api.route(servicesHandler, "GetUserServices"))
+	s.router.Put("/api/services/:subdomain", s.Api.route(servicesHandler, "UpdateService"))
+	s.router.Get("/api/services/:subdomain", s.Api.route(servicesHandler, "GetServiceInfo"))
+	s.router.Delete("/api/services/:subdomain", s.Api.route(servicesHandler, "DeleteService"))
+
 	s.handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
 	s.oAuthStorage = &OAuthMongoStorage{}
 

@@ -22,9 +22,7 @@ func (handler *ServicesHandler) CreateService(c *web.C, w http.ResponseWriter, r
 	if err != nil {
 		return handler.handleError(err)
 	}
-	service := &Service{
-		Team: c.URLParams["team"],
-	}
+	service := &Service{}
 	err = handler.parseBody(r.Body, service)
 	if err != nil {
 		return handler.handleError(err)
@@ -53,19 +51,18 @@ func (handler *ServicesHandler) UpdateService(c *web.C, w http.ResponseWriter, r
 		return handler.handleError(err)
 	}
 
-	team, err := FindTeamByAlias(c.URLParams["team"], currentUser)
-	if err != nil {
-		return handler.handleError(err)
-	}
-
 	service := &Service{}
 	err = handler.parseBody(r.Body, service)
 	if err != nil {
 		return handler.handleError(err)
 	}
 
+	team, err := FindTeamByAlias(service.Team, currentUser)
+	if err != nil {
+		return handler.handleError(err)
+	}
+
 	service.Subdomain = c.URLParams["subdomain"]
-	service.Team = c.URLParams["team"]
 	err = service.Save(currentUser, team)
 	if err != nil {
 		return handler.handleError(err)
@@ -86,7 +83,7 @@ func (handler *ServicesHandler) DeleteService(c *web.C, w http.ResponseWriter, r
 	}
 
 	service, err := FindServiceBySubdomain(c.URLParams["subdomain"])
-	if err != nil || service.Owner != currentUser.Email || service.Team != c.URLParams["team"] {
+	if err != nil || service.Owner != currentUser.Email {
 		return NotFound(ErrServiceNotFound.Error())
 	}
 	err = service.Delete()
