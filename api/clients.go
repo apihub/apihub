@@ -34,10 +34,6 @@ func (handler *ClientsHandler) CreateClient(c *web.C, w http.ResponseWriter, r *
 	if err != nil {
 		return handler.handleError(err)
 	}
-	client, err = FindClientByIdAndTeam(client.Id, client.Team)
-	if err != nil {
-		return handler.handleError(err)
-	}
 	payload, _ := json.Marshal(client)
 	return Created(string(payload))
 }

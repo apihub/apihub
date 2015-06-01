@@ -109,6 +109,10 @@ func (s *S) TestCreateClientWhenTeamDoesNotExist(c *C) {
 }
 
 func (s *S) TestCreateClientWithInvalidPayloadFormat(c *C) {
+	owner.Save()
+	team.Save(owner)
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+	defer owner.Delete()
 	payload := `"name": "backstage"`
 	b := strings.NewReader(payload)
 

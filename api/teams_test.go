@@ -62,7 +62,8 @@ func (s *S) TestCreateTeamWhenUserIsNotSignedIn(c *C) {
 }
 
 func (s *S) TestCreateTeamWithInvalidPayloadFormat(c *C) {
-
+	alice.Save()
+	defer alice.Delete()
 	payload := `"name": "Team"`
 	b := strings.NewReader(payload)
 
