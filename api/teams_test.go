@@ -70,7 +70,7 @@ func (s *S) TestCreateTeamWithInvalidPayloadFormat(c *C) {
 	s.router.Post("/api/teams", s.Api.route(teamsHandler, "CreateTeam"))
 	req, _ := http.NewRequest("POST", "/api/teams", b)
 	req.Header.Set("Content-Type", "application/json")
-	s.env[CurrentUser] = owner
+	s.env[CurrentUser] = alice
 	webC := web.C{Env: s.env}
 	s.router.ServeHTTPC(webC, s.recorder, req)
 

@@ -24,6 +24,15 @@ type Client struct {
 //
 // It requires to inform the fields: Name.
 func (client *Client) Save(owner *User, team *Team) error {
+	// // Check if user belongs to the team.
+	// team, err := FindTeamByAliaS(team.Alias)
+	// if err != nil {
+	// 	return err
+	// }
+	// if i, err := team.ContainsUser(user); err != nil {
+	// 	return err
+	// }
+
 	conn, err := db.Conn()
 	if err != nil {
 		return err

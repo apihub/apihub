@@ -217,7 +217,8 @@ func FindTeamByName(name string) (*Team, error) {
 // It returns the team info if the user belongs to the team.
 // Return an error otherwise.
 func FindTeamByAlias(alias string, user *User) (*Team, error) {
-	team, err := findTeamByAlias(alias)
+	// FIXME: remove this from here
+	team, err := FindTeamByAliaS(alias)
 	if err != nil {
 		return nil, &errors.NotFoundError{Payload: err.Error()}
 	}
@@ -236,7 +237,7 @@ func FindTeamByAlias(alias string, user *User) (*Team, error) {
 	return team, nil
 }
 
-func findTeamByAlias(alias string) (*Team, error) {
+func FindTeamByAliaS(alias string) (*Team, error) {
 	conn, err := db.Conn()
 	if err != nil {
 		return nil, err

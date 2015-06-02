@@ -89,6 +89,11 @@ func (s *S) TestCreateServiceWhenTeamDoesNotExist(c *C) {
 }
 
 func (s *S) TestCreateServiceWithInvalidPayloadFormat(c *C) {
+	owner.Save()
+	team.Save(owner)
+	defer account.DeleteTeamByAlias(team.Alias, owner)
+	defer owner.Delete()
+
 	payload := `"subdomain": "backstage"`
 	b := strings.NewReader(payload)
 
