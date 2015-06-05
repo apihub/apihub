@@ -12,6 +12,7 @@ import (
 	"unicode"
 
 	"github.com/RangelReale/osin"
+	"github.com/backstage/backstage/account"
 	. "github.com/backstage/backstage/log"
 	"github.com/zenazn/goji"
 	"github.com/zenazn/goji/web"
@@ -21,12 +22,13 @@ import (
 const API_DEFAULT_PORT string = ":8000"
 
 type Api struct {
+	store         account.Storable
 	privateRoutes *web.Mux
 	oAuthServer   *osin.Server
 }
 
-func NewApi() *Api {
-	var api = &Api{}
+func NewApi(store account.Storable) *Api {
+	var api = &Api{store: store}
 	api.init()
 	return api
 }
@@ -90,13 +92,14 @@ func (api *Api) drawDefaultRoutes() {
 	goji.NotFound(NotFoundHandler)
 
 	// Handlers
-	servicesHandler := &ServicesHandler{}
-	clientsHandler := &ClientsHandler{}
-	debugHandler := &DebugHandler{}
-	usersHandler := &UsersHandler{}
-	teamsHandler := &TeamsHandler{}
-	oauthHandler := &OAuthHandler{}
-	pluginsHandler := &PluginsHandler{}
+	handler := Handler{store: api.store}
+	servicesHandler := &ServicesHandler{Handler: handler}
+	clientsHandler := &ClientsHandler{Handler: handler}
+	debugHandler := &DebugHandler{Handler: handler}
+	usersHandler := &UsersHandler{Handler: handler}
+	teamsHandler := &TeamsHandler{Handler: handler}
+	oauthHandler := &OAuthHandler{Handler: handler}
+	pluginsHandler := &PluginsHandler{Handler: handler}
 
 	//Assets
 	_, filename, _, _ := runtime.Caller(1)

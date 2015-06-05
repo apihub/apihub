@@ -58,3 +58,15 @@ type NotFoundError struct {
 func (err *NotFoundError) Error() string {
 	return err.Payload
 }
+
+type NotFoundErrorNEW struct {
+	description error
+}
+
+func NewNotFoundErrorNEW(err error) NotFoundErrorNEW {
+	return NotFoundErrorNEW{description: err}
+}
+
+func (err NotFoundErrorNEW) Error() string {
+	return err.description.Error()
+}

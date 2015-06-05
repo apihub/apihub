@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/backstage/backstage/account/mem"
 	. "github.com/backstage/backstage/api"
 	"github.com/backstage/backstage/log"
 	"github.com/zenazn/goji/web"
@@ -17,7 +18,8 @@ func (handler *HiHandler) Index(c *web.C, w http.ResponseWriter, r *http.Request
 }
 
 func main() {
-	var api = NewApi()
+	store := mem.New()
+	var api = NewApi(store)
 	logger := NewCustomLogger()
 	logger.SetLevel(log.DEBUG)
 	api.Logger(logger)
