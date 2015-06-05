@@ -12,9 +12,11 @@ import (
 	"github.com/zenazn/goji/web"
 )
 
-type ApiHandler struct{}
+type Handler struct {
+	store Storable
+}
 
-func (api *ApiHandler) getCurrentUser(c *web.C) (*User, error) {
+func (api *Handler) getCurrentUser(c *web.C) (*User, error) {
 	user, err := GetCurrentUser(c)
 	if err != nil {
 		return nil, err
@@ -22,7 +24,7 @@ func (api *ApiHandler) getCurrentUser(c *web.C) (*User, error) {
 	return user, nil
 }
 
-func (api *ApiHandler) parseBody(body io.ReadCloser, r interface{}) error {
+func (api *Handler) parseBody(body io.ReadCloser, r interface{}) error {
 	defer body.Close()
 	b, err := ioutil.ReadAll(body)
 	if err != nil {
@@ -35,7 +37,7 @@ func (api *ApiHandler) parseBody(body io.ReadCloser, r interface{}) error {
 	return nil
 }
 
-func (api *ApiHandler) handleError(err error) *HTTPResponse {
+func (api *Handler) handleError(err error) *HTTPResponse {
 	switch err.(type) {
 	case *NotFoundError:
 		return NotFound(err.Error())

@@ -11,7 +11,7 @@ Private routes have several middlewares that are applied for each request. If yo
 
   //Custom handler
   type HiHandler struct {
-    ApiHandler
+    Handler
   }
   func (handler *HiHandler) Index(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
     return OK("Hi from custom route!")

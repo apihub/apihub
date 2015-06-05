@@ -7,7 +7,7 @@ import (
 )
 
 type DebugHandler struct {
-	ApiHandler
+	Handler
 }
 
 func (handler *DebugHandler) HelloWorld(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {

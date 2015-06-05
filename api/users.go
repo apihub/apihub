@@ -10,7 +10,7 @@ import (
 )
 
 type UsersHandler struct {
-	ApiHandler
+	Handler
 }
 
 func (handler *UsersHandler) CreateUser(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {

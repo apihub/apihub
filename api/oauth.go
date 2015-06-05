@@ -19,7 +19,7 @@ import (
 )
 
 type OAuthHandler struct {
-	ApiHandler
+	Handler
 }
 
 type PageForm struct {

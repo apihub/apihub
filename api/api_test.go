@@ -8,7 +8,7 @@ import (
 )
 
 type HiHandler struct {
-	ApiHandler
+	Handler
 }
 
 func (handler *HiHandler) Index(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {

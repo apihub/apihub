@@ -10,7 +10,7 @@ import (
 )
 
 type ServicesHandler struct {
-	ApiHandler
+	Handler
 }
 
 func (handler *ServicesHandler) Index(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {

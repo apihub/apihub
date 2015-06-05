@@ -10,7 +10,7 @@ import (
 )
 
 type ClientsHandler struct {
-	ApiHandler
+	Handler
 }
 
 func (handler *ClientsHandler) CreateClient(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {

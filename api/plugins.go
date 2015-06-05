@@ -9,7 +9,7 @@ import (
 )
 
 type PluginsHandler struct {
-	ApiHandler
+	Handler
 }
 
 func (handler *PluginsHandler) SubscribePlugin(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {

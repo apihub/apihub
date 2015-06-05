@@ -12,7 +12,7 @@ import (
 func (s *S) TestGetCurrentUserWithoutUser(c *C) {
 	env := map[string]interface{}{}
 	webContext := &web.C{Env: env}
-	api := &ApiHandler{}
+	api := &Handler{}
 	user, err := api.getCurrentUser(webContext)
 	c.Assert(err, NotNil)
 	c.Assert(user, IsNil)
@@ -22,7 +22,7 @@ func (s *S) TestGetCurrentUserWhenUserDoesNotExist(c *C) {
 	alice := &account.User{Username: "alice", Name: "Alice", Email: "alice@example.org", Password: "123456"}
 	env := map[string]interface{}{CurrentUser: alice}
 	webContext := &web.C{Env: env}
-	api := &ApiHandler{}
+	api := &Handler{}
 	user, err := api.getCurrentUser(webContext)
 	c.Assert(err, NotNil)
 	c.Assert(user, IsNil)
@@ -35,14 +35,14 @@ func (s *S) TestGetCurrentUser(c *C) {
 
 	env := map[string]interface{}{CurrentUser: alice}
 	webContext := &web.C{Env: env}
-	api := &ApiHandler{}
+	api := &Handler{}
 	user, err := api.getCurrentUser(webContext)
 	c.Assert(user.Name, Equals, "Alice")
 	c.Assert(err, IsNil)
 }
 
 func (s *S) TestParseBody(c *C) {
-	api := &ApiHandler{}
+	api := &Handler{}
 	var result map[string]string
 	body := ioutil.NopCloser(bytes.NewBufferString(`{"name": "Alice"}`))
 	api.parseBody(body, &result)
@@ -50,7 +50,7 @@ func (s *S) TestParseBody(c *C) {
 }
 
 func (s *S) TestParseBodyWithInvalidInterface(c *C) {
-	api := &ApiHandler{}
+	api := &Handler{}
 	var result map[string]string
 	body := ioutil.NopCloser(bytes.NewBufferString(`"name": "Alice"`))
 	err := api.parseBody(body, &result)

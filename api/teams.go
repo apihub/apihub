@@ -8,7 +8,7 @@ import (
 )
 
 type TeamsHandler struct {
-	ApiHandler
+	Handler
 }
 
 func (handler *TeamsHandler) CreateTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
