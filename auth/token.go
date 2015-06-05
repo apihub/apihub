@@ -2,6 +2,7 @@
 package auth
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -31,6 +32,12 @@ type TokenInfo struct {
 	Type      string `json:"token_type"`
 	Expires   int    `json:"expires"`
 	CreatedAt string `bson:"created_at" json:"created_at"`
+}
+
+//Return a representation of token but without sensitive data.
+func (t *TokenInfo) ToString() string {
+	token, _ := json.Marshal(t)
+	return string(token)
 }
 
 // Convert a Token in a user.

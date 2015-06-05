@@ -1,6 +1,7 @@
-package account
+package account_test
 
 import (
+	. "github.com/backstage/backstage/account"
 	"github.com/backstage/backstage/errors"
 	. "gopkg.in/check.v1"
 )
@@ -207,4 +208,15 @@ func (s *S) TestFindServicesByTeam(c *C) {
 func (s *S) TestFindServicesByTeamWithoutElements(c *C) {
 	se, _ := FindServicesByTeam([]string{"non-existing-team"})
 	c.Assert(len(se), Equals, 0)
+}
+
+func (s *S) TestServiceToString(c *C) {
+	service := Service{
+		Owner:     "owner@example.org",
+		Team:      "team",
+		Endpoint:  "http://example.org/api",
+		Subdomain: "_test_create_service",
+	}
+	str := service.ToString()
+	c.Assert(str, Equals, `{"subdomain":"_test_create_service","description":"","disabled":false,"documentation":"","endpoint":"http://example.org/api","owner":"owner@example.org","team":"team","timeout":0}`)
 }

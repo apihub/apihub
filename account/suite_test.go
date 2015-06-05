@@ -1,4 +1,4 @@
-package account
+package account_test
 
 import (
 	"testing"
@@ -6,6 +6,8 @@ import (
 	"github.com/tsuru/config"
 	. "gopkg.in/check.v1"
 
+	. "github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/account/mongore"
 	"github.com/backstage/backstage/db"
 )
 
@@ -16,7 +18,8 @@ var (
 	client  *Client
 )
 
-type S struct{}
+type S struct {
+}
 
 var _ = Suite(&S{})
 
@@ -26,6 +29,15 @@ func Test(t *testing.T) { TestingT(t) }
 func (s *S) SetUpSuite(c *C) {
 	config.Set("database:url", "127.0.0.1:27017")
 	config.Set("database:name", "backstage_db_test")
+
+	cfg := mongore.Config{
+		Host:         "127.0.0.1:27017",
+		DatabaseName: "backstage_db_test",
+	}
+	NewStorable = func() (Storable, error) {
+		m, err := mongore.New(cfg)
+		return m, err
+	}
 }
 
 func (s *S) TearDownSuite(c *C) {
@@ -34,7 +46,6 @@ func (s *S) TearDownSuite(c *C) {
 	defer conn.Close()
 	config.Unset("database:url")
 	config.Unset("database:name")
-	// conn.Collection("services").Database.DropDatabase()
 }
 
 func (s *S) SetUpTest(c *C) {

@@ -41,8 +41,7 @@ func (handler *ServicesHandler) CreateService(c *web.C, w http.ResponseWriter, r
 	if err != nil {
 		return handler.handleError(err)
 	}
-	payload, _ := json.Marshal(service)
-	return Created(string(payload))
+	return Created(service.ToString())
 }
 
 func (handler *ServicesHandler) UpdateService(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
@@ -72,8 +71,7 @@ func (handler *ServicesHandler) UpdateService(c *web.C, w http.ResponseWriter, r
 	if err != nil {
 		return handler.handleError(err)
 	}
-	payload, _ := json.Marshal(service)
-	return OK(string(payload))
+	return OK(service.ToString())
 }
 
 func (handler *ServicesHandler) DeleteService(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {

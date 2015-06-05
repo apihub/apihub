@@ -27,8 +27,9 @@ var (
 	ErrUserNotInTeam          = errors.New("You do not belong to this team!")
 	ErrConfirmationPassword   = errors.New("Your new password and confirmation password do not match.")
 
-	ErrDuplicateEntry = errors.New("Duplicate entry.")
-	ErrNotFound       = errors.New("Not found.")
+	ErrUserDuplicateEntry        = errors.New("Someone already has that email/username. Could you try another?")
+	ErrUserNotFound              = errors.New("User not found.")
+	ErrUserMissingRequiredFields = errors.New("Name/Email/Username/Password cannot be empty.")
 )
 
 // The ValidationError type indicates that any validation has failed.

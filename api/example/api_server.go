@@ -17,12 +17,7 @@ func (handler *HiHandler) Index(c *web.C, w http.ResponseWriter, r *http.Request
 }
 
 func main() {
-	var config = &Config{
-		FilePath: "config.yaml",
-		Port:     ":8000",
-	}
-
-	var api = NewApi(config)
+	var api = NewApi()
 	logger := NewCustomLogger()
 	logger.SetLevel(log.DEBUG)
 	api.Logger(logger)

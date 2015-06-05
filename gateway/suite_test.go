@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/account/mongore"
 	"github.com/backstage/backstage/db"
 	. "gopkg.in/check.v1"
 )
@@ -21,6 +22,15 @@ var service *account.Service
 var team *account.Team
 
 func (s *S) SetUpTest(c *C) {
+	cfg := mongore.Config{
+		Host:         "127.0.0.1:27017",
+		DatabaseName: "backstage_gateway_test",
+	}
+	account.NewStorable = func() (account.Storable, error) {
+		m, err := mongore.New(cfg)
+		return m, err
+	}
+
 	s.Settings = &Settings{
 		Host:        "test.backstage.dev",
 		Port:        ":4567",

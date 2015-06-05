@@ -7,9 +7,9 @@ import (
 
 	"github.com/RangelReale/osin"
 	"github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/account/mongore"
 	"github.com/backstage/backstage/db"
 	"github.com/backstage/backstage/log"
-	"github.com/tsuru/config"
 	"github.com/zenazn/goji/web"
 	. "gopkg.in/check.v1"
 	"gopkg.in/mgo.v2/bson"
@@ -65,13 +65,20 @@ type S struct {
 }
 
 func (s *S) SetUpSuite(c *C) {
-	config.Set("database:url", "127.0.0.1:27017")
-	config.Set("database:name", "backstage_api_test")
+	cfg := mongore.Config{
+		Host:         "127.0.0.1:27017",
+		DatabaseName: "backstage_api_test",
+	}
+	account.NewStorable = func() (account.Storable, error) {
+		m, err := mongore.New(cfg)
+		return m, err
+	}
+
 	log.Logger.Disable()
 }
 
 func (s *S) SetUpTest(c *C) {
-	s.Api = &Api{Config: &Config{}}
+	s.Api = &Api{}
 	teamsHandler = &TeamsHandler{}
 	usersHandler = &UsersHandler{}
 	servicesHandler = &ServicesHandler{}
@@ -110,8 +117,6 @@ func (s *S) TearDownSuite(c *C) {
 	storage, err := db.Conn()
 	c.Assert(err, IsNil)
 	defer storage.Close()
-	config.Unset("database:url")
-	config.Unset("database:name")
 }
 
 var _ = Suite(&S{})

@@ -6,7 +6,6 @@ import (
 	"code.google.com/p/go.crypto/bcrypt"
 	"github.com/backstage/backstage/db"
 	"github.com/backstage/backstage/errors"
-	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -27,37 +26,31 @@ type User struct {
 // It is not allowed to create two users with the same email address.
 // It returns an error if the user creation fails.
 func (user *User) Save() error {
-	conn, err := db.Conn()
+	if user.Name == "" || user.Email == "" || user.Username == "" || user.Password == "" {
+		return errors.ErrUserMissingRequiredFields
+	}
+
+	user.hashPassword()
+	strg, err := NewStorable()
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer strg.Close()
 
-	if user.Name == "" || user.Email == "" || user.Username == "" || user.Password == "" {
-		return &errors.ValidationError{Payload: "Name/Email/Username/Password cannot be empty."}
-	}
-
-	user.HashPassword()
-	err = conn.Users().Insert(user)
-	if mgo.IsDup(err) {
-		return &errors.ValidationError{Payload: "Someone already has that email/username. Could you try another?"}
-	}
+	err = strg.CreateUser(*user)
 	return err
 }
 
-// Updates the password for an existing account
+// Updates the password for an existing account.
 func (user *User) ChangePassword() error {
-	conn, err := db.Conn()
+	strg, err := NewStorable()
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer strg.Close()
 
-	user.HashPassword()
-	err = conn.Users().Update(bson.M{"email": user.Email}, bson.M{"$set": user})
-	if err != nil {
-		return err
-	}
+	user.hashPassword()
+	err = strg.UpdateUser(*user)
 	return err
 }
 
@@ -67,20 +60,6 @@ func (user *User) ChangePassword() error {
 // is the only member are deleted along with the user account.
 // It returns an error if the user is not found.
 func (user *User) Delete() error {
-	conn, err := db.Conn()
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
-	err = user.remove()
-	if err == mgo.ErrNotFound {
-		return &errors.ValidationError{Payload: "User not found."}
-	}
-	return err
-}
-
-func (user *User) remove() error {
 	conn, err := db.Conn()
 	if err != nil {
 		return err
@@ -102,20 +81,14 @@ func (user *User) remove() error {
 		return err
 	}
 
-	err = conn.Users().Remove(user)
+	strg, err := NewStorable()
 	if err != nil {
 		return err
 	}
-	return nil
-}
+	defer strg.Close()
 
-// Encrypts the user password before saving it in the database.
-func (user *User) HashPassword() {
-	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	if err != nil {
-		panic(err)
-	}
-	user.Password = string(hash[:])
+	err = strg.DeleteUser(*user)
+	return err
 }
 
 // Exists checks if the user exists in the database.
@@ -131,18 +104,14 @@ func (user *User) Exists() bool {
 // Try to find a user by its email address.
 // If the user is not found, return an error. Return the user otherwise.
 func FindUserByEmail(email string) (*User, error) {
-	conn, err := db.Conn()
+	strg, err := NewStorable()
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
+	defer strg.Close()
 
-	var user User
-	err = conn.Users().Find(bson.M{"email": email}).One(&user)
-	if err == mgo.ErrNotFound {
-		return nil, &errors.ValidationError{Payload: "User not found"}
-	}
-	return &user, nil
+	u, err := strg.FindUserByEmail(email)
+	return &u, err
 }
 
 // Return a list of all the teams which the user belongs to.
@@ -180,4 +149,13 @@ func (user *User) ToString() string {
 	user.Password = ""
 	u, _ := json.Marshal(user)
 	return string(u)
+}
+
+// Encrypts the user password before saving it in the database.
+func (user *User) hashPassword() {
+	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		panic(err)
+	}
+	user.Password = string(hash[:])
 }

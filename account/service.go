@@ -193,6 +193,12 @@ func (service *Service) Middlewares() ([]*PluginConfig, error) {
 	return midds, nil
 }
 
+//Return a representation of service but without sensitive data.
+func (service *Service) ToString() string {
+	u, _ := json.Marshal(service)
+	return string(u)
+}
+
 func (service *Service) publish() {
 	s, err := json.Marshal(service)
 	if err != nil {

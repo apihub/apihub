@@ -13,7 +13,6 @@ import (
 
 	"github.com/RangelReale/osin"
 	. "github.com/backstage/backstage/log"
-	"github.com/tsuru/config"
 	"github.com/zenazn/goji"
 	"github.com/zenazn/goji/web"
 	"github.com/zenazn/goji/web/middleware"
@@ -21,42 +20,28 @@ import (
 
 const API_DEFAULT_PORT string = ":8000"
 
-type Config struct {
-	FilePath string
-	Port     string
-}
-
 type Api struct {
 	privateRoutes *web.Mux
 	oAuthServer   *osin.Server
-	Config        *Config
 }
 
-func NewApi(cfg *Config) *Api {
-	var api = &Api{Config: cfg}
+func NewApi() *Api {
+	var api = &Api{}
 	api.init()
 	return api
 }
 
 func (api *Api) init() {
 	Logger.Info("Show time: Starting Backstage API.")
-	if api.Config.Port == "" {
-		api.Config.Port = API_DEFAULT_PORT
-	}
-
 	api.privateRoutes = web.New()
 
-	err := config.ReadConfigFile(api.Config.FilePath)
-	if err != nil {
-		Logger.Error("Error reading config file: %s", err.Error())
-	}
 	storage := NewOAuthMongoStorage()
 	api.LoadOauthServer(storage)
 }
 
 func (api *Api) Start() {
 	api.drawDefaultRoutes()
-	flag.Set("bind", api.Config.Port)
+	flag.Set("bind", API_DEFAULT_PORT)
 	goji.Serve()
 }
 

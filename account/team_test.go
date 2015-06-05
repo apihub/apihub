@@ -1,6 +1,7 @@
-package account
+package account_test
 
 import (
+	. "github.com/backstage/backstage/account"
 	"github.com/backstage/backstage/errors"
 	. "gopkg.in/check.v1"
 )
