@@ -22,7 +22,6 @@ func (s *S) TestCreateUser(c *C) {
 	payload := `{"name": "Alice", "email": "alice@example.org", "username": "alice", "password": "123456"}`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/users", s.Api.route(usersHandler, "CreateUser"))
 	req, _ := http.NewRequest("POST", "/api/users", b)
 	req.Header.Set("Content-Type", "application/json")
 	webC := web.C{Env: s.env}
@@ -36,7 +35,6 @@ func (s *S) TestCreateUserWithInvalidPayloadFormat(c *C) {
 	payload := `"name": "Alice"`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/users", s.Api.route(usersHandler, "CreateUser"))
 	req, _ := http.NewRequest("POST", "/api/users", b)
 	req.Header.Set("Content-Type", "application/json")
 	webC := web.C{Env: s.env}
@@ -50,7 +48,6 @@ func (s *S) TestCreateUserWithMissingRequiredFields(c *C) {
 	payload := `{}`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/users", s.Api.route(usersHandler, "CreateUser"))
 	req, _ := http.NewRequest("POST", "/api/users", b)
 	req.Header.Set("Content-Type", "application/json")
 	webC := web.C{Env: s.env}
@@ -64,7 +61,6 @@ func (s *S) TestDeleteUser(c *C) {
 	alice.Save()
 	defer alice.Delete()
 
-	s.router.Delete("/api/users", s.Api.route(usersHandler, "DeleteUser"))
 	req, _ := http.NewRequest("DELETE", "/api/users", nil)
 	s.env[CurrentUser] = alice
 	webC := web.C{Env: s.env}
@@ -75,7 +71,6 @@ func (s *S) TestDeleteUser(c *C) {
 }
 
 func (s *S) TestDeleteUserWithNotSignedUser(c *C) {
-	s.router.Delete("/api/users", s.Api.route(usersHandler, "DeleteUser"))
 	req, _ := http.NewRequest("DELETE", "/api/users", nil)
 	s.env[CurrentUser] = "invalid-user"
 	webC := web.C{Env: s.env}
@@ -91,7 +86,6 @@ func (s *S) TestLoginUser(c *C) {
 	payload := `{"email":"bob@example.org", "password":"123456"}`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/login", s.Api.route(usersHandler, "Login"))
 	req, _ := http.NewRequest("POST", "/api/login", b)
 	req.Header.Set("Content-Type", "application/json")
 	webC := web.C{Env: s.env}
@@ -106,7 +100,6 @@ func (s *S) TestLoginUserWithBadCredentials(c *C) {
 	payload := `{"email":"bob@example.org", "password":"123"}`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/login", s.Api.route(usersHandler, "Login"))
 	req, _ := http.NewRequest("POST", "/api/login", b)
 	req.Header.Set("Content-Type", "application/json")
 	webC := web.C{Env: s.env}
@@ -122,7 +115,6 @@ func (s *S) TestLoginUserWithMalformedRequest(c *C) {
 	payload := `"email":"bob@example.org", "password":"123456"}`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/login", s.Api.route(usersHandler, "Login"))
 	req, _ := http.NewRequest("POST", "/api/login", b)
 	req.Header.Set("Content-Type", "application/json")
 	webC := web.C{Env: s.env}
@@ -138,7 +130,6 @@ func (s *S) TestLogout(c *C) {
 	payload := `{"email":"bob@example.org", "password":"123456"}`
 	b := strings.NewReader(payload)
 
-	s.router.Post("/api/login", s.Api.route(usersHandler, "Login"))
 	req, _ := http.NewRequest("POST", "/api/login", b)
 	req.Header.Set("Content-Type", "application/json")
 	webC := web.C{Env: s.env}
@@ -167,7 +158,6 @@ func (s *S) TestChangePassword(c *C) {
 	payload := `{"email":"bob@example.org", "password":"123456", "new_password": "654321", "confirmation_password": "654321"}`
 	b := strings.NewReader(payload)
 
-	s.router.Put("/api/password", s.Api.route(usersHandler, "ChangePassword"))
 	req, _ := http.NewRequest("PUT", "/api/password", b)
 	req.Header.Set("Content-Type", "application/json")
 	webC := web.C{Env: s.env}
@@ -176,7 +166,6 @@ func (s *S) TestChangePassword(c *C) {
 
 	payload = `{"email":"bob@example.org", "password":"654321"}`
 	b = strings.NewReader(payload)
-	s.router.Post("/api/login", s.Api.route(usersHandler, "Login"))
 	req, _ = http.NewRequest("POST", "/api/login", b)
 	req.Header.Set("Content-Type", "application/json")
 	webC = web.C{Env: s.env}
@@ -189,7 +178,6 @@ func (s *S) TestChangePasswordWithInvalidConfirmation(c *C) {
 	payload := `{"email":"bob@example.org", "password":"123456", "new_password": "654321", "confirmation_password": "invalid"}`
 	b := strings.NewReader(payload)
 
-	s.router.Put("/api/password", s.Api.route(usersHandler, "ChangePassword"))
 	req, _ := http.NewRequest("PUT", "/api/password", b)
 	req.Header.Set("Content-Type", "application/json")
 	webC := web.C{Env: s.env}

@@ -149,8 +149,8 @@ func (s *S) TestAuthenticationMiddlewareWithoutHeader(c *C) {
 	service = &account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Transformers: []string{"AddHeader", "AddHeaderVia"}}
 	services := []*account.Service{service}
 
-	service.Save(owner, team)
 	defer service.Delete()
+	service.Save(owner, team)
 
 	conf := configAuthenticationMiddleware(service, owner)
 	defer conf.Delete(owner)

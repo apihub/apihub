@@ -7,6 +7,7 @@ import (
 	"github.com/backstage/backstage/account"
 	"github.com/backstage/backstage/account/mongore"
 	"github.com/backstage/backstage/db"
+	"github.com/tsuru/config"
 	. "gopkg.in/check.v1"
 )
 
@@ -22,6 +23,9 @@ var service *account.Service
 var team *account.Team
 
 func (s *S) SetUpTest(c *C) {
+	config.Set("database:url", "127.0.0.1:27017")
+	config.Set("database:name", "backstage_gateway_test")
+
 	cfg := mongore.Config{
 		Host:         "127.0.0.1:27017",
 		DatabaseName: "backstage_gateway_test",

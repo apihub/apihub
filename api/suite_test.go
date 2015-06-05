@@ -101,6 +101,11 @@ func (s *S) SetUpTest(c *C) {
 	s.router.Get("/api/services/:subdomain", s.Api.route(servicesHandler, "GetServiceInfo"))
 	s.router.Delete("/api/services/:subdomain", s.Api.route(servicesHandler, "DeleteService"))
 
+	s.router.Post("/api/users", s.Api.route(usersHandler, "CreateUser"))
+	s.router.Delete("/api/users", s.Api.route(usersHandler, "DeleteUser"))
+	s.router.Post("/api/login", s.Api.route(usersHandler, "Login"))
+	s.router.Put("/api/password", s.Api.route(usersHandler, "ChangePassword"))
+
 	s.handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
 	s.oAuthStorage = &OAuthMongoStorage{}
 
