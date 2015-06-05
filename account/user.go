@@ -118,9 +118,9 @@ func (user *User) HashPassword() {
 	user.Password = string(hash[:])
 }
 
-// Valid checks if the user exists in the database.
+// Exists checks if the user exists in the database.
 // Returns `true` if so, and `false` otherwise.
-func (user *User) Valid() bool {
+func (user *User) Exists() bool {
 	_, err := FindUserByEmail(user.Email)
 	if err != nil {
 		return false

@@ -36,7 +36,7 @@ func SetCurrentUser(c *web.C, user interface{}) {
 // Get the user from the request context and check if it's still valid.
 func GetCurrentUser(c *web.C) (*account.User, error) {
 	user, ok := c.Env[CurrentUser].(*account.User)
-	if !ok || !user.Valid() {
+	if !ok || !user.Exists() {
 		return nil, ErrLoginRequired
 	}
 	return user, nil

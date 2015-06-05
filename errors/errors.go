@@ -26,6 +26,9 @@ var (
 	ErrTokenNotFound          = errors.New("Token not found.")
 	ErrUserNotInTeam          = errors.New("You do not belong to this team!")
 	ErrConfirmationPassword   = errors.New("Your new password and confirmation password do not match.")
+
+	ErrDuplicateEntry = errors.New("Duplicate entry.")
+	ErrNotFound       = errors.New("Not found.")
 )
 
 // The ValidationError type indicates that any validation has failed.

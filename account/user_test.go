@@ -55,18 +55,18 @@ func (s *S) TestCreateUserShouldMaskThePassword(c *C) {
 	c.Assert(foundUser.Password, Not(Equals), "123456")
 }
 
-func (s *S) TestValid(c *C) {
+func (s *S) TestExists(c *C) {
 	user := User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
 	defer user.Delete()
 	user.Save()
 
-	valid := user.Valid()
+	valid := user.Exists()
 	c.Assert(valid, Equals, true)
 }
 
-func (s *S) TestValidWhenUserDoesNotExistInTheDB(c *C) {
+func (s *S) TestExistsWhenUserDoesNotExistInTheDB(c *C) {
 	user := User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
-	valid := user.Valid()
+	valid := user.Exists()
 	c.Assert(valid, Equals, false)
 }
 

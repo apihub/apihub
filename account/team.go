@@ -113,7 +113,7 @@ func (team *Team) AddUsers(emails []string) error {
 	var user *User
 	for _, email := range emails {
 		user = &User{Email: email}
-		if !user.Valid() {
+		if !user.Exists() {
 			continue
 		}
 		if _, err := team.ContainsUser(user); err != nil {
@@ -150,7 +150,7 @@ func (team *Team) RemoveUsers(emails []string) error {
 		}
 
 		user = &User{Email: email}
-		if !user.Valid() {
+		if !user.Exists() {
 			continue
 		}
 		if i, err := team.ContainsUser(user); err == nil {
