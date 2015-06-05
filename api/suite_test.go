@@ -104,6 +104,7 @@ func (s *S) SetUpTest(c *C) {
 	s.router.Post("/api/users", s.Api.route(usersHandler, "CreateUser"))
 	s.router.Delete("/api/users", s.Api.route(usersHandler, "DeleteUser"))
 	s.router.Post("/api/login", s.Api.route(usersHandler, "Login"))
+	s.router.Delete("/api/logout", s.Api.route(usersHandler, "Logout"))
 	s.router.Put("/api/password", s.Api.route(usersHandler, "ChangePassword"))
 
 	s.handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})

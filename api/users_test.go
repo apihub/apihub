@@ -139,7 +139,6 @@ func (s *S) TestLogout(c *C) {
 	var t auth.TokenInfo
 	dec.Decode(&t)
 
-	s.router.Delete("/api/logout", s.Api.route(usersHandler, "Logout"))
 	req, _ = http.NewRequest("DELETE", "/api/logout", b)
 	req.Header.Set("Authorization", t.Type+"  "+t.Token)
 	webC = web.C{Env: s.env}
