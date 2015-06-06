@@ -70,3 +70,15 @@ func NewNotFoundErrorNEW(err error) NotFoundErrorNEW {
 func (err NotFoundErrorNEW) Error() string {
 	return err.description.Error()
 }
+
+type ValidationErrorNEW struct {
+	description error
+}
+
+func NewValidationErrorNEW(err error) ValidationErrorNEW {
+	return ValidationErrorNEW{description: err}
+}
+
+func (err ValidationErrorNEW) Error() string {
+	return err.description.Error()
+}
