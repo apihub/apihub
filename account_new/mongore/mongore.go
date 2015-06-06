@@ -27,24 +27,11 @@ func New(config Config) (account_new.Storable, error) {
 	}, nil
 }
 
-func (m *Mongore) CreateUser(u account_new.User) error {
-	err := m.Users().Insert(u)
-	if mgo.IsDup(err) {
-		Logger.Warn(err.Error())
-		return errors.NewValidationErrorNEW(errors.ErrUserDuplicateEntry)
-	}
+func (m *Mongore) UpsertUser(u account_new.User) error {
+	_, err := m.Users().Upsert(bson.M{"email": u.Email}, u)
 
-	return err
-}
-
-func (m *Mongore) UpdateUser(u account_new.User) error {
-	err := m.Users().Update(bson.M{"email": u.Email}, bson.M{"$set": u})
-	if err == mgo.ErrNotFound {
-		return errors.NewNotFoundErrorNEW(errors.ErrUserNotFound)
-	}
 	if err != nil {
 		Logger.Warn(err.Error())
-		return err
 	}
 
 	return err
@@ -52,8 +39,12 @@ func (m *Mongore) UpdateUser(u account_new.User) error {
 
 func (m *Mongore) DeleteUser(u account_new.User) error {
 	err := m.Users().Remove(u)
+
 	if err == mgo.ErrNotFound {
 		return errors.NewNotFoundErrorNEW(errors.ErrUserNotFound)
+	}
+	if err != nil {
+		Logger.Warn(err.Error())
 	}
 
 	return err
@@ -62,11 +53,25 @@ func (m *Mongore) DeleteUser(u account_new.User) error {
 func (m *Mongore) FindUserByEmail(email string) (account_new.User, error) {
 	var user account_new.User
 	err := m.Users().Find(bson.M{"email": email}).One(&user)
+
 	if err == mgo.ErrNotFound {
 		return account_new.User{}, errors.NewNotFoundErrorNEW(errors.ErrUserNotFound)
 	}
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
 
 	return user, err
+}
+
+func (m *Mongore) UpsertTeam(t account_new.Team) error {
+	_, err := m.Teams().Upsert(bson.M{"alias": t.Alias}, t)
+
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
+
+	return err
 }
 
 func (m *Mongore) Close() {

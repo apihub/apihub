@@ -6,29 +6,39 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-var alice = account_new.User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
+var alice = account_new.User{Name: "Alice", Email: "alice@example.org", Password: "123456"}
 
 func (s *S) TestCreateUser(c *C) {
 	defer alice.Delete()
-	err := alice.Save()
+	err := alice.Create()
 	c.Assert(err, IsNil)
 }
 
 func (s *S) TestCreateUserWithoutRequiredFields(c *C) {
 	user := account_new.User{}
-	err := user.Save()
+	err := user.Create()
+	_, ok := err.(errors.ValidationErrorNEW)
+	c.Assert(ok, Equals, true)
+}
+
+func (s *S) TestCreateUserWithDuplicateEmail(c *C) {
+	defer alice.Delete()
+	err := alice.Create()
+	c.Check(err, IsNil)
+
+	err = alice.Create()
 	_, ok := err.(errors.ValidationErrorNEW)
 	c.Assert(ok, Equals, true)
 }
 
 func (s *S) TestUserToString(c *C) {
-	user := account_new.User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
+	user := account_new.User{Name: "Alice", Email: "alice@example.org", Password: "123456"}
 	str := user.ToString()
-	c.Assert(str, Equals, `{"name":"Alice","email":"alice@example.org","username":"alice"}`)
+	c.Assert(str, Equals, `{"name":"Alice","email":"alice@example.org"}`)
 }
 
 func (s *S) TestChangePassword(c *C) {
-	alice.Save()
+	alice.Create()
 	p1 := alice.Password
 	alice.Password = "654321"
 	err := alice.ChangePassword()
@@ -38,9 +48,15 @@ func (s *S) TestChangePassword(c *C) {
 	c.Assert(p1, Not(Equals), p2)
 }
 
+func (s *S) TestChangePasswordNotFound(c *C) {
+	err := alice.ChangePassword()
+	_, ok := err.(errors.NotFoundErrorNEW)
+	c.Assert(ok, Equals, true)
+}
+
 func (s *S) TestExists(c *C) {
 	defer alice.Delete()
-	alice.Save()
+	alice.Create()
 
 	valid := alice.Exists()
 	c.Assert(valid, Equals, true)

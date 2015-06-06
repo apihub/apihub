@@ -8,30 +8,17 @@ import (
 
 type Mem struct {
 	Users map[string]account_new.User
+	Teams map[string]account_new.Team
 }
 
 func New() account_new.Storable {
 	return &Mem{
 		Users: make(map[string]account_new.User),
+		Teams: make(map[string]account_new.Team),
 	}
 }
 
-func (m *Mem) CreateUser(u account_new.User) error {
-	for _, user := range m.Users {
-		if user.Email == u.Email || user.Username == u.Username {
-			return errors.NewValidationErrorNEW(errors.ErrUserDuplicateEntry)
-		}
-	}
-
-	m.Users[u.Email] = u
-	return nil
-}
-
-func (m *Mem) UpdateUser(u account_new.User) error {
-	if _, ok := m.Users[u.Email]; !ok {
-		return errors.NewNotFoundErrorNEW(errors.ErrUserNotFound)
-	}
-
+func (m *Mem) UpsertUser(u account_new.User) error {
 	m.Users[u.Email] = u
 	return nil
 }
@@ -51,6 +38,17 @@ func (m *Mem) FindUserByEmail(email string) (account_new.User, error) {
 	} else {
 		return user, nil
 	}
+}
+
+func (m *Mem) UpsertTeam(t account_new.Team) error {
+	// if t.Id != "" {
+	// 	// err = m.Teams().Update(bson.M{"_id": t.Id}, bson.M{"$set": t})
+	// } else {
+	// 	t.Id = bson.NewObjectId()
+	// 	m.Teams[t.Id] = t
+	// }
+
+	return nil
 }
 
 func (m *Mem) Close() {}

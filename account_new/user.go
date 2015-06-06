@@ -13,19 +13,18 @@ import (
 type User struct {
 	Name                 string `json:"name,omitempty"`
 	Email                string `json:"email,omitempty"`
-	Username             string `json:"username,omitempty"`
 	Password             string `json:"password,omitempty"`
 	NewPassword          string `json:"new_password,omitempty" bson:"-"`
 	ConfirmationPassword string `json:"confirmation_password,omitempty" bson:"-"`
 }
 
-// Save creates a new user account.
+// Create creates a new user account.
 //
 // It requires to inform the fields: Name, Email and Password.
 // It is not allowed to create two users with the same email address.
 // It returns an error if the user creation fails.
-func (user *User) Save() error {
-	if user.Name == "" || user.Email == "" || user.Username == "" || user.Password == "" {
+func (user *User) Create() error {
+	if user.Name == "" || user.Email == "" || user.Password == "" {
 		return errors.NewValidationErrorNEW(errors.ErrUserMissingRequiredFields)
 	}
 
@@ -37,7 +36,11 @@ func (user *User) Save() error {
 	}
 	defer store.Close()
 
-	err = store.CreateUser(*user)
+	if _, err := store.FindUserByEmail(user.Email); err == nil {
+		return errors.NewValidationErrorNEW(errors.ErrUserDuplicateEntry)
+	}
+
+	err = store.UpsertUser(*user)
 	return err
 }
 
@@ -50,8 +53,12 @@ func (user *User) ChangePassword() error {
 	}
 	defer store.Close()
 
+	if _, err := store.FindUserByEmail(user.Email); err != nil {
+		return errors.NewNotFoundErrorNEW(errors.ErrUserNotFound)
+	}
+
 	user.hashPassword()
-	err = store.UpdateUser(*user)
+	err = store.UpsertUser(*user)
 	return err
 }
 

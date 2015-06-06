@@ -20,55 +20,25 @@ type StorableSuite struct {
 
 func (s *StorableSuite) SetUpTest(c *C) {
 	expires = 10
-	user = account_new.User{Name: "Alice", Username: "alice", Email: "alice@example.org", Password: "123456"}
+	user = account_new.User{Name: "Alice", Email: "alice@example.org", Password: "123456"}
 }
 
-func (s *StorableSuite) TestCreateUser(c *C) {
+func (s *StorableSuite) TestUpsertUser(c *C) {
 	defer s.Storage.DeleteUser(user)
-	err := s.Storage.CreateUser(user)
+	err := s.Storage.UpsertUser(user)
 	c.Check(err, IsNil)
-}
-
-func (s *StorableSuite) TestCreateUserWithDupEmail(c *C) {
-	user.Username = "alice1"
-	defer s.Storage.DeleteUser(user)
-	err := s.Storage.CreateUser(user)
-	c.Check(err, IsNil)
-
-	user.Username = "alice2"
-	err = s.Storage.CreateUser(user)
-	_, ok := err.(errors.ValidationErrorNEW)
-	c.Assert(ok, Equals, true)
-}
-
-func (s *StorableSuite) TestCreateUserWithDupUsername(c *C) {
-	user.Email = "alice@example.org"
-	defer s.Storage.DeleteUser(user)
-	err := s.Storage.CreateUser(user)
-	c.Check(err, IsNil)
-
-	user.Email = "alice2@example.org"
-	err = s.Storage.CreateUser(user)
-	_, ok := err.(errors.ValidationErrorNEW)
-	c.Assert(ok, Equals, true)
 }
 
 func (s *StorableSuite) TestUpdateUser(c *C) {
-	s.Storage.CreateUser(user)
+	s.Storage.UpsertUser(user)
 	user.Name = "Bob"
 	defer s.Storage.DeleteUser(user)
-	err := s.Storage.UpdateUser(user)
+	err := s.Storage.UpsertUser(user)
 	c.Check(err, IsNil)
 }
 
-func (s *StorableSuite) TestUpdateUserNotFound(c *C) {
-	err := s.Storage.UpdateUser(user)
-	_, ok := err.(errors.NotFoundErrorNEW)
-	c.Assert(ok, Equals, true)
-}
-
 func (s *StorableSuite) TestDeleteUser(c *C) {
-	s.Storage.CreateUser(user)
+	s.Storage.UpsertUser(user)
 	err := s.Storage.DeleteUser(user)
 	c.Check(err, IsNil)
 }
@@ -81,7 +51,7 @@ func (s *StorableSuite) TestDeleteUserNotFound(c *C) {
 
 func (s *StorableSuite) TestFindUserByEmail(c *C) {
 	defer s.Storage.DeleteUser(user)
-	s.Storage.CreateUser(user)
+	s.Storage.UpsertUser(user)
 	u, err := s.Storage.FindUserByEmail(user.Email)
 	c.Assert(u, Equals, user)
 	c.Check(err, IsNil)

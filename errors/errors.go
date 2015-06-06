@@ -30,6 +30,9 @@ var (
 	ErrUserDuplicateEntry        = errors.New("Someone already has that email/username. Could you try another?")
 	ErrUserNotFound              = errors.New("User not found.")
 	ErrUserMissingRequiredFields = errors.New("Name/Email/Username/Password cannot be empty.")
+
+	ErrTeamMissingRequiredFields = errors.New("Name cannot be empty.")
+	ErrTeamDuplicateEntry        = errors.New("Someone already has that team alias. Could you try another?")
 )
 
 // The ValidationError type indicates that any validation has failed.
