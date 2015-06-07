@@ -41,14 +41,25 @@ func (m *Mem) FindUserByEmail(email string) (account_new.User, error) {
 }
 
 func (m *Mem) UpsertTeam(t account_new.Team) error {
-	// if t.Id != "" {
-	// 	// err = m.Teams().Update(bson.M{"_id": t.Id}, bson.M{"$set": t})
-	// } else {
-	// 	t.Id = bson.NewObjectId()
-	// 	m.Teams[t.Id] = t
-	// }
-
+	m.Teams[t.Alias] = t
 	return nil
+}
+
+func (m *Mem) DeleteTeam(t account_new.Team) error {
+	if _, ok := m.Teams[t.Alias]; !ok {
+		return errors.NewNotFoundErrorNEW(errors.ErrTeamNotFound)
+	}
+
+	delete(m.Teams, t.Alias)
+	return nil
+}
+
+func (m *Mem) FindTeamByAlias(alias string) (account_new.Team, error) {
+	if team, ok := m.Teams[alias]; !ok {
+		return account_new.Team{}, errors.NewNotFoundErrorNEW(errors.ErrTeamNotFound)
+	} else {
+		return team, nil
+	}
 }
 
 func (m *Mem) Close() {}

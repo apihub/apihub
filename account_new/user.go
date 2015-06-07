@@ -36,7 +36,7 @@ func (user *User) Create() error {
 	}
 	defer store.Close()
 
-	if _, err := store.FindUserByEmail(user.Email); err == nil {
+	if user.Exists() {
 		return errors.NewValidationErrorNEW(errors.ErrUserDuplicateEntry)
 	}
 
@@ -53,7 +53,7 @@ func (user *User) ChangePassword() error {
 	}
 	defer store.Close()
 
-	if _, err := store.FindUserByEmail(user.Email); err != nil {
+	if !user.Exists() {
 		return errors.NewNotFoundErrorNEW(errors.ErrUserNotFound)
 	}
 
@@ -79,7 +79,7 @@ func (user User) Delete() error {
 	return err
 }
 
-// Exists checks if the user exists in the database.
+// Exists checks if there is a user with the same email in the database.
 // Returns `true` if so, and `false` otherwise.
 func (user User) Exists() bool {
 	store, err := NewStorable()

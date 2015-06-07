@@ -74,6 +74,33 @@ func (m *Mongore) UpsertTeam(t account_new.Team) error {
 	return err
 }
 
+func (m *Mongore) DeleteTeam(t account_new.Team) error {
+	err := m.Teams().Remove(t)
+
+	if err == mgo.ErrNotFound {
+		return errors.NewNotFoundErrorNEW(errors.ErrTeamNotFound)
+	}
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
+
+	return err
+}
+
+func (m *Mongore) FindTeamByAlias(alias string) (account_new.Team, error) {
+	var team account_new.Team
+	err := m.Teams().Find(bson.M{"alias": alias}).One(&team)
+
+	if err == mgo.ErrNotFound {
+		return account_new.Team{}, errors.NewNotFoundErrorNEW(errors.ErrTeamNotFound)
+	}
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
+
+	return team, err
+}
+
 func (m *Mongore) Close() {
 	m.store.Close()
 }

@@ -6,8 +6,6 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-var alice = account_new.User{Name: "Alice", Email: "alice@example.org", Password: "123456"}
-
 func (s *S) TestCreateUser(c *C) {
 	defer alice.Delete()
 	err := alice.Create()
@@ -54,7 +52,7 @@ func (s *S) TestChangePasswordNotFound(c *C) {
 	c.Assert(ok, Equals, true)
 }
 
-func (s *S) TestExists(c *C) {
+func (s *S) TestUserExists(c *C) {
 	defer alice.Delete()
 	alice.Create()
 
@@ -62,7 +60,14 @@ func (s *S) TestExists(c *C) {
 	c.Assert(valid, Equals, true)
 }
 
-func (s *S) TestExistsWhenUserDoesNotExistInTheDB(c *C) {
+func (s *S) TestUserExistsNotFound(c *C) {
 	valid := alice.Exists()
 	c.Assert(valid, Equals, false)
+}
+
+func (s *S) TestDeleteUser(c *C) {
+	alice.Create()
+	c.Assert(alice.Exists(), Equals, true)
+	alice.Delete()
+	c.Assert(alice.Exists(), Equals, false)
 }

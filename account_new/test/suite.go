@@ -9,7 +9,7 @@ import (
 )
 
 var user account_new.User
-var expires int
+var team account_new.Team
 
 //Hook up gocheck into the "go test" runner.
 func Test(t *testing.T) { TestingT(t) }
@@ -19,8 +19,8 @@ type StorableSuite struct {
 }
 
 func (s *StorableSuite) SetUpTest(c *C) {
-	expires = 10
 	user = account_new.User{Name: "Alice", Email: "alice@example.org", Password: "123456"}
+	team = account_new.Team{Name: "Backstage Team", Alias: "backstage", Users: []string{}, Owner: user.Email}
 }
 
 func (s *StorableSuite) TestUpsertUser(c *C) {
@@ -59,6 +59,38 @@ func (s *StorableSuite) TestFindUserByEmail(c *C) {
 
 func (s *StorableSuite) TestFindUserByEmailNotFound(c *C) {
 	_, err := s.Storage.FindUserByEmail("not-found")
+	_, ok := err.(errors.NotFoundErrorNEW)
+	c.Assert(ok, Equals, true)
+}
+
+func (s *StorableSuite) TestUpsertTeam(c *C) {
+	defer s.Storage.DeleteTeam(team)
+	err := s.Storage.UpsertTeam(team)
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestDeleteTeam(c *C) {
+	s.Storage.UpsertTeam(team)
+	err := s.Storage.DeleteTeam(team)
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestDeleteTeamNotFound(c *C) {
+	err := s.Storage.DeleteTeam(team)
+	_, ok := err.(errors.NotFoundErrorNEW)
+	c.Assert(ok, Equals, true)
+}
+
+func (s *StorableSuite) TestFindTeamByAlias(c *C) {
+	defer s.Storage.DeleteTeam(team)
+	s.Storage.UpsertTeam(team)
+	u, err := s.Storage.FindTeamByAlias(team.Alias)
+	c.Assert(u, DeepEquals, team)
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestFindTeamByAliasNotFound(c *C) {
+	_, err := s.Storage.FindTeamByAlias("not-found")
 	_, ok := err.(errors.NotFoundErrorNEW)
 	c.Assert(ok, Equals, true)
 }

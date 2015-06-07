@@ -26,7 +26,14 @@ func (s *S) SetUpSuite(c *C) {
 func (s *S) TearDownSuite(c *C) {
 }
 
+var team account_new.Team
+var owner account_new.User
+var alice account_new.User
+
 func (s *S) SetUpTest(c *C) {
+	team = account_new.Team{Name: "Backstage Team", Alias: "backstage"}
+	alice = account_new.User{Name: "Alice", Email: "alice@example.org", Password: "123456"}
+	owner = account_new.User{Name: "Owner", Email: "owner@example.org", Password: "123456"}
 }
 
 // Run the tests in memory
