@@ -11,11 +11,9 @@ import (
 // The User type is an encapsulation of a user details.
 // A valid user is capable to interact with the API to manage teams and services.
 type User struct {
-	Name                 string `json:"name,omitempty"`
-	Email                string `json:"email,omitempty"`
-	Password             string `json:"password,omitempty"`
-	NewPassword          string `json:"new_password,omitempty" bson:"-"`
-	ConfirmationPassword string `json:"confirmation_password,omitempty" bson:"-"`
+	Name     string `json:"name,omitempty"`
+	Email    string `json:"email,omitempty"`
+	Password string `json:"password,omitempty"`
 }
 
 // Create creates a new user account.
@@ -105,7 +103,9 @@ func (user User) ToString() string {
 
 // Encrypts the user password before saving it in the database.
 func (user *User) hashPassword() {
-	if hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost); err != nil {
+	if hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost); err == nil {
 		user.Password = string(hash[:])
+	} else {
+		Logger.Error(err.Error())
 	}
 }
