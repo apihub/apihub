@@ -1,51 +1,56 @@
 package api_new_test
 
 import (
+	"io/ioutil"
 	"net/http"
-	"net/http/httptest"
-
-	"github.com/backstage/backstage/api_new"
-	. "gopkg.in/check.v1"
+	"net/url"
+	"strings"
 )
 
-func (s *S) TestMakeRequest(c *C) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"name": "Alice"}`))
-	}))
-	defer server.Close()
-	httpClient.Host = server.URL
-
-	args := api_new.RequestArgs{Method: "GET", Path: "/path", Body: ""}
-	_, _, body, err := httpClient.MakeRequest(args)
-	c.Assert(string(body), Equals, `{"name": "Alice"}`)
-	c.Check(err, IsNil)
+type HTTPClient struct {
+	Host   string
+	client *http.Client
 }
 
-func (s *S) TestReturnsErrorWhenHostIsInvalid(c *C) {
-	httpClient.Host = "://invalid-host"
-	args := api_new.RequestArgs{Method: "GET", Path: "/path", Body: ""}
-	_, _, _, err := httpClient.MakeRequest(args)
-	c.Check(err, Not(IsNil))
+func NewHTTPClient(host string) HTTPClient {
+	return HTTPClient{
+		Host:   host,
+		client: &http.Client{},
+	}
 }
 
-func (s *S) TestReturnsErrorWhenRequestIsInvalid(c *C) {
-	httpClient.Host = "invalid-host"
-	args := api_new.RequestArgs{Method: "GET", Path: "/path", Body: ""}
-	_, _, _, err := httpClient.MakeRequest(args)
-	c.Check(err, Not(IsNil))
+type RequestArgs struct {
+	Body    string
+	Path    string
+	Method  string
+	Headers http.Header
 }
 
-func (s *S) TestReturnsErrorWhenResponseIsInvalid(c *C) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		w.Header().Set("Content-Length", "1")
-		w.Write([]byte("{}"))
-	}))
-	defer server.Close()
+func (c *HTTPClient) MakeRequest(requestArgs RequestArgs) (http.Header, int, []byte, error) {
+	url, err := url.Parse(c.Host)
+	if err != nil {
+		return nil, 0, nil, err
+	}
 
-	httpClient.Host = server.URL
+	url.Path = requestArgs.Path
+	r, err := http.NewRequest(requestArgs.Method, url.String(), strings.NewReader(requestArgs.Body))
+	if err != nil {
+		return nil, 0, nil, err
+	}
 
-	args := api_new.RequestArgs{Method: "GET", Path: "/path", Body: ""}
-	_, _, _, err := httpClient.MakeRequest(args)
-	c.Check(err, Not(IsNil))
+	if requestArgs.Headers != nil {
+
+		r.Header = requestArgs.Headers
+	}
+	resp, err := c.client.Do(r)
+	if err != nil {
+		return nil, 0, nil, err
+	}
+
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, 0, nil, err
+	}
+
+	return resp.Header, resp.StatusCode, respBody, nil
 }

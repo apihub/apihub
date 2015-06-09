@@ -1,71 +1,34 @@
 package api_new_test
 
-// import (
-//   "encoding/json"
-//   "fmt"
-//   "net/http"
-//   "net/http/httptest"
+import (
+	"net/http"
 
-//   "github.com/backstage/backstage/account"
-//   "github.com/backstage/backstage/errors"
-//   "github.com/zenazn/goji/web"
-//   . "gopkg.in/check.v1"
-// )
+	"github.com/backstage/backstage/account_new"
+	"github.com/backstage/backstage/api_new"
+	"github.com/backstage/backstage/errors"
+	. "gopkg.in/check.v1"
+)
 
-// func (s *S) TestAddGetRequestError(c *C) {
-//   m := web.New()
+func (s *S) TestAddGetRequestError(c *C) {
+	req, _ := http.NewRequest("GET", "/foo", nil)
+	api_new.AddRequestError(req, errors.ErrClientNotFound)
+	err, ok := api_new.GetRequestError(req)
+	c.Assert(err, Equals, errors.ErrClientNotFound)
+	c.Assert(ok, Equals, true)
+}
 
-//   m.Get("/helloworld", func(c web.C, w http.ResponseWriter, r *http.Request) {
-//     AddRequestError(&c, &HTTPResponse{StatusCode: http.StatusUnauthorized,
-//       ErrorType:        errors.E_UNAUTHORIZED_REQUEST,
-//       ErrorDescription: "You do not have access to this resource."})
+func (s *S) TestSetAndGetCurrentUser(c *C) {
+	user := &account_new.User{Name: "Alice", Email: "alice@example.org", Password: "123456"}
+	req, _ := http.NewRequest("GET", "/foo", nil)
+	api_new.SetCurrentUser(req, user)
+	u, err := api_new.GetCurrentUser(req)
+	c.Assert(u, DeepEquals, user)
+	c.Check(err, IsNil)
+}
 
-//     key, _ := GetRequestError(&c)
-//     body, _ := json.Marshal(key)
-//     http.Error(w, string(body), key.StatusCode)
-//   })
-
-//   req, _ := http.NewRequest("GET", "/helloworld", nil)
-//   recorder := httptest.NewRecorder()
-//   env := map[string]interface{}{}
-//   m.ServeHTTPC(web.C{Env: env}, recorder, req)
-
-//   c.Assert(recorder.Code, Equals, 401)
-//   c.Assert(recorder.Body.String(), Equals, "{\"error\":\"unauthorized_access\",\"error_description\":\"You do not have access to this resource.\"}\n")
-// }
-
-// func (s *S) TestSetAndGetCurrentUser(c *C) {
-//   m := web.New()
-
-//   m.Get("/helloworld", func(c web.C, w http.ResponseWriter, r *http.Request) {
-//     alice := &account.User{Username: "alice", Name: "Alice", Email: "alice@example.org", Password: "123456"}
-//     alice.Save()
-//     defer alice.Delete()
-//     SetCurrentUser(&c, alice)
-//     user, _ := GetCurrentUser(&c)
-//     body, _ := json.Marshal(user)
-//     fmt.Fprint(w, string(body))
-//     w.WriteHeader(http.StatusOK)
-//   })
-
-//   req, _ := http.NewRequest("GET", "/helloworld", nil)
-//   recorder := httptest.NewRecorder()
-//   env := map[string]interface{}{}
-//   m.ServeHTTPC(web.C{Env: env}, recorder, req)
-
-//   c.Assert(recorder.Code, Equals, http.StatusOK)
-// }
-
-// func (s *S) TestGetCurrentUserWhenNotSignedIn(c *C) {
-//   m := web.New()
-
-//   m.Get("/helloworld", func(co web.C, w http.ResponseWriter, r *http.Request) {
-//     _, err := GetCurrentUser(&co)
-//     c.Assert(err.Error(), Equals, "Invalid or expired token. Please log in with your Backstage credentials.")
-//   })
-
-//   req, _ := http.NewRequest("GET", "/helloworld", nil)
-//   recorder := httptest.NewRecorder()
-//   env := map[string]interface{}{}
-//   m.ServeHTTPC(web.C{Env: env}, recorder, req)
-// }
+func (s *S) TestGetCurrentUserNotSignedIn(c *C) {
+	req, _ := http.NewRequest("GET", "/foo", nil)
+	u, err := api_new.GetCurrentUser(req)
+	c.Check(u, IsNil)
+	c.Assert(err, Equals, errors.ErrLoginRequired)
+}

@@ -36,6 +36,9 @@ func handleError(rw http.ResponseWriter, err error) {
 	case *errors.ForbiddenError:
 		erro := HTTPError{ErrorType: errors.E_FORBIDDEN_REQUEST, ErrorDescription: err.Error()}
 		Forbidden(rw, erro)
+	case *errors.UnauthorizedError:
+		erro := HTTPError{ErrorType: errors.E_UNAUTHORIZED_REQUEST, ErrorDescription: err.Error()}
+		Forbidden(rw, erro)
 	default:
 		erro := HTTPError{ErrorType: errors.E_BAD_REQUEST, ErrorDescription: err.Error()}
 		BadRequest(rw, erro)
@@ -44,25 +47,35 @@ func handleError(rw http.ResponseWriter, err error) {
 
 func BadRequest(rw http.ResponseWriter, body interface{}) {
 	resp := HTTPResponse{StatusCode: http.StatusBadRequest, Body: body}
-	responseOutput(rw, resp)
+	jsonResponse(rw, resp)
 }
 
 func Created(rw http.ResponseWriter, body interface{}) {
 	resp := HTTPResponse{StatusCode: http.StatusCreated, Body: body}
-	responseOutput(rw, resp)
+	jsonResponse(rw, resp)
 }
 
 func Forbidden(rw http.ResponseWriter, body interface{}) {
 	resp := HTTPResponse{StatusCode: http.StatusForbidden, Body: body}
-	responseOutput(rw, resp)
+	jsonResponse(rw, resp)
 }
 
 func NotFound(rw http.ResponseWriter, body interface{}) {
 	resp := HTTPResponse{StatusCode: http.StatusNotFound, Body: body}
-	responseOutput(rw, resp)
+	jsonResponse(rw, resp)
 }
 
-func responseOutput(rw http.ResponseWriter, resp HTTPResponse) {
+func Unauthorized(rw http.ResponseWriter, body interface{}) {
+	resp := HTTPResponse{StatusCode: http.StatusUnauthorized, Body: body}
+	jsonResponse(rw, resp)
+}
+
+func Ok(rw http.ResponseWriter, body interface{}) {
+	resp := HTTPResponse{StatusCode: http.StatusOK, Body: body}
+	jsonResponse(rw, resp)
+}
+
+func jsonResponse(rw http.ResponseWriter, resp HTTPResponse) {
 	body := resp.ToJson()
 	rw.Header().Set("Content-Type", resp.ContentType)
 	rw.WriteHeader(resp.StatusCode)

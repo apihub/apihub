@@ -18,19 +18,19 @@ func Clear(r *http.Request) {
 }
 
 // Add an error in the request context.
-func AddRequestError(r *http.Request, err *HTTPResponse) {
+func AddRequestError(r *http.Request, err error) {
 	context.Set(r, ErrRequestKey, err)
 }
 
 // Get an error from the request context.
 // Return nil and false if nothing is found.
 // Otherwise, return the error.
-func GetRequestError(r *http.Request) (*HTTPResponse, bool) {
+func GetRequestError(r *http.Request) (error, bool) {
 	val, ok := context.GetOk(r, ErrRequestKey)
 	if !ok {
 		return nil, false
 	}
-	return val.(*HTTPResponse), true
+	return val.(error), true
 }
 
 // Set the current user in the request context.
