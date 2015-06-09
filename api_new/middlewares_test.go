@@ -1,87 +1,58 @@
 package api_new_test
 
-// import (
-// 	"encoding/json"
-// 	"net/http"
-// 	"net/http/httptest"
+import (
+	"fmt"
+	"net/http"
 
-// 	"github.com/backstage/backstage/auth"
-// 	. "gopkg.in/check.v1"
-// )
+	. "gopkg.in/check.v1"
+)
 
-// func (s *S) TestAuthorizationMiddlewareWithValidToken(c *C) {
-// 	s.router.Use(ErrorMiddleware)
-// 	s.router.Use(AuthorizationMiddleware)
-// 	err := alice.Save()
-// 	defer alice.Delete()
-// 	if err != nil {
-// 		c.Error(err)
-// 	}
+func (s *S) TestAuthorizationMiddlewareWithValidToken(c *C) {
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "DELETE",
+		Path:    "/api/users",
+		Headers: http.Header{"Authorization": {s.authHeader}},
+	})
 
-// 	tokenInfo := auth.GenerateToken(alice)
-// 	s.router.Get("/", s.handler)
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusOK)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, fmt.Sprintf(`{"name":"%s","email":"%s"}`, user.Name, user.Email))
+}
 
-// 	req, _ := http.NewRequest("GET", "/", nil)
-// 	req.Header.Set("Authorization", "Token "+tokenInfo.Token)
-// 	cc := web.C{Env: map[string]interface{}{}}
-// 	s.router.ServeHTTPC(cc, s.recorder, req)
-// 	_, ok := GetRequestError(&cc)
-// 	c.Assert(ok, Equals, false)
-// 	c.Assert(s.recorder.Body.String(), Equals, "")
-// }
+func (s *S) TestAuthorizationMiddlewareWithInvalidToken(c *C) {
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "DELETE",
+		Path:    "/api/users",
+		Headers: http.Header{"Authorization": {"expired-token"}},
+	})
 
-// func (s *S) TestAuthorizationMiddlewareWithInvalidToken(c *C) {
-// 	s.router.Use(ErrorMiddleware)
-// 	s.router.Use(AuthorizationMiddleware)
-// 	s.router.Get("/", s.handler)
-// 	req, _ := http.NewRequest("GET", "/", nil)
-// 	req.Header.Set("Authorization", "Invalid-Token")
-// 	cc := web.C{Env: map[string]interface{}{}}
-// 	s.router.ServeHTTPC(cc, s.recorder, req)
-// 	erro, _ := GetRequestError(&cc)
-// 	c.Assert(erro.StatusCode, Equals, http.StatusUnauthorized)
-// 	c.Assert(erro.ErrorDescription, Equals, "Request refused or access is not allowed.")
-// 	c.Assert(erro.ErrorType, Equals, "unauthorized_access")
-// 	c.Assert(s.recorder.Body.String(), Equals, `{"error":"unauthorized_access","error_description":"Request refused or access is not allowed."}`)
-// }
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusBadRequest)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"error":"bad_request","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
+}
 
-// func (s *S) TestAuthorizationMiddlewareWithMissingToken(c *C) {
-// 	s.router.Use(ErrorMiddleware)
-// 	s.router.Use(AuthorizationMiddleware)
-// 	s.router.Get("/", s.handler)
-// 	req, _ := http.NewRequest("GET", "/", nil)
-// 	cc := web.C{Env: map[string]interface{}{}}
-// 	s.router.ServeHTTPC(cc, s.recorder, req)
-// 	erro, _ := GetRequestError(&cc)
-// 	c.Assert(erro.StatusCode, Equals, http.StatusUnauthorized)
-// 	c.Assert(erro.ErrorDescription, Equals, "Request refused or access is not allowed.")
-// 	c.Assert(erro.ErrorType, Equals, "unauthorized_access")
-// 	c.Assert(s.recorder.Body.String(), Equals, `{"error":"unauthorized_access","error_description":"Request refused or access is not allowed."}`)
-// }
+func (s *S) TestAuthorizationMiddlewareWithMissingToken(c *C) {
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method: "DELETE",
+		Path:   "/api/users",
+	})
 
-// func (s *S) TestRequestIdMiddleware(c *C) {
-// 	s.router.Use(ErrorMiddleware)
-// 	s.router.Use(RequestIdMiddleware)
-// 	s.router.Get("/", s.handler)
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusBadRequest)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"error":"bad_request","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
+}
 
-// 	req, _ := http.NewRequest("GET", "/", nil)
-// 	cc := web.C{Env: map[string]interface{}{}}
-// 	s.router.ServeHTTPC(cc, s.recorder, req)
-// 	c.Assert(s.recorder.Code, Equals, http.StatusOK)
-// 	c.Assert(s.recorder.HeaderMap["Request-Id"], NotNil)
-// }
+func (s *S) TestNotFoundHandler(c *C) {
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method: "GET",
+		Path:   "/not-found-path",
+	})
 
-// func (s *S) TestNotFoundHandler(c *C) {
-// 	w := httptest.NewRecorder()
-// 	req, err := http.NewRequest("GET", "/invalid-endpoint", nil)
-// 	if err != nil {
-// 		c.Error(err)
-// 	}
-
-// 	NotFoundHandler(w, req)
-// 	c.Assert(w.Code, Equals, http.StatusNotFound)
-// 	body := &HTTPResponse{}
-// 	json.Unmarshal(w.Body.Bytes(), body)
-// 	c.Assert(body.ErrorDescription, Equals, "The resource requested does not exist.")
-// 	c.Assert(body.ErrorType, Equals, "not_found")
-// }
+	c.Check(err, IsNil)
+	c.Assert(string(body), Equals, `{"error":"not_found","error_description":"The resource requested does not exist."}`)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(code, Equals, http.StatusNotFound)
+}

@@ -1,46 +1,42 @@
 package api_new
 
 import (
-	"encoding/json"
-	"fmt"
 	"net/http"
 
+	"github.com/backstage/backstage/auth_new"
 	"github.com/backstage/backstage/errors"
 	"github.com/gorilla/context"
 )
 
-func authorizationMiddleware(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	fmt.Println("AuthorizationMiddleware")
+func requestIdMiddleware(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	next(rw, r)
 }
 
-func requestIdMiddleware(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	fmt.Println("REQID")
+func authorizationMiddleware(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	authorization := r.Header.Get("Authorization")
+	auth := auth_new.NewAuth()
+	user, err := auth.UserFromToken(authorization)
+	if err != nil {
+		AddRequestError(r, errors.NewUnauthorizedError(errors.ErrLoginRequired))
+		return
+	}
+	SetCurrentUser(r, user)
 	next(rw, r)
 }
 
 func errorMiddleware(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-
 	next(rw, r)
-	fmt.Println("ERROR")
 
-	// key, ok := GetRequestError(c)
-	// if ok {
-	// 	w.Header().Set("Content-Type", "application/json")
-	// 	body, _ := json.Marshal(key)
-	// 	w.WriteHeader(key.StatusCode)
-	// 	io.WriteString(w, string(body))
-	// 	return
-	// }
+	err, ok := GetRequestError(r)
+	if ok {
+		handleError(rw, err)
+		return
+	}
 }
 
-func notFoundHandler(w http.ResponseWriter, r *http.Request) {
-	nfe := HTTPError{ErrorType: errors.E_NOT_FOUND, ErrorDescription: "The resource requested does not exist."}
-	notFound := HTTPResponse{StatusCode: http.StatusNotFound, Body: nfe}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(notFound.StatusCode)
-	body, _ := json.Marshal(notFound)
-	fmt.Fprint(w, string(body))
+func notFoundHandler(rw http.ResponseWriter, r *http.Request) {
+	err := errors.NewNotFoundErrorNEW(errors.ErrNotFound)
+	handleError(rw, &err)
 }
 
 func contextClearerMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {

@@ -15,6 +15,7 @@ const (
 
 var (
 	ErrAuthenticationFailed   = errors.New("Authentication failed.")
+	ErrUnauthorizedAccess     = errors.New("Request refused or access is not allowed.")
 	ErrBadRequest             = errors.New("The request was invalid or cannot be served.")
 	ErrClientNotFound         = errors.New("Client not found.")
 	ErrClientNotFoundOnTeam   = errors.New("Client not found on this team.")
@@ -25,9 +26,10 @@ var (
 	ErrTeamNotFound           = errors.New("Team not found.")
 	ErrTokenNotFound          = errors.New("Token not found.")
 	ErrUserNotInTeam          = errors.New("You do not belong to this team!")
+	ErrNotFound               = errors.New("The resource requested does not exist.")
 	ErrConfirmationPassword   = errors.New("Your new password and confirmation password do not match.")
 
-	ErrUserDuplicateEntry        = errors.New("Someone already has that email/username. Could you try another?")
+	ErrUserDuplicateEntry        = errors.New("Someone already has that email. Could you try another?")
 	ErrUserNotFound              = errors.New("User not found.")
 	ErrUserMissingRequiredFields = errors.New("Name/Email/Password cannot be empty.")
 
@@ -83,5 +85,17 @@ func NewValidationErrorNEW(err error) ValidationErrorNEW {
 }
 
 func (err ValidationErrorNEW) Error() string {
+	return err.description.Error()
+}
+
+type UnauthorizedError struct {
+	description error
+}
+
+func NewUnauthorizedError(err error) UnauthorizedError {
+	return UnauthorizedError{description: err}
+}
+
+func (err UnauthorizedError) Error() string {
 	return err.description.Error()
 }
