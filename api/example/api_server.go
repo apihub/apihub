@@ -1,8 +1,6 @@
 package main
 
 import (
-	"net/http"
-
 	"github.com/backstage/backstage/account/mem"
 	. "github.com/backstage/backstage/api"
 	"github.com/backstage/backstage/log"

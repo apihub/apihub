@@ -143,3 +143,13 @@ func addHCache(key string, expires int, data map[string]interface{}) {
 	}
 	conn.Do("EXPIRE", key, expires)
 }
+
+func HMSET(key string, expires int, data map[string]interface{}) {
+	conn := NewRedisClient().conn
+	defer conn.Close()
+
+	if _, err := conn.Do("HMSET", redis.Args{key}.AddFlat(data)...); err != nil {
+		fmt.Print(err)
+	}
+	conn.Do("EXPIRE", key, expires)
+}

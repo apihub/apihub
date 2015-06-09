@@ -7,8 +7,8 @@ import (
 )
 
 func (s *S) TestCreateUser(c *C) {
-	defer alice.Delete()
 	err := alice.Create()
+	defer alice.Delete()
 	c.Assert(err, IsNil)
 }
 
@@ -20,8 +20,8 @@ func (s *S) TestCreateUserWithoutRequiredFields(c *C) {
 }
 
 func (s *S) TestCreateUserWithDuplicateEmail(c *C) {
-	defer alice.Delete()
 	err := alice.Create()
+	defer alice.Delete()
 	c.Check(err, IsNil)
 
 	err = alice.Create()
@@ -53,8 +53,8 @@ func (s *S) TestChangePasswordNotFound(c *C) {
 }
 
 func (s *S) TestUserExists(c *C) {
-	defer alice.Delete()
 	alice.Create()
+	defer alice.Delete()
 
 	valid := alice.Exists()
 	c.Assert(valid, Equals, true)

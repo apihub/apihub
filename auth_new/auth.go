@@ -12,32 +12,15 @@ import (
 
 type Authenticatable interface {
 	Authenticate(email, password string) (*account_new.User, bool)
-	Login(email, password string) (*ApiToken, error)
+	CreateUserToken(*account_new.User) (*ApiToken, error)
 	UserFromToken(token string) (*account_new.User, error)
 	RevokeUserToken(token string)
 }
 
-type auth struct {
-}
+type auth struct{}
 
 func NewAuth() *auth {
 	return &auth{}
-}
-
-func (a *auth) Login(email, password string) (*ApiToken, error) {
-	auth := NewAuth()
-
-	user, ok := auth.Authenticate(email, password)
-	if ok {
-		token, err := createToken(user)
-		if err != nil {
-			Logger.Warn(err.Error())
-			return nil, err
-		}
-		return token, nil
-	}
-
-	return nil, errors.ErrAuthenticationFailed
 }
 
 func (a *auth) Authenticate(email, password string) (*account_new.User, bool) {
@@ -61,6 +44,10 @@ func (a *auth) Authenticate(email, password string) (*account_new.User, bool) {
 	}
 
 	return &user, true
+}
+
+func (a *auth) CreateUserToken(user *account_new.User) (*ApiToken, error) {
+	return createToken(user)
 }
 
 func (a *auth) UserFromToken(token string) (*account_new.User, error) {

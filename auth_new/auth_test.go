@@ -32,12 +32,22 @@ func (s *S) TestAuthenticateWithNotFound(c *C) {
 	c.Assert(ok, Equals, false)
 }
 
+func (s *S) TestCreateUserToken(c *C) {
+	user := &account_new.User{Name: "Alice", Email: "alice@bar.example.org", Password: "123"}
+	user.Create()
+	defer user.Delete()
+
+	token, err := s.auth.CreateUserToken(user)
+	c.Check(err, IsNil)
+	c.Assert(token.Token, Not(Equals), "")
+}
+
 func (s *S) TestUserFromToken(c *C) {
 	user := &account_new.User{Name: "Alice", Email: "alice@bar.example.org", Password: "123"}
 	user.Create()
 	defer user.Delete()
 
-	token, _ := s.auth.Login("alice@bar.example.org", "123")
+	token, _ := s.auth.CreateUserToken(user)
 	foundUser, err := s.auth.UserFromToken(fmt.Sprintf("%s %s", token.Type, token.Token))
 	c.Check(err, IsNil)
 	c.Assert(foundUser, DeepEquals, user)
@@ -60,7 +70,7 @@ func (s *S) TestRevokeUserToken(c *C) {
 	user.Create()
 	defer user.Delete()
 
-	token, _ := s.auth.Login("alice@bar.example.org", "123")
+	token, _ := s.auth.CreateUserToken(user)
 	tstr := fmt.Sprintf("%s %s", token.Type, token.Token)
 	foundUser, err := s.auth.UserFromToken(tstr)
 	c.Check(err, IsNil)
