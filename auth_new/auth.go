@@ -24,6 +24,7 @@ func NewAuth() *auth {
 }
 
 func (a *auth) Authenticate(email, password string) (*account_new.User, bool) {
+	// FIXME remove para auth struct
 	store, err := account_new.NewStorable()
 	if err != nil {
 		Logger.Warn(err.Error())

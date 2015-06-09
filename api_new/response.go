@@ -75,6 +75,11 @@ func Ok(rw http.ResponseWriter, body interface{}) {
 	jsonResponse(rw, resp)
 }
 
+func NoContent(rw http.ResponseWriter) {
+	resp := HTTPResponse{StatusCode: http.StatusNoContent}
+	jsonResponse(rw, resp)
+}
+
 func jsonResponse(rw http.ResponseWriter, resp HTTPResponse) {
 	body := resp.ToJson()
 	rw.Header().Set("Content-Type", resp.ContentType)

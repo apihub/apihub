@@ -25,33 +25,34 @@ type Api struct {
 }
 
 func NewApi(store func() (account_new.Storable, error)) *Api {
+	// FIXME need to improve this.
 	account_new.NewStorable = store
 
 	api := &Api{router: mux.NewRouter(), auth: auth_new.NewAuth()}
 	api.router.HandleFunc("/", homeHandler)
-	api.router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
+	api.router.NotFoundHandler = http.HandlerFunc(api.notFoundHandler)
 
 	//  Auth (login, logout, signup)
 	auth := api.router.PathPrefix("/auth").Subrouter()
 	auth.Methods("POST").Path("/login").HandlerFunc(api.userLogin)
-	auth.Methods("DELETE").Path("/logout").HandlerFunc(userLogout)
-	auth.Methods("POST").Path("/signup").HandlerFunc(userSignup)
-	auth.Methods("PUT").Path("/password").HandlerFunc(userChangePassword)
+	auth.Methods("DELETE").Path("/logout").HandlerFunc(api.userLogout)
+	auth.Methods("POST").Path("/signup").HandlerFunc(api.userSignup)
+	auth.Methods("PUT").Path("/password").HandlerFunc(api.userChangePassword)
 
 	//  Private Routes
 	private := mux.NewRouter()
 
 	api.router.PathPrefix("/api").Handler(negroni.New(
 		negroni.NewRecovery(),
-		negroni.HandlerFunc(errorMiddleware),
-		negroni.HandlerFunc(requestIdMiddleware),
-		negroni.HandlerFunc(authorizationMiddleware),
-		negroni.HandlerFunc(contextClearerMiddleware),
+		negroni.HandlerFunc(api.errorMiddleware),
+		negroni.HandlerFunc(api.requestIdMiddleware),
+		negroni.HandlerFunc(api.authorizationMiddleware),
+		negroni.HandlerFunc(api.contextClearerMiddleware),
 		negroni.Wrap(private),
 	))
 
 	// Users
-	private.Methods("DELETE").Path("/api/users").HandlerFunc(userDelete)
+	private.Methods("DELETE").Path("/api/users").HandlerFunc(api.userDelete)
 
 	return api
 }

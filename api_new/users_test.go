@@ -103,3 +103,42 @@ func (s *S) TestLoginUser(c *C) {
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
 	c.Assert(string(body), Matches, fmt.Sprintf(`{"access_token":".*","token_type":"%s","expires":%d,"created_at":".*"}`, auth_new.TOKEN_TYPE, auth_new.EXPIRES_IN_SECONDS))
 }
+
+func (s *S) TestLoginUserWithInvalidUser(c *C) {
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method: "POST",
+		Path:   "/auth/login",
+		Body:   fmt.Sprintf(`{"email": "%s", "password": "invalid-password"}`, user.Email),
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusBadRequest)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"error":"bad_request","error_description":"Authentication failed."}`)
+}
+
+func (s *S) TestLogoutUser(c *C) {
+	_, code, _, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "DELETE",
+		Path:    "/auth/logout",
+		Headers: http.Header{"Authorization": {s.authHeader}},
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusNoContent)
+}
+
+func (s *S) TestLogoutUserWithInvalidToken(c *C) {
+	_, code, _, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "DELETE",
+		Path:    "/auth/logout",
+		Headers: http.Header{"Authorization": {"invalid-token"}},
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusNoContent)
+}
+
+func (s *S) TestChangePassword(c *C) {
+
+}
