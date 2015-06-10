@@ -129,7 +129,7 @@ func (s *S) TestLogoutUser(c *C) {
 }
 
 func (s *S) TestLogoutUserWithInvalidToken(c *C) {
-	_, code, _, err := httpClient.MakeRequest(RequestArgs{
+	_, code, body, err := httpClient.MakeRequest(RequestArgs{
 		Method:  "DELETE",
 		Path:    "/auth/logout",
 		Headers: http.Header{"Authorization": {"invalid-token"}},
@@ -137,6 +137,7 @@ func (s *S) TestLogoutUserWithInvalidToken(c *C) {
 
 	c.Check(err, IsNil)
 	c.Assert(code, Equals, http.StatusNoContent)
+	c.Assert(string(body), Equals, "")
 }
 
 func (s *S) TestChangePassword(c *C) {
