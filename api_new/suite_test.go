@@ -25,8 +25,8 @@ type S struct {
 }
 
 func (s *S) SetUpTest(c *C) {
-	// setUpMemoryTest(s)
-	setUpMongoreTest(s)
+	setUpMemoryTest(s)
+	// setUpMongoreTest(s)
 
 	api := api_new.NewApi(s.store)
 	s.server = httptest.NewServer(api.GetHandler())
@@ -34,7 +34,6 @@ func (s *S) SetUpTest(c *C) {
 
 	user = &account_new.User{Name: "Bob", Email: "bob@bar.example.org", Password: "secret"}
 	user.Create()
-
 	token, err := api.Login(user.Email, "secret")
 	if err != nil {
 		panic(err)

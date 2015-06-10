@@ -13,27 +13,28 @@ import (
 func Test(t *testing.T) { TestingT(t) }
 
 type S struct {
-	store account_new.Storable
+	store func() (account_new.Storable, error)
 	auth  auth_new.Authenticatable
 }
 
 func (s *S) SetUpSuite(c *C) {
 	// setUpMemoryTest(s)
-	setUpMongoreTest(s)
+	setUpMongoreTestngoreTest(s)
 }
 
 func (s *S) SetUpTest(c *C) {
-	s.auth = auth_new.NewAuth()
+	s.auth = auth_new.NewAuth(s.store)
 }
 
 var _ = Suite(&S{})
 
 // Run the tests in memory
 func setUpMemoryTest(s *S) {
-	s.store = mem.New()
-	account_new.NewStorable = func() (account_new.Storable, error) {
-		return s.store, nil
+	store := mem.New()
+	s.store = func() (account_new.Storable, error) {
+		return store, nil
 	}
+	account_new.NewStorable = s.store
 }
 
 // Run the tests using MongoRe
@@ -42,7 +43,8 @@ func setUpMongoreTest(s *S) {
 		Host:         "127.0.0.1:27017",
 		DatabaseName: "backstage_auth_test",
 	}
-	account_new.NewStorable = func() (account_new.Storable, error) {
+	s.store = func() (account_new.Storable, error) {
 		return mongore.New(cfg)
 	}
+	account_new.NewStorable = s.store
 }

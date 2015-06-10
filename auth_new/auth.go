@@ -17,15 +17,16 @@ type Authenticatable interface {
 	RevokeUserToken(token string)
 }
 
-type auth struct{}
+type auth struct {
+	store func() (account_new.Storable, error)
+}
 
-func NewAuth() *auth {
-	return &auth{}
+func NewAuth(store func() (account_new.Storable, error)) *auth {
+	return &auth{store: store}
 }
 
 func (a *auth) Authenticate(email, password string) (*account_new.User, bool) {
-	// FIXME remove para auth struct
-	store, err := account_new.NewStorable()
+	store, err := a.store()
 	if err != nil {
 		Logger.Warn(err.Error())
 		return nil, false

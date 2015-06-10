@@ -28,7 +28,7 @@ func NewApi(store func() (account_new.Storable, error)) *Api {
 	// FIXME need to improve this.
 	account_new.NewStorable = store
 
-	api := &Api{router: mux.NewRouter(), auth: auth_new.NewAuth()}
+	api := &Api{router: mux.NewRouter(), auth: auth_new.NewAuth(store)}
 	api.router.HandleFunc("/", homeHandler)
 	api.router.NotFoundHandler = http.HandlerFunc(api.notFoundHandler)
 
@@ -57,6 +57,7 @@ func NewApi(store func() (account_new.Storable, error)) *Api {
 	return api
 }
 
+// Split Authenticate and CreateUserToken because we can override only the authentication method and still use the token creation.
 func (api *Api) Login(email, password string) (*auth_new.ApiToken, error) {
 	user, ok := api.auth.Authenticate(email, password)
 	if ok {
