@@ -60,6 +60,7 @@ func NewApi(store func() (account_new.Storable, error)) *Api {
 	teams := pr.Path("/teams").Subrouter()
 	// teams.Methods("GET").HandlerFunc(teamCreate)
 	teams.Methods("POST").HandlerFunc(teamCreate)
+	teams.Methods("GET").HandlerFunc(teamList)
 
 	// team := private.PathPrefix("/api/teams/{alias}").Subrouter()
 	// team.Methods("GET").HandlerFunc(teamCreate)

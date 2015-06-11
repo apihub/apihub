@@ -2,6 +2,7 @@ package api_new_test
 
 import (
 	"fmt"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -71,4 +72,13 @@ func setUpMongoreTest(s *S) {
 	s.store = func() (account_new.Storable, error) {
 		return mongore.New(cfg)
 	}
+}
+
+func testWithoutSignIn(reqArgs RequestArgs, c *C) {
+	headers, code, body, err := httpClient.MakeRequest(reqArgs)
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusBadRequest)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"error":"bad_request","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
 }

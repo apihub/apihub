@@ -21,7 +21,7 @@ type StorableSuite struct {
 
 func (s *StorableSuite) SetUpTest(c *C) {
 	user = account_new.User{Name: "Alice", Email: "alice@example.org", Password: "123456"}
-	team = account_new.Team{Name: "Backstage Team", Alias: "backstage", Users: []string{}, Owner: user.Email}
+	team = account_new.Team{Name: "Backstage Team", Alias: "backstage", Users: []string{user.Email}, Owner: user.Email}
 	token = account_new.TokenInfo{Token: "secret-token", Expires: 10, Type: "Token", User: &user}
 }
 
@@ -37,6 +37,20 @@ func (s *StorableSuite) TestUpdateUser(c *C) {
 	defer s.Storage.DeleteUser(user)
 	err := s.Storage.UpsertUser(user)
 	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestTeams(c *C) {
+	defer s.Storage.DeleteTeam(team)
+	s.Storage.UpsertTeam(team)
+	teams, err := s.Storage.UserTeams(team.Owner)
+	c.Check(err, IsNil)
+	c.Assert(teams, DeepEquals, []account_new.Team{team})
+}
+
+func (s *StorableSuite) TestTeamsNotFound(c *C) {
+	teams, err := s.Storage.UserTeams("not-found")
+	c.Check(err, IsNil)
+	c.Assert(teams, DeepEquals, []account_new.Team{})
 }
 
 func (s *StorableSuite) TestDeleteUser(c *C) {
@@ -90,7 +104,7 @@ func (s *StorableSuite) TestDeleteTeamByAlias(c *C) {
 }
 
 func (s *StorableSuite) TestDeleteTeamByAliasNotFound(c *C) {
-	err := s.Storage.DeleteTeamByAlias(team)
+	err := s.Storage.DeleteTeamByAlias(team.Alias)
 	_, ok := err.(errors.NotFoundErrorNEW)
 	c.Assert(ok, Equals, true)
 }

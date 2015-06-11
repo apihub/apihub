@@ -67,6 +67,12 @@ func (m *Mongore) FindUserByEmail(email string) (account_new.User, error) {
 	return user, err
 }
 
+func (m *Mongore) UserTeams(email string) ([]account_new.Team, error) {
+	teams := []account_new.Team{}
+	err := m.Teams().Find(bson.M{"users": bson.M{"$in": []string{email}}}).All(&teams)
+	return teams, err
+}
+
 func (m *Mongore) UpsertTeam(t account_new.Team) error {
 	_, err := m.Teams().Upsert(bson.M{"alias": t.Alias}, t)
 
@@ -115,7 +121,6 @@ func (m *Mongore) DeleteTeamByAlias(alias string) error {
 	}
 
 	return err
-
 }
 
 func (m *Mongore) CreateToken(token account_new.TokenInfo) error {

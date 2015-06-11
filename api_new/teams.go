@@ -28,3 +28,14 @@ func teamCreate(rw http.ResponseWriter, r *http.Request) {
 
 	Created(rw, team)
 }
+
+func teamList(rw http.ResponseWriter, r *http.Request) {
+	user, err := GetCurrentUser(r)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	teams, _ := user.Teams()
+	Ok(rw, CollectionSerializer{Items: teams, Count: len(teams)})
+}

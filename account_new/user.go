@@ -1,8 +1,6 @@
 package account_new
 
 import (
-	"encoding/json"
-
 	"code.google.com/p/go.crypto/bcrypt"
 	"github.com/backstage/backstage/errors"
 	. "github.com/backstage/backstage/log"
@@ -94,11 +92,15 @@ func (user User) Exists() bool {
 	return true
 }
 
-//Return a representation of user but without sensitive data.
-func (user User) ToString() string {
-	user.Password = ""
-	u, _ := json.Marshal(user)
-	return string(u)
+func (user *User) Teams() ([]Team, error) {
+	store, err := NewStorable()
+	if err != nil {
+		Logger.Warn(err.Error())
+		return []Team{}, err
+	}
+	defer store.Close()
+
+	return store.UserTeams(user.Email)
 }
 
 // Encrypts the user password before saving it in the database.

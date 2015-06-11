@@ -29,12 +29,6 @@ func (s *S) TestCreateUserWithDuplicateEmail(c *C) {
 	c.Assert(ok, Equals, true)
 }
 
-func (s *S) TestUserToString(c *C) {
-	user := account_new.User{Name: "Alice", Email: "alice@example.org", Password: "123456"}
-	str := user.ToString()
-	c.Assert(str, Equals, `{"name":"Alice","email":"alice@example.org"}`)
-}
-
 func (s *S) TestChangePassword(c *C) {
 	alice.Create()
 	p1 := alice.Password
@@ -63,6 +57,14 @@ func (s *S) TestUserExists(c *C) {
 func (s *S) TestUserExistsNotFound(c *C) {
 	valid := alice.Exists()
 	c.Assert(valid, Equals, false)
+}
+
+func (s *S) TestTeams(c *C) {
+	err := team.Create(alice)
+	defer team.Delete()
+	teams, err := alice.Teams()
+	c.Assert(err, IsNil)
+	c.Assert(teams, DeepEquals, []account_new.Team{team})
 }
 
 func (s *S) TestDeleteUser(c *C) {

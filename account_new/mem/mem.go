@@ -46,6 +46,18 @@ func (m *Mem) FindUserByEmail(email string) (account_new.User, error) {
 	}
 }
 
+func (m *Mem) UserTeams(email string) ([]account_new.Team, error) {
+	teams := []account_new.Team{}
+	for _, team := range m.Teams {
+		for _, user := range team.Users {
+			if email == user {
+				teams = append(teams, team)
+			}
+		}
+	}
+	return teams, nil
+}
+
 func (m *Mem) UpsertTeam(t account_new.Team) error {
 	m.Teams[t.Alias] = t
 	return nil

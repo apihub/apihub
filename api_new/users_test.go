@@ -67,28 +67,11 @@ func (s *S) TestDeleteUser(c *C) {
 }
 
 func (s *S) TestDeleteUserWithExpiredToken(c *C) {
-	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
-		Method:  "DELETE",
-		Path:    "/api/users",
-		Headers: http.Header{"Authorization": {"expired-token"}},
-	})
-
-	c.Check(err, IsNil)
-	c.Assert(code, Equals, http.StatusBadRequest)
-	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"error":"bad_request","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
+	testWithoutSignIn(RequestArgs{Method: "DELETE", Path: "/api/users", Headers: http.Header{"Authorization": {"expired-token"}}}, c)
 }
 
 func (s *S) TestDeleteUserWithoutToken(c *C) {
-	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
-		Method: "DELETE",
-		Path:   "/api/users",
-	})
-
-	c.Check(err, IsNil)
-	c.Assert(code, Equals, http.StatusBadRequest)
-	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"error":"bad_request","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
+	testWithoutSignIn(RequestArgs{Method: "DELETE", Path: "/api/users"}, c)
 }
 
 func (s *S) TestLoginUser(c *C) {

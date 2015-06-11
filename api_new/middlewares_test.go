@@ -21,28 +21,11 @@ func (s *S) TestAuthorizationMiddleware(c *C) {
 }
 
 func (s *S) TestAuthorizationMiddlewareWithInvalidToken(c *C) {
-	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
-		Method:  "DELETE",
-		Path:    "/api/users",
-		Headers: http.Header{"Authorization": {"expired-token"}},
-	})
-
-	c.Check(err, IsNil)
-	c.Assert(code, Equals, http.StatusBadRequest)
-	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"error":"bad_request","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
+	testWithoutSignIn(RequestArgs{Method: "DELETE", Path: "/api/users", Headers: http.Header{"Authorization": {"expired-token"}}}, c)
 }
 
 func (s *S) TestAuthorizationMiddlewareWithMissingToken(c *C) {
-	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
-		Method: "DELETE",
-		Path:   "/api/users",
-	})
-
-	c.Check(err, IsNil)
-	c.Assert(code, Equals, http.StatusBadRequest)
-	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"error":"bad_request","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
+	testWithoutSignIn(RequestArgs{Method: "DELETE", Path: "/api/users"}, c)
 }
 
 func (s *S) TestNotFoundHandler(c *C) {

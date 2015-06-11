@@ -50,16 +50,7 @@ func (s *S) TestCreateTeamWithCustomAlias(c *C) {
 }
 
 func (s *S) TestCreateTeamWithoutSignIn(c *C) {
-	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
-		Method: "POST",
-		Path:   "/api/teams",
-		Body:   `{"name": "Backstage Team"}`,
-	})
-
-	c.Check(err, IsNil)
-	c.Assert(code, Equals, http.StatusBadRequest)
-	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"error":"bad_request","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
+	testWithoutSignIn(RequestArgs{Method: "POST", Path: "/api/teams", Body: `{"name": "Backstage Team"}`}, c)
 }
 
 func (s *S) TestCreateTeamWithInvalidRequest(c *C) {
@@ -74,4 +65,21 @@ func (s *S) TestCreateTeamWithInvalidRequest(c *C) {
 	c.Assert(code, Equals, http.StatusBadRequest)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
 	c.Assert(string(body), Equals, `{"error":"bad_request","error_description":"The request was invalid or cannot be served."}`)
+}
+
+func (s *S) TestTeamList(c *C) {
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "GET",
+		Path:    "/api/teams",
+		Headers: http.Header{"Authorization": {s.authHeader}},
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusOK)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"items":[],"item_count":0}`)
+}
+
+func (s *S) TestTeamListWithoutSignIn(c *C) {
+	testWithoutSignIn(RequestArgs{Method: "GET", Path: "/api/teams"}, c)
 }
