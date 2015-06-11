@@ -13,9 +13,8 @@ import (
 )
 
 const (
-	EXPIRES_IN_SECONDS  = 24 * 3600
-	EXPIRES_TOKEN_CACHE = 10 // time in seconds to remove from expire time.
-	TOKEN_TYPE          = "Token"
+	EXPIRES_IN_SECONDS = 24 * 3600
+	TOKEN_TYPE         = "Token"
 )
 
 type Authenticatable interface {
@@ -110,7 +109,7 @@ func (a *auth) UserFromToken(token string) (*account_new.User, error) {
 func (a *auth) RevokeUserToken(token string) error {
 	user, err := a.UserFromToken(token)
 
-	if err == nil { //&& user.Email != "" {
+	if err == nil && user.Email != "" {
 		store, err := a.store()
 		if err != nil {
 			Logger.Warn(err.Error())
