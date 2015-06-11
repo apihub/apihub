@@ -5,10 +5,14 @@ import (
 
 	"github.com/backstage/backstage/errors"
 	"github.com/gorilla/context"
+	"github.com/satori/go.uuid"
 )
 
 func (api *Api) requestIdMiddleware(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	reqID := uuid.NewV2(uuid.DomainPerson).String()
+	r.Header.Set("X-Request-Id", reqID)
 	next(rw, r)
+	rw.Header().Set("X-Request-Id", reqID)
 }
 
 func (api *Api) authorizationMiddleware(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {

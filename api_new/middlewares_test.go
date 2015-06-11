@@ -7,7 +7,7 @@ import (
 	. "gopkg.in/check.v1"
 )
 
-func (s *S) TestAuthorizationMiddlewareWithValidToken(c *C) {
+func (s *S) TestAuthorizationMiddleware(c *C) {
 	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
 		Method:  "DELETE",
 		Path:    "/api/users",
@@ -55,4 +55,13 @@ func (s *S) TestNotFoundHandler(c *C) {
 	c.Assert(string(body), Equals, `{"error":"not_found","error_description":"The resource requested does not exist."}`)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
 	c.Assert(code, Equals, http.StatusNotFound)
+}
+
+func (s *S) TestRequestId(c *C) {
+	headers, _, _, _ := httpClient.MakeRequest(RequestArgs{
+		Method: "DELETE",
+		Path:   "/api/users",
+	})
+
+	c.Assert(headers.Get("X-Request-Id"), Not(Equals), "")
 }

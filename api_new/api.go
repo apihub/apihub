@@ -76,6 +76,8 @@ func (api *Api) Handler() http.Handler {
 	return api.router
 }
 
+// Allow to override the default authentication method.
+// To be compatible, it is needed to implement the Authenticatable interface.
 func (api *Api) SetAuth(auth auth_new.Authenticatable) {
 	api.auth = auth
 }

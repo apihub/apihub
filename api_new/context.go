@@ -13,6 +13,7 @@ const (
 	CurrentUser   string = "CurrentUser"
 )
 
+// Clear removes all values stored for a given request.
 func Clear(r *http.Request) {
 	context.Clear(r)
 }
