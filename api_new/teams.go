@@ -48,8 +48,13 @@ func teamDelete(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	team, err := account_new.DeleteTeamByAlias(mux.Vars(r)["alias"], user)
+	team, err := account_new.FindTeamByAlias(mux.Vars(r)["alias"])
 	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	if err = team.Delete(*user); err != nil {
 		handleError(rw, err)
 		return
 	}

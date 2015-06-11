@@ -48,7 +48,7 @@ func (team *Team) Create(owner User) error {
 }
 
 // Delete removes an existing team from the server.
-func (team Team) Delete() error {
+func (team Team) Delete(owner User) error {
 	store, err := NewStorable()
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -56,7 +56,12 @@ func (team Team) Delete() error {
 	}
 	defer store.Close()
 
+	if err != nil || team.Owner != owner.Email {
+		return errors.NewForbiddenErrorNEW(errors.ErrOnlyOwnerHasPermission)
+	}
+
 	err = store.DeleteTeam(team)
+
 	return err
 }
 
@@ -77,8 +82,7 @@ func (team Team) Exists() bool {
 	return true
 }
 
-// DeleteTeamByAlias removes an existing team from the server based on given alias.
-func DeleteTeamByAlias(alias string, owner *User) (*Team, error) {
+func FindTeamByAlias(alias string) (*Team, error) {
 	store, err := NewStorable()
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -87,11 +91,10 @@ func DeleteTeamByAlias(alias string, owner *User) (*Team, error) {
 	defer store.Close()
 
 	team, err := store.FindTeamByAlias(alias)
-	if err != nil || team.Owner != owner.Email {
-		return nil, errors.NewForbiddenErrorNEW(errors.ErrOnlyOwnerHasPermission)
+	if err != nil {
+		return nil, err
 	}
-
-	return &team, store.DeleteTeamByAlias(team.Alias)
+	return &team, nil
 }
 
 // func (team *Team) delete() error {

@@ -61,7 +61,7 @@ func (s *S) TestUserExistsNotFound(c *C) {
 
 func (s *S) TestTeams(c *C) {
 	err := team.Create(alice)
-	defer team.Delete()
+	defer team.Delete(alice)
 	teams, err := alice.Teams()
 	c.Assert(err, IsNil)
 	c.Assert(teams, DeepEquals, []account_new.Team{team})

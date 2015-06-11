@@ -137,7 +137,7 @@ func (s *S) TestDeleteTeamNotFound(c *C) {
 	})
 
 	c.Check(err, IsNil)
-	c.Assert(code, Equals, http.StatusForbidden)
+	c.Assert(code, Equals, http.StatusNotFound)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"error":"access_denied","error_description":"Only the owner has permission to perform this operation."}`)
+	c.Assert(string(body), Equals, `{"error":"not_found","error_description":"Team not found."}`)
 }
