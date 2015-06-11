@@ -68,6 +68,11 @@ func (m *Mem) FindTeamByAlias(alias string) (account_new.Team, error) {
 	}
 }
 
+func (m *Mem) DeleteTeamByAlias(alias string) error {
+	team := account_new.Team{Alias: alias}
+	return m.DeleteTeam(team)
+}
+
 func (m *Mem) CreateToken(token account_new.TokenInfo) error {
 	key := fmt.Sprintf("%s: %s", token.Type, token.User.Email)
 	m.Tokens[key] = token

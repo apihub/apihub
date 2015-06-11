@@ -11,6 +11,7 @@ type Storable interface {
 	UpsertTeam(Team) error
 	DeleteTeam(Team) error
 	FindTeamByAlias(string) (Team, error)
+	DeleteTeamByAlias(string) error
 
 	CreateToken(TokenInfo) error
 	DeleteToken(string) error

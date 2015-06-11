@@ -104,6 +104,20 @@ func (m *Mongore) FindTeamByAlias(alias string) (account_new.Team, error) {
 	return team, err
 }
 
+func (m *Mongore) DeleteTeamByAlias(alias string) error {
+	err := m.Teams().Remove(bson.M{"alias": alias})
+
+	if err == mgo.ErrNotFound {
+		return errors.NewNotFoundErrorNEW(errors.ErrTeamNotFound)
+	}
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
+
+	return err
+
+}
+
 func (m *Mongore) CreateToken(token account_new.TokenInfo) error {
 	key := fmt.Sprintf("%s: %s", token.Type, token.User.Email)
 	db.Cache.Set(key, nil, time.Duration(token.Expires)*time.Minute)

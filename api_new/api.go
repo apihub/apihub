@@ -41,6 +41,7 @@ func NewApi(store func() (account_new.Storable, error)) *Api {
 
 	//  Private Routes
 	private := mux.NewRouter()
+	private.NotFoundHandler = http.HandlerFunc(api.notFoundHandler)
 
 	api.router.PathPrefix("/api").Handler(negroni.New(
 		negroni.NewRecovery(),
@@ -50,9 +51,20 @@ func NewApi(store func() (account_new.Storable, error)) *Api {
 		negroni.HandlerFunc(api.contextClearerMiddleware),
 		negroni.Wrap(private),
 	))
+	pr := private.PathPrefix("/api").Subrouter()
 
 	// Users
-	private.Methods("DELETE").Path("/api/users").HandlerFunc(api.userDelete)
+	pr.Methods("DELETE").Path("/users").HandlerFunc(api.userDelete)
+
+	// Teams
+	teams := pr.Path("/teams").Subrouter()
+	// teams.Methods("GET").HandlerFunc(teamCreate)
+	teams.Methods("POST").HandlerFunc(teamCreate)
+
+	// team := private.PathPrefix("/api/teams/{alias}").Subrouter()
+	// team.Methods("GET").HandlerFunc(teamCreate)
+	// team.Methods("PUT").HandlerFunc(teamCreate)
+	// team.Methods("DELETE").HandlerFunc(teamCreate)
 
 	return api
 }

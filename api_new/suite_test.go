@@ -19,22 +19,25 @@ func Test(t *testing.T) { TestingT(t) }
 var user *account_new.User
 
 type S struct {
+	api        *api_new.Api
 	authHeader string
 	store      func() (account_new.Storable, error)
 	server     *httptest.Server
 }
 
-func (s *S) SetUpTest(c *C) {
-	setUpMemoryTest(s)
-	// setUpMongoreTest(s)
+func (s *S) SetUpSuite(c *C) {
+	// setUpMemoryTest(s)
+	setUpMongoreTest(s)
 
-	api := api_new.NewApi(s.store)
-	s.server = httptest.NewServer(api.Handler())
+	s.api = api_new.NewApi(s.store)
+	s.server = httptest.NewServer(s.api.Handler())
 	httpClient = NewHTTPClient(s.server.URL)
+}
 
+func (s *S) SetUpTest(c *C) {
 	user = &account_new.User{Name: "Bob", Email: "bob@bar.example.org", Password: "secret"}
 	user.Create()
-	token, err := api.Login(user.Email, "secret")
+	token, err := s.api.Login(user.Email, "secret")
 	if err != nil {
 		panic(err)
 	}
@@ -42,8 +45,11 @@ func (s *S) SetUpTest(c *C) {
 }
 
 func (s *S) TearDownTest(c *C) {
-	s.server.Close()
 	user.Delete()
+}
+
+func (s *S) TearDownSuite(c *C) {
+	s.server.Close()
 }
 
 var _ = Suite(&S{})

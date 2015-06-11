@@ -83,6 +83,18 @@ func (s *StorableSuite) TestDeleteTeamNotFound(c *C) {
 	c.Assert(ok, Equals, true)
 }
 
+func (s *StorableSuite) TestDeleteTeamByAlias(c *C) {
+	s.Storage.UpsertTeam(team)
+	err := s.Storage.DeleteTeamByAlias(team.Alias)
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestDeleteTeamByAliasNotFound(c *C) {
+	err := s.Storage.DeleteTeamByAlias(team)
+	_, ok := err.(errors.NotFoundErrorNEW)
+	c.Assert(ok, Equals, true)
+}
+
 func (s *StorableSuite) TestFindTeamByAlias(c *C) {
 	defer s.Storage.DeleteTeam(team)
 	s.Storage.UpsertTeam(team)

@@ -77,26 +77,22 @@ func (team Team) Exists() bool {
 	return true
 }
 
-// // DeleteTeamByAlias removes an existing team from the server based on given alias.
-// //
-// // Only the owner is allowed to remove the team. If the user is not the owner,
-// // an error will be returned.
-// // Deletes all the services that belong to the team.
-// func DeleteTeamByAlias(alias string, user *User) (*Team, error) {
-//   team, err := FindTeamByAlias(alias, user)
-//   if err != nil || team.Owner != user.Email {
-//     return nil, &errors.ForbiddenError{Payload: errors.ErrOnlyOwnerHasPermission.Error()}
-//   }
-//   team.Services, err = FindServicesByTeam([]string{alias})
-//   if err != nil {
-//     return nil, err
-//   }
-//   team.Clients, err = FindClientsByTeam(alias)
-//   if err != nil {
-//     return nil, err
-//   }
-//   return team, team.delete()
-// }
+// DeleteTeamByAlias removes an existing team from the server based on given alias.
+func DeleteTeamByAlias(alias string) (*Team, error) {
+	store, err := NewStorable()
+	if err != nil {
+		Logger.Warn(err.Error())
+		return nil, err
+	}
+	defer store.Close()
+
+	team, err := store.FindTeamByAlias(alias)
+	if err != nil {
+		return nil, err
+	}
+
+	return &team, store.DeleteTeamByAlias(team.Alias)
+}
 
 // func (team *Team) delete() error {
 //   conn, err := db.Conn()
