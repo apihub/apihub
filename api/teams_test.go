@@ -141,3 +141,56 @@ func (s *S) TestDeleteTeamNotFound(c *C) {
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
 	c.Assert(string(body), Equals, `{"error":"not_found","error_description":"Team not found."}`)
 }
+
+func (s *S) TestTeamInfo(c *C) {
+	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team.Create(user)
+	defer team.Delete(user)
+
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "GET",
+		Path:    fmt.Sprintf("/api/teams/%s", team.Alias),
+		Headers: http.Header{"Authorization": {s.authHeader}},
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusOK)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, fmt.Sprintf(`{"name":"%s","alias":"%s","users":["%s"],"owner":"%s"}`, team.Name, team.Alias, user.Email, user.Email))
+}
+
+func (s *S) TestTeamInfoNotFound(c *C) {
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "GET",
+		Path:    "/api/teams/not-found",
+		Headers: http.Header{"Authorization": {s.authHeader}},
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusNotFound)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"error":"not_found","error_description":"Team not found."}`)
+}
+func (s *S) TestTeamInfoWithoutPermission(c *C) {
+	alice := account.User{Name: "alice", Email: "alice@bar.example.org", Password: "secret"}
+	alice.Create()
+	defer alice.Delete()
+
+	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team.Create(alice)
+	defer func() {
+		store, _ := s.store()
+		store.DeleteTeamByAlias(team.Alias)
+	}()
+
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "GET",
+		Path:    fmt.Sprintf("/api/teams/%s", team.Alias),
+		Headers: http.Header{"Authorization": {s.authHeader}},
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusForbidden)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"error":"access_denied","error_description":"You do not belong to this team!"}`)
+}

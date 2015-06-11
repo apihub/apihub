@@ -70,3 +70,17 @@ func (s *S) TestFindTeamByAliasNotFound(c *C) {
 	_, ok := err.(errors.NotFoundErrorNEW)
 	c.Assert(ok, Equals, true)
 }
+
+func (s *S) TestContainsUser(c *C) {
+	team.Users = append(team.Users, alice.Email)
+	pos, err := team.ContainsUser(&alice)
+	c.Check(err, IsNil)
+	c.Assert(pos >= 0, Equals, true)
+}
+
+func (s *S) TestContainsUserNotFound(c *C) {
+	pos, err := team.ContainsUser(&alice)
+	_, ok := err.(errors.ForbiddenErrorNEW)
+	c.Assert(ok, Equals, true)
+	c.Assert(pos, Equals, -1)
+}

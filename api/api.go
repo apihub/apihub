@@ -64,6 +64,7 @@ func NewApi(store func() (account.Storable, error)) *Api {
 
 	team := pr.PathPrefix("/teams/{alias}").Subrouter()
 	team.Methods("DELETE").HandlerFunc(teamDelete)
+	team.Methods("GET").HandlerFunc(teamInfo)
 
 	return api
 }

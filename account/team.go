@@ -96,3 +96,14 @@ func FindTeamByAlias(alias string) (*Team, error) {
 	}
 	return &team, nil
 }
+
+// Check if the user belongs to the team.
+// Return the position if so.
+func (team *Team) ContainsUser(user *User) (int, error) {
+	for i, u := range team.Users {
+		if u == user.Email {
+			return i, nil
+		}
+	}
+	return -1, errors.NewForbiddenErrorNEW(errors.ErrUserNotInTeam)
+}

@@ -61,3 +61,23 @@ func teamDelete(rw http.ResponseWriter, r *http.Request) {
 
 	Ok(rw, team)
 }
+
+func teamInfo(rw http.ResponseWriter, r *http.Request) {
+	user, err := GetCurrentUser(r)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	team, err := account.FindTeamByAlias(mux.Vars(r)["alias"])
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+	if _, err := team.ContainsUser(user); err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	Ok(rw, team)
+}
