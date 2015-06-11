@@ -27,7 +27,7 @@ var (
 	ErrTokenNotFound          = errors.New("Token not found.")
 	ErrUserNotInTeam          = errors.New("You do not belong to this team!")
 	ErrNotFound               = errors.New("The resource requested does not exist.")
-	ErrConfirmationPassword   = errors.New("Your new password and confirmation password do not match.")
+	ErrConfirmationPassword   = errors.New("Your new password and confirmation password do not match or are invalid.")
 
 	ErrUserDuplicateEntry        = errors.New("Someone already has that email. Could you try another?")
 	ErrUserNotFound              = errors.New("User not found.")

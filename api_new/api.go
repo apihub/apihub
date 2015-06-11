@@ -58,7 +58,7 @@ func NewApi(store func() (account_new.Storable, error)) *Api {
 }
 
 // Split Authenticate and CreateUserToken because we can override only the authentication method and still use the token creation.
-func (api *Api) Login(email, password string) (*auth_new.ApiToken, error) {
+func (api *Api) Login(email, password string) (*account_new.TokenInfo, error) {
 	user, ok := api.auth.Authenticate(email, password)
 	if ok {
 		token, err := api.auth.CreateUserToken(user)

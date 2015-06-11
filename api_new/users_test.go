@@ -101,7 +101,7 @@ func (s *S) TestLoginUser(c *C) {
 	c.Check(err, IsNil)
 	c.Assert(code, Equals, http.StatusOK)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Matches, fmt.Sprintf(`{"access_token":".*","token_type":"%s","expires":%d,"created_at":".*"}`, auth_new.TOKEN_TYPE, auth_new.EXPIRES_IN_SECONDS))
+	c.Assert(string(body), Matches, fmt.Sprintf(`{"access_token":".*","created_at":".*","expires":%d,"token_type":"%s"}`, auth_new.EXPIRES_IN_SECONDS, auth_new.TOKEN_TYPE))
 }
 
 func (s *S) TestLoginUserWithInvalidUser(c *C) {
@@ -118,7 +118,7 @@ func (s *S) TestLoginUserWithInvalidUser(c *C) {
 }
 
 func (s *S) TestLogoutUser(c *C) {
-	_, code, _, err := httpClient.MakeRequest(RequestArgs{
+	_, code, body, err := httpClient.MakeRequest(RequestArgs{
 		Method:  "DELETE",
 		Path:    "/auth/logout",
 		Headers: http.Header{"Authorization": {s.authHeader}},
@@ -126,6 +126,7 @@ func (s *S) TestLogoutUser(c *C) {
 
 	c.Check(err, IsNil)
 	c.Assert(code, Equals, http.StatusNoContent)
+	c.Assert(string(body), Equals, "")
 }
 
 func (s *S) TestLogoutUserWithInvalidToken(c *C) {
@@ -141,5 +142,43 @@ func (s *S) TestLogoutUserWithInvalidToken(c *C) {
 }
 
 func (s *S) TestChangePassword(c *C) {
+	defer func() {
+		store, _ := s.store()
+		u, _ := store.FindUserByEmail("bob@bar.example.org")
+		u.Delete()
+	}()
 
+	_, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method: "PUT",
+		Path:   "/auth/password",
+		Body:   fmt.Sprintf(`{"email": "%s", "password": "secret", "new_password": "123", "confirmation_password": "123"}`, user.Email),
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(string(body), Equals, "")
+	c.Assert(code, Equals, http.StatusNoContent)
+}
+
+func (s *S) TestChangePasswordWithInvalidCredentials(c *C) {
+	_, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method: "PUT",
+		Path:   "/auth/password",
+		Body:   fmt.Sprintf(`{"email": "%s", "password": "%s", "new_password": "123", "confirmation_password": "123"}`, user.Email, "invalid-password"),
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusBadRequest)
+	c.Assert(string(body), Equals, `{"error":"bad_request","error_description":"Authentication failed."}`)
+}
+
+func (s *S) TestChangePasswordWithInvalidNewPassword(c *C) {
+	_, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method: "PUT",
+		Path:   "/auth/password",
+		Body:   fmt.Sprintf(`{"email": "%s", "password": "secret"}`, user.Email),
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusBadRequest)
+	c.Assert(string(body), Equals, `{"error":"bad_request","error_description":"Your new password and confirmation password do not match or are invalid."}`)
 }

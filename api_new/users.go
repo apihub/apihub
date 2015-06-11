@@ -2,7 +2,6 @@ package api_new
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/backstage/backstage/account_new"
@@ -22,6 +21,7 @@ func (api *Api) userSignup(rw http.ResponseWriter, r *http.Request) {
 	}
 	// Remove hashed-password from response.
 	user.Password = ""
+
 	Created(rw, user)
 }
 
@@ -38,13 +38,39 @@ func (api *Api) userDelete(rw http.ResponseWriter, r *http.Request) {
 	}
 	// Remove hashed-password from response.
 	user.Password = ""
+
 	Ok(rw, user)
 }
 
 func (api *Api) userChangePassword(rw http.ResponseWriter, r *http.Request) {
-	// NewPassword          string `json:"new_password,omitempty"`
-	// ConfirmationPassword string `json:"confirmation_password,omitempty"`
-	fmt.Fprintln(rw, "User change password!")
+	u := struct {
+		account_new.User
+		NewPassword          string `json:"new_password,omitempty"`
+		ConfirmationPassword string `json:"confirmation_password,omitempty"`
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
+		handleError(rw, errors.ErrBadRequest)
+		return
+	}
+
+	if u.NewPassword != u.ConfirmationPassword || u.NewPassword == "" {
+		handleError(rw, errors.ErrConfirmationPassword)
+		return
+	}
+	authUser, ok := api.auth.Authenticate(u.Email, u.Password)
+	if !ok {
+		handleError(rw, errors.ErrAuthenticationFailed)
+		return
+	}
+
+	authUser.Password = u.NewPassword
+	if err := authUser.ChangePassword(); err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	NoContent(rw)
 }
 
 func (api *Api) userLogin(rw http.ResponseWriter, r *http.Request) {
