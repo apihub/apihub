@@ -99,3 +99,15 @@ func NewUnauthorizedError(err error) UnauthorizedError {
 func (err UnauthorizedError) Error() string {
 	return err.description.Error()
 }
+
+type ForbiddenErrorNEW struct {
+	description error
+}
+
+func NewForbiddenErrorNEW(err error) ForbiddenErrorNEW {
+	return ForbiddenErrorNEW{description: err}
+}
+
+func (err ForbiddenErrorNEW) Error() string {
+	return err.description.Error()
+}

@@ -30,15 +30,15 @@ func (h *HTTPResponse) ToJson() []byte {
 
 func handleError(rw http.ResponseWriter, err error) {
 	switch err.(type) {
-	case *errors.NotFoundErrorNEW:
+	case errors.NotFoundErrorNEW:
 		erro := HTTPError{ErrorType: errors.E_NOT_FOUND, ErrorDescription: err.Error()}
 		NotFound(rw, erro)
-	case *errors.ForbiddenError:
+	case errors.ForbiddenErrorNEW:
 		erro := HTTPError{ErrorType: errors.E_FORBIDDEN_REQUEST, ErrorDescription: err.Error()}
 		Forbidden(rw, erro)
-	case *errors.UnauthorizedError:
+	case errors.UnauthorizedError:
 		erro := HTTPError{ErrorType: errors.E_UNAUTHORIZED_REQUEST, ErrorDescription: err.Error()}
-		Forbidden(rw, erro)
+		Unauthorized(rw, erro)
 	default:
 		erro := HTTPError{ErrorType: errors.E_BAD_REQUEST, ErrorDescription: err.Error()}
 		BadRequest(rw, erro)

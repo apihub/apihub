@@ -6,6 +6,7 @@ import (
 
 	"github.com/backstage/backstage/account_new"
 	"github.com/backstage/backstage/errors"
+	"github.com/gorilla/mux"
 )
 
 func teamCreate(rw http.ResponseWriter, r *http.Request) {
@@ -38,4 +39,20 @@ func teamList(rw http.ResponseWriter, r *http.Request) {
 
 	teams, _ := user.Teams()
 	Ok(rw, CollectionSerializer{Items: teams, Count: len(teams)})
+}
+
+func teamDelete(rw http.ResponseWriter, r *http.Request) {
+	user, err := GetCurrentUser(r)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	team, err := account_new.DeleteTeamByAlias(mux.Vars(r)["alias"], user)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	Ok(rw, team)
 }

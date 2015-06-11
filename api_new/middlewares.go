@@ -39,8 +39,7 @@ func (api *Api) errorMiddleware(rw http.ResponseWriter, r *http.Request, next ht
 }
 
 func (api *Api) notFoundHandler(rw http.ResponseWriter, r *http.Request) {
-	err := errors.NewNotFoundErrorNEW(errors.ErrNotFound)
-	handleError(rw, &err)
+	handleError(rw, errors.NewNotFoundErrorNEW(errors.ErrNotFound))
 }
 
 func (api *Api) contextClearerMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {

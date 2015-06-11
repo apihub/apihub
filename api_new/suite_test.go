@@ -17,7 +17,7 @@ var httpClient HTTPClient
 
 func Test(t *testing.T) { TestingT(t) }
 
-var user *account_new.User
+var user account_new.User
 
 type S struct {
 	api        *api_new.Api
@@ -36,7 +36,7 @@ func (s *S) SetUpSuite(c *C) {
 }
 
 func (s *S) SetUpTest(c *C) {
-	user = &account_new.User{Name: "Bob", Email: "bob@bar.example.org", Password: "secret"}
+	user = account_new.User{Name: "Bob", Email: "bob@bar.example.org", Password: "secret"}
 	user.Create()
 	token, err := s.api.Login(user.Email, "secret")
 	if err != nil {
@@ -77,8 +77,8 @@ func setUpMongoreTest(s *S) {
 func testWithoutSignIn(reqArgs RequestArgs, c *C) {
 	headers, code, body, err := httpClient.MakeRequest(reqArgs)
 
-	c.Check(err, IsNil)
-	c.Assert(code, Equals, http.StatusBadRequest)
+	c.Assert(string(body), Equals, `{"error":"unauthorized_access","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"error":"bad_request","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
+	c.Assert(code, Equals, http.StatusUnauthorized)
+	c.Check(err, IsNil)
 }

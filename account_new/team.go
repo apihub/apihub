@@ -78,7 +78,7 @@ func (team Team) Exists() bool {
 }
 
 // DeleteTeamByAlias removes an existing team from the server based on given alias.
-func DeleteTeamByAlias(alias string) (*Team, error) {
+func DeleteTeamByAlias(alias string, owner *User) (*Team, error) {
 	store, err := NewStorable()
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -87,8 +87,8 @@ func DeleteTeamByAlias(alias string) (*Team, error) {
 	defer store.Close()
 
 	team, err := store.FindTeamByAlias(alias)
-	if err != nil {
-		return nil, err
+	if err != nil || team.Owner != owner.Email {
+		return nil, errors.NewForbiddenErrorNEW(errors.ErrOnlyOwnerHasPermission)
 	}
 
 	return &team, store.DeleteTeamByAlias(team.Alias)
