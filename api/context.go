@@ -1,9 +1,11 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/backstage/backstage/account"
-	. "github.com/backstage/backstage/errors"
-	"github.com/zenazn/goji/web"
+	"github.com/backstage/backstage/errors"
+	"github.com/gorilla/context"
 )
 
 const (
@@ -11,33 +13,37 @@ const (
 	CurrentUser   string = "CurrentUser"
 )
 
+// Clear removes all values stored for a given request.
+func Clear(r *http.Request) {
+	context.Clear(r)
+}
+
 // Add an error in the request context.
-func AddRequestError(c *web.C, error *HTTPResponse) {
-	c.Env[ErrRequestKey] = error
+func AddRequestError(r *http.Request, err error) {
+	context.Set(r, ErrRequestKey, err)
 }
 
 // Get an error from the request context.
 // Return nil and false if nothing is found.
 // Otherwise, return the error.
-func GetRequestError(c *web.C) (*HTTPResponse, bool) {
-	val, ok := c.Env[ErrRequestKey].(*HTTPResponse)
+func GetRequestError(r *http.Request) (error, bool) {
+	val, ok := context.GetOk(r, ErrRequestKey)
 	if !ok {
 		return nil, false
 	}
-	return val, true
+	return val.(error), true
 }
 
 // Set the current user in the request context.
-func SetCurrentUser(c *web.C, user interface{}) {
-	user = user.(*account.User)
-	c.Env[CurrentUser] = user
+func SetCurrentUser(r *http.Request, user *account.User) {
+	context.Set(r, CurrentUser, user)
 }
 
 // Get the user from the request context and check if it's still valid.
-func GetCurrentUser(c *web.C) (*account.User, error) {
-	user, ok := c.Env[CurrentUser].(*account.User)
-	if !ok || !user.Exists() {
-		return nil, ErrLoginRequired
+func GetCurrentUser(r *http.Request) (*account.User, error) {
+	user, ok := context.GetOk(r, CurrentUser)
+	if !ok {
+		return nil, errors.ErrLoginRequired
 	}
-	return user, nil
+	return user.(*account.User), nil
 }

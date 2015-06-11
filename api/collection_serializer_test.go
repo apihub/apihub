@@ -1,14 +1,17 @@
-package api
+package api_test
 
 import (
-	. "github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/api"
 	. "gopkg.in/check.v1"
 )
 
 func (s *S) TestCollectionSerializer(c *C) {
-	teams := []*Team{&Team{Name: "Team", Alias: "Alias", Owner: "alice", Users: []string{}}}
+	teams := []*account.Team{
+		&account.Team{Name: "Team", Alias: "Alias", Owner: "alice", Users: []string{}},
+	}
 
-	cs := &CollectionSerializer{
+	cs := &api.CollectionSerializer{
 		Items: teams,
 		Count: len(teams),
 	}

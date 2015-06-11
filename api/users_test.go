@@ -1,187 +1,167 @@
-package api
+package api_test
 
 import (
-	"encoding/json"
+	"fmt"
 	"net/http"
-	"net/http/httptest"
-	"strings"
 
-	"github.com/backstage/backstage/account"
 	"github.com/backstage/backstage/auth"
-	"github.com/zenazn/goji/web"
 	. "gopkg.in/check.v1"
 )
 
 func (s *S) TestCreateUser(c *C) {
 	defer func() {
-		user, err := account.FindUserByEmail("alice@example.org")
-		c.Assert(err, IsNil)
-		err = user.Delete()
-		c.Assert(err, IsNil)
+		store, _ := s.store()
+		u, _ := store.FindUserByEmail("alice@example.org")
+		u.Delete()
 	}()
-	payload := `{"name": "Alice", "email": "alice@example.org", "username": "alice", "password": "123456"}`
-	b := strings.NewReader(payload)
 
-	req, _ := http.NewRequest("POST", "/api/users", b)
-	req.Header.Set("Content-Type", "application/json")
-	webC := web.C{Env: s.env}
-	s.router.ServeHTTPC(webC, s.recorder, req)
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method: "POST",
+		Path:   "/auth/signup",
+		Body:   `{"name": "Alice", "email": "alice@example.org", "password": "123456"}`,
+	})
 
-	c.Assert(s.recorder.Code, Equals, http.StatusCreated)
-	c.Assert(s.recorder.Body.String(), Equals, `{"name":"Alice","email":"alice@example.org","username":"alice"}`)
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusCreated)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"name":"Alice","email":"alice@example.org"}`)
 }
 
 func (s *S) TestCreateUserWithInvalidPayloadFormat(c *C) {
-	payload := `"name": "Alice"`
-	b := strings.NewReader(payload)
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method: "POST",
+		Path:   "/auth/signup",
+		Body:   `"name": "Alice"`,
+	})
 
-	req, _ := http.NewRequest("POST", "/api/users", b)
-	req.Header.Set("Content-Type", "application/json")
-	webC := web.C{Env: s.env}
-	s.router.ServeHTTPC(webC, s.recorder, req)
-
-	c.Assert(s.recorder.Code, Equals, http.StatusBadRequest)
-	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"The request was invalid or cannot be served."}`)
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusBadRequest)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"error":"bad_request","error_description":"The request was invalid or cannot be served."}`)
 }
 
 func (s *S) TestCreateUserWithMissingRequiredFields(c *C) {
-	payload := `{}`
-	b := strings.NewReader(payload)
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method: "POST",
+		Path:   "/auth/signup",
+		Body:   `{}`,
+	})
 
-	req, _ := http.NewRequest("POST", "/api/users", b)
-	req.Header.Set("Content-Type", "application/json")
-	webC := web.C{Env: s.env}
-	s.router.ServeHTTPC(webC, s.recorder, req)
-
-	c.Assert(s.recorder.Code, Equals, http.StatusBadRequest)
-	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"Name/Email/Username/Password cannot be empty."}`)
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusBadRequest)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"error":"bad_request","error_description":"Name/Email/Password cannot be empty."}`)
 }
 
 func (s *S) TestDeleteUser(c *C) {
-	alice.Save()
-	defer alice.Delete()
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "DELETE",
+		Path:    "/api/users",
+		Headers: http.Header{"Authorization": {s.authHeader}},
+	})
 
-	req, _ := http.NewRequest("DELETE", "/api/users", nil)
-	s.env[CurrentUser] = alice
-	webC := web.C{Env: s.env}
-	s.router.ServeHTTPC(webC, s.recorder, req)
-
-	c.Assert(s.recorder.Code, Equals, http.StatusOK)
-	c.Assert(s.recorder.Body.String(), Equals, `{"name":"Alice","email":"alice@example.org","username":"alice"}`)
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusOK)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, fmt.Sprintf(`{"name":"%s","email":"%s"}`, user.Name, user.Email))
 }
 
-func (s *S) TestDeleteUserWithNotSignedUser(c *C) {
-	req, _ := http.NewRequest("DELETE", "/api/users", nil)
-	s.env[CurrentUser] = "invalid-user"
-	webC := web.C{Env: s.env}
-	s.router.ServeHTTPC(webC, s.recorder, req)
+func (s *S) TestDeleteUserWithExpiredToken(c *C) {
+	testWithoutSignIn(RequestArgs{Method: "DELETE", Path: "/api/users", Headers: http.Header{"Authorization": {"expired-token"}}}, c)
+}
 
-	c.Assert(s.recorder.Code, Equals, http.StatusBadRequest)
-	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
+func (s *S) TestDeleteUserWithoutToken(c *C) {
+	testWithoutSignIn(RequestArgs{Method: "DELETE", Path: "/api/users"}, c)
 }
 
 func (s *S) TestLoginUser(c *C) {
-	bob.Save()
-	defer bob.Delete()
-	payload := `{"email":"bob@example.org", "password":"123456"}`
-	b := strings.NewReader(payload)
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method: "POST",
+		Path:   "/auth/login",
+		Body:   fmt.Sprintf(`{"email": "%s", "password": "secret"}`, user.Email),
+	})
 
-	req, _ := http.NewRequest("POST", "/api/login", b)
-	req.Header.Set("Content-Type", "application/json")
-	webC := web.C{Env: s.env}
-	s.router.ServeHTTPC(webC, s.recorder, req)
-
-	c.Assert(s.recorder.Code, Equals, http.StatusOK)
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusOK)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Matches, fmt.Sprintf(`{"access_token":".*","created_at":".*","expires":%d,"token_type":"%s"}`, auth.EXPIRES_IN_SECONDS, auth.TOKEN_TYPE))
 }
 
-func (s *S) TestLoginUserWithBadCredentials(c *C) {
-	bob.Save()
-	defer bob.Delete()
-	payload := `{"email":"bob@example.org", "password":"123"}`
-	b := strings.NewReader(payload)
+func (s *S) TestLoginUserWithInvalidUser(c *C) {
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method: "POST",
+		Path:   "/auth/login",
+		Body:   fmt.Sprintf(`{"email": "%s", "password": "invalid-password"}`, user.Email),
+	})
 
-	req, _ := http.NewRequest("POST", "/api/login", b)
-	req.Header.Set("Content-Type", "application/json")
-	webC := web.C{Env: s.env}
-	s.router.ServeHTTPC(webC, s.recorder, req)
-
-	c.Assert(s.recorder.Code, Equals, http.StatusBadRequest)
-	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"Authentication failed."}`)
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusBadRequest)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"error":"bad_request","error_description":"Authentication failed."}`)
 }
 
-func (s *S) TestLoginUserWithMalformedRequest(c *C) {
-	bob.Save()
-	defer bob.Delete()
-	payload := `"email":"bob@example.org", "password":"123456"}`
-	b := strings.NewReader(payload)
+func (s *S) TestLogoutUser(c *C) {
+	_, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "DELETE",
+		Path:    "/auth/logout",
+		Headers: http.Header{"Authorization": {s.authHeader}},
+	})
 
-	req, _ := http.NewRequest("POST", "/api/login", b)
-	req.Header.Set("Content-Type", "application/json")
-	webC := web.C{Env: s.env}
-	s.router.ServeHTTPC(webC, s.recorder, req)
-
-	c.Assert(s.recorder.Code, Equals, http.StatusBadRequest)
-	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"The request was invalid or cannot be served."}`)
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusNoContent)
+	c.Assert(string(body), Equals, "")
 }
 
-func (s *S) TestLogout(c *C) {
-	bob.Save()
-	defer bob.Delete()
-	payload := `{"email":"bob@example.org", "password":"123456"}`
-	b := strings.NewReader(payload)
+func (s *S) TestLogoutUserWithInvalidToken(c *C) {
+	_, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "DELETE",
+		Path:    "/auth/logout",
+		Headers: http.Header{"Authorization": {"invalid-token"}},
+	})
 
-	req, _ := http.NewRequest("POST", "/api/login", b)
-	req.Header.Set("Content-Type", "application/json")
-	webC := web.C{Env: s.env}
-	s.router.ServeHTTPC(webC, s.recorder, req)
-
-	dec := json.NewDecoder(strings.NewReader(s.recorder.Body.String()))
-	var t auth.TokenInfo
-	dec.Decode(&t)
-
-	req, _ = http.NewRequest("DELETE", "/api/logout", b)
-	req.Header.Set("Authorization", t.Type+"  "+t.Token)
-	webC = web.C{Env: s.env}
-	s.recorder = httptest.NewRecorder()
-	s.router.ServeHTTPC(webC, s.recorder, req)
-	c.Assert(s.recorder.Code, Equals, http.StatusNoContent)
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusNoContent)
+	c.Assert(string(body), Equals, "")
 }
 
 func (s *S) TestChangePassword(c *C) {
-	bob.Save()
 	defer func() {
-		user, _ := account.FindUserByEmail(bob.Email)
-		user.Delete()
+		store, _ := s.store()
+		u, _ := store.FindUserByEmail("bob@bar.example.org")
+		u.Delete()
 	}()
 
-	payload := `{"email":"bob@example.org", "password":"123456", "new_password": "654321", "confirmation_password": "654321"}`
-	b := strings.NewReader(payload)
+	_, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method: "PUT",
+		Path:   "/auth/password",
+		Body:   fmt.Sprintf(`{"email": "%s", "password": "secret", "new_password": "123", "confirmation_password": "123"}`, user.Email),
+	})
 
-	req, _ := http.NewRequest("PUT", "/api/password", b)
-	req.Header.Set("Content-Type", "application/json")
-	webC := web.C{Env: s.env}
-	s.router.ServeHTTPC(webC, s.recorder, req)
-	c.Assert(s.recorder.Code, Equals, http.StatusNoContent)
-
-	payload = `{"email":"bob@example.org", "password":"654321"}`
-	b = strings.NewReader(payload)
-	req, _ = http.NewRequest("POST", "/api/login", b)
-	req.Header.Set("Content-Type", "application/json")
-	webC = web.C{Env: s.env}
-	s.recorder = httptest.NewRecorder()
-	s.router.ServeHTTPC(webC, s.recorder, req)
-	c.Assert(s.recorder.Code, Equals, http.StatusOK)
+	c.Check(err, IsNil)
+	c.Assert(string(body), Equals, "")
+	c.Assert(code, Equals, http.StatusNoContent)
 }
 
-func (s *S) TestChangePasswordWithInvalidConfirmation(c *C) {
-	payload := `{"email":"bob@example.org", "password":"123456", "new_password": "654321", "confirmation_password": "invalid"}`
-	b := strings.NewReader(payload)
+func (s *S) TestChangePasswordWithInvalidCredentials(c *C) {
+	_, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method: "PUT",
+		Path:   "/auth/password",
+		Body:   fmt.Sprintf(`{"email": "%s", "password": "%s", "new_password": "123", "confirmation_password": "123"}`, user.Email, "invalid-password"),
+	})
 
-	req, _ := http.NewRequest("PUT", "/api/password", b)
-	req.Header.Set("Content-Type", "application/json")
-	webC := web.C{Env: s.env}
-	s.router.ServeHTTPC(webC, s.recorder, req)
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusBadRequest)
+	c.Assert(string(body), Equals, `{"error":"bad_request","error_description":"Authentication failed."}`)
+}
 
-	c.Assert(s.recorder.Code, Equals, http.StatusBadRequest)
-	c.Assert(s.recorder.Body.String(), Equals, `{"error":"bad_request","error_description":"Your new password and confirmation password do not match."}`)
+func (s *S) TestChangePasswordWithInvalidNewPassword(c *C) {
+	_, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method: "PUT",
+		Path:   "/auth/password",
+		Body:   fmt.Sprintf(`{"email": "%s", "password": "secret"}`, user.Email),
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusBadRequest)
+	c.Assert(string(body), Equals, `{"error":"bad_request","error_description":"Your new password and confirmation password do not match or are invalid."}`)
 }

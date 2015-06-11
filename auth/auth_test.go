@@ -1,15 +1,15 @@
-package auth_new_test
+package auth_test
 
 import (
 	"fmt"
 
-	"github.com/backstage/backstage/account_new"
+	"github.com/backstage/backstage/account"
 	"github.com/backstage/backstage/errors"
 	. "gopkg.in/check.v1"
 )
 
 func (s *S) TestAuthenticate(c *C) {
-	user := &account_new.User{Name: "Alice", Email: "alice@bar.example.org", Password: "123"}
+	user := &account.User{Name: "Alice", Email: "alice@bar.example.org", Password: "123"}
 	user.Create()
 	defer user.Delete()
 
@@ -19,7 +19,7 @@ func (s *S) TestAuthenticate(c *C) {
 }
 
 func (s *S) TestAuthenticateWithInvalidCredentials(c *C) {
-	user := account_new.User{Name: "Alice", Email: "alice@bar.example.org", Password: "123"}
+	user := account.User{Name: "Alice", Email: "alice@bar.example.org", Password: "123"}
 	user.Create()
 	defer user.Delete()
 
@@ -33,7 +33,7 @@ func (s *S) TestAuthenticateWithNotFound(c *C) {
 }
 
 func (s *S) TestCreateUserToken(c *C) {
-	user := &account_new.User{Name: "Alice", Email: "alice@bar.example.org", Password: "123"}
+	user := &account.User{Name: "Alice", Email: "alice@bar.example.org", Password: "123"}
 	user.Create()
 	defer user.Delete()
 
@@ -43,7 +43,7 @@ func (s *S) TestCreateUserToken(c *C) {
 }
 
 func (s *S) TestUserFromToken(c *C) {
-	user := &account_new.User{Name: "Alice", Email: "alice@bar.example.org", Password: "123"}
+	user := &account.User{Name: "Alice", Email: "alice@bar.example.org", Password: "123"}
 	user.Create()
 	defer user.Delete()
 
@@ -66,7 +66,7 @@ func (s *S) TestUserFromTokenWithInvalidFormat(c *C) {
 }
 
 func (s *S) TestRevokeUserToken(c *C) {
-	user := &account_new.User{Name: "Alice", Email: "alice@bar.example.org", Password: "123"}
+	user := &account.User{Name: "Alice", Email: "alice@bar.example.org", Password: "123"}
 	user.Create()
 	defer user.Delete()
 

@@ -1,56 +1,60 @@
 package account
 
 import (
-	"encoding/json"
-
 	"code.google.com/p/go.crypto/bcrypt"
-	"github.com/backstage/backstage/db"
 	"github.com/backstage/backstage/errors"
-	"gopkg.in/mgo.v2/bson"
+	. "github.com/backstage/backstage/log"
 )
 
 // The User type is an encapsulation of a user details.
 // A valid user is capable to interact with the API to manage teams and services.
 type User struct {
-	Name                 string `json:"name,omitempty"`
-	Email                string `json:"email,omitempty"`
-	Username             string `json:"username,omitempty"`
-	Password             string `json:"password,omitempty"`
-	NewPassword          string `json:"new_password,omitempty" bson:"-"`
-	ConfirmationPassword string `json:"confirmation_password,omitempty" bson:"-"`
+	Name     string `json:"name,omitempty"`
+	Email    string `json:"email,omitempty"`
+	Password string `json:"password,omitempty"`
 }
 
-// Save creates a new user account.
+// Create creates a new user account.
 //
 // It requires to inform the fields: Name, Email and Password.
 // It is not allowed to create two users with the same email address.
 // It returns an error if the user creation fails.
-func (user *User) Save() error {
-	if user.Name == "" || user.Email == "" || user.Username == "" || user.Password == "" {
-		return errors.ErrUserMissingRequiredFields
+func (user *User) Create() error {
+	if user.Name == "" || user.Email == "" || user.Password == "" {
+		return errors.NewValidationErrorNEW(errors.ErrUserMissingRequiredFields)
 	}
 
 	user.hashPassword()
-	strg, err := NewStorable()
+	store, err := NewStorable()
 	if err != nil {
+		Logger.Warn(err.Error())
 		return err
 	}
-	defer strg.Close()
+	defer store.Close()
 
-	err = strg.CreateUser(*user)
+	if user.Exists() {
+		return errors.NewValidationErrorNEW(errors.ErrUserDuplicateEntry)
+	}
+
+	err = store.UpsertUser(*user)
 	return err
 }
 
 // Updates the password for an existing account.
 func (user *User) ChangePassword() error {
-	strg, err := NewStorable()
+	store, err := NewStorable()
 	if err != nil {
+		Logger.Warn(err.Error())
 		return err
 	}
-	defer strg.Close()
+	defer store.Close()
+
+	if !user.Exists() {
+		return errors.NewNotFoundErrorNEW(errors.ErrUserNotFound)
+	}
 
 	user.hashPassword()
-	err = strg.UpdateUser(*user)
+	err = store.UpsertUser(*user)
 	return err
 }
 
@@ -59,103 +63,51 @@ func (user *User) ChangePassword() error {
 // All the teams and services which the corresponding user
 // is the only member are deleted along with the user account.
 // It returns an error if the user is not found.
-func (user *User) Delete() error {
-	conn, err := db.Conn()
+func (user User) Delete() error {
+	store, err := NewStorable()
 	if err != nil {
+		Logger.Warn(err.Error())
 		return err
 	}
-	defer conn.Close()
-	var ts []*Team = []*Team{}
-	err = conn.Teams().Find(bson.M{"users": bson.M{"$size": 1}, "owner": user.Email}).All(&ts)
-	if err != nil {
-		return err
-	}
-	var teams []string
-	for _, t := range ts {
-		teams = append(teams, t.Alias)
-		DeleteServicesByTeam(t.Alias)
-		DeleteClientByTeam(t.Alias)
-	}
-	_, err = conn.Teams().RemoveAll(bson.M{"alias": bson.M{"$in": teams}})
-	if err != nil {
-		return err
-	}
+	defer store.Close()
 
-	strg, err := NewStorable()
-	if err != nil {
-		return err
-	}
-	defer strg.Close()
-
-	err = strg.DeleteUser(*user)
+	err = store.DeleteUser(user)
 	return err
 }
 
-// Exists checks if the user exists in the database.
+// Exists checks if there is a user with the same email in the database.
 // Returns `true` if so, and `false` otherwise.
-func (user *User) Exists() bool {
-	_, err := FindUserByEmail(user.Email)
+func (user User) Exists() bool {
+	store, err := NewStorable()
+	if err != nil {
+		Logger.Warn(err.Error())
+		return false
+	}
+	defer store.Close()
+
+	_, err = store.FindUserByEmail(user.Email)
 	if err != nil {
 		return false
 	}
 	return true
 }
 
-// Try to find a user by its email address.
-// If the user is not found, return an error. Return the user otherwise.
-func FindUserByEmail(email string) (*User, error) {
-	strg, err := NewStorable()
+func (user *User) Teams() ([]Team, error) {
+	store, err := NewStorable()
 	if err != nil {
-		return nil, err
+		Logger.Warn(err.Error())
+		return []Team{}, err
 	}
-	defer strg.Close()
+	defer store.Close()
 
-	u, err := strg.FindUserByEmail(email)
-	return &u, err
-}
-
-// Return a list of all the teams which the user belongs to.
-func (user *User) GetTeams() ([]*Team, error) {
-	conn, err := db.Conn()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close()
-	var teams []*Team = []*Team{}
-	err = conn.Teams().Find(bson.M{"users": bson.M{"$in": []string{user.Email}}}).All(&teams)
-	return teams, nil
-}
-
-// Return a list of all the services which the user belongs to.
-func (user *User) GetServices() ([]*Service, error) {
-	conn, err := db.Conn()
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close()
-
-	teams, _ := user.GetTeams()
-	var st []string = make([]string, len(teams))
-	for i, team := range teams {
-		st[i] = team.Alias
-	}
-	var services []*Service = []*Service{}
-	err = conn.Services().Find(bson.M{"team": bson.M{"$in": st}}).All(&services)
-	return services, nil
-}
-
-//Return a representation of user but without sensitive data.
-func (user *User) ToString() string {
-	user.Password = ""
-	u, _ := json.Marshal(user)
-	return string(u)
+	return store.UserTeams(user.Email)
 }
 
 // Encrypts the user password before saving it in the database.
 func (user *User) hashPassword() {
-	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	if err != nil {
-		panic(err)
+	if hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost); err == nil {
+		user.Password = string(hash[:])
+	} else {
+		Logger.Error(err.Error())
 	}
-	user.Password = string(hash[:])
 }

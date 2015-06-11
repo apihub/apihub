@@ -1,7 +1,0 @@
-database:
-  host: "127.0.0.1:27017"
-  name: "backstage-dev"
-
-redis:
-  host: "127.0.0.1:6379"
-  number: 0

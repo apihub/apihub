@@ -1,83 +1,99 @@
 package api
 
 import (
+	"encoding/json"
 	"net/http"
 
-	. "github.com/backstage/backstage/account"
-	"github.com/backstage/backstage/auth"
-	. "github.com/backstage/backstage/errors"
-	"github.com/zenazn/goji/web"
+	"github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/errors"
 )
 
-type UsersHandler struct {
-	Handler
-}
-
-func (handler *UsersHandler) CreateUser(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
-	user := &User{}
-	if err := handler.parseBody(r.Body, user); err != nil {
-		return handler.handleError(err)
+func (api *Api) userSignup(rw http.ResponseWriter, r *http.Request) {
+	user := account.User{}
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		handleError(rw, errors.ErrBadRequest)
+		return
 	}
 
-	if err := user.Save(); err != nil {
-		return handler.handleError(err)
+	if err := user.Create(); err != nil {
+		handleError(rw, err)
+		return
 	}
-	return Created(user.ToString())
+	// Remove hashed-password from response.
+	user.Password = ""
+
+	Created(rw, user)
 }
 
-func (handler *UsersHandler) DeleteUser(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
-	user, err := GetCurrentUser(c)
+func (api *Api) userDelete(rw http.ResponseWriter, r *http.Request) {
+	user, err := GetCurrentUser(r)
 	if err != nil {
-		return handler.handleError(err)
+		handleError(rw, err)
+		return
 	}
 
-	auth.RevokeTokensFor(user)
 	if err := user.Delete(); err != nil {
-		return handler.handleError(err)
+		handleError(rw, err)
+		return
 	}
-	return OK(user.ToString())
+	// Remove hashed-password from response.
+	user.Password = ""
+
+	Ok(rw, user)
 }
 
-func (handler *UsersHandler) Login(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
-	user := &User{}
-	if err := handler.parseBody(r.Body, user); err != nil {
-		return handler.handleError(err)
+func (api *Api) userChangePassword(rw http.ResponseWriter, r *http.Request) {
+	u := struct {
+		account.User
+		NewPassword          string `json:"new_password,omitempty"`
+		ConfirmationPassword string `json:"confirmation_password,omitempty"`
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
+		handleError(rw, errors.ErrBadRequest)
+		return
 	}
 
-	token, err := LoginAndGetToken(user)
-	if err != nil {
-		return BadRequest(E_BAD_REQUEST, ErrAuthenticationFailed.Error())
+	if u.NewPassword != u.ConfirmationPassword || u.NewPassword == "" {
+		handleError(rw, errors.ErrConfirmationPassword)
+		return
 	}
-	return OK(token.ToString())
+	authUser, ok := api.auth.Authenticate(u.Email, u.Password)
+	if !ok {
+		handleError(rw, errors.ErrAuthenticationFailed)
+		return
+	}
+
+	authUser.Password = u.NewPassword
+	if err := authUser.ChangePassword(); err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	NoContent(rw)
 }
 
-func (handler *UsersHandler) Logout(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
-	authorization := r.Header.Get("Authorization")
-
-	if user, err := auth.GetUserFromToken(authorization); err == nil {
-		auth.RevokeTokensFor(user)
+func (api *Api) userLogin(rw http.ResponseWriter, r *http.Request) {
+	user := account.User{}
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		handleError(rw, errors.ErrBadRequest)
+		return
 	}
-	return NoContent()
+
+	token, err := api.Login(user.Email, user.Password)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	Ok(rw, token)
 }
 
-func (handler *UsersHandler) ChangePassword(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
-	user := &User{}
-	if err := handler.parseBody(r.Body, user); err != nil {
-		return handler.handleError(err)
+func (api *Api) userLogout(rw http.ResponseWriter, r *http.Request) {
+	authToken := r.Header.Get("Authorization")
+	if authToken != "" {
+		api.auth.RevokeUserToken(authToken)
 	}
 
-	if user.NewPassword != user.ConfirmationPassword {
-		return BadRequest(E_BAD_REQUEST, ErrConfirmationPassword.Error())
-	}
-	u, err := Login(user)
-	if err != nil {
-		return BadRequest(E_BAD_REQUEST, ErrAuthenticationFailed.Error())
-	}
-
-	u.Password = user.NewPassword
-	err = u.ChangePassword()
-	if err != nil {
-		return BadRequest(E_BAD_REQUEST, err.Error())
-	}
-	return NoContent()
+	NoContent(rw)
 }

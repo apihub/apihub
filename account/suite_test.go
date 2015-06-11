@@ -3,22 +3,14 @@ package account_test
 import (
 	"testing"
 
-	"github.com/tsuru/config"
-	. "gopkg.in/check.v1"
-
-	. "github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/account/mem"
 	"github.com/backstage/backstage/account/mongore"
-	"github.com/backstage/backstage/db"
-)
-
-var (
-	team    *Team
-	owner   *User
-	service *Service
-	client  *Client
+	. "gopkg.in/check.v1"
 )
 
 type S struct {
+	store account.Storable
 }
 
 var _ = Suite(&S{})
@@ -27,30 +19,38 @@ var _ = Suite(&S{})
 func Test(t *testing.T) { TestingT(t) }
 
 func (s *S) SetUpSuite(c *C) {
-	config.Set("database:url", "127.0.0.1:27017")
-	config.Set("database:name", "backstage_db_test")
-
-	cfg := mongore.Config{
-		Host:         "127.0.0.1:27017",
-		DatabaseName: "backstage_db_test",
-	}
-	NewStorable = func() (Storable, error) {
-		m, err := mongore.New(cfg)
-		return m, err
-	}
+	// setUpMemoryTest(s)
+	setUpMongoreTest(s)
 }
 
 func (s *S) TearDownSuite(c *C) {
-	conn, err := db.Conn()
-	c.Assert(err, IsNil)
-	defer conn.Close()
-	config.Unset("database:url")
-	config.Unset("database:name")
 }
 
+var team account.Team
+var owner account.User
+var alice account.User
+
 func (s *S) SetUpTest(c *C) {
-	team = &Team{Name: "Team", Alias: "Alias"}
-	owner = &User{Name: "Owner", Username: "owner", Email: "owner@example.org", Password: "123456"}
-	service = &Service{Endpoint: "http://example.org/api", Subdomain: "backstage"}
-	client = &Client{Id: "backstage", Secret: "SuperSecret", Name: "Backstage", RedirectUri: "http://example.org/auth"}
+	team = account.Team{Name: "Backstage Team", Alias: "backstage"}
+	alice = account.User{Name: "Alice", Email: "alice@example.org", Password: "123456"}
+	owner = account.User{Name: "Owner", Email: "owner@example.org", Password: "123456"}
+}
+
+// Run the tests in memory
+func setUpMemoryTest(s *S) {
+	s.store = mem.New()
+	account.NewStorable = func() (account.Storable, error) {
+		return s.store, nil
+	}
+}
+
+// Run the tests using MongoRe
+func setUpMongoreTest(s *S) {
+	cfg := mongore.Config{
+		Host:         "127.0.0.1:27017",
+		DatabaseName: "backstage_account_test",
+	}
+	account.NewStorable = func() (account.Storable, error) {
+		return mongore.New(cfg)
+	}
 }

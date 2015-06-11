@@ -1,179 +1,102 @@
-// Package api provides interfaces to interact with account through HTTP.
 package api
 
 import (
-	"flag"
-	"io"
+	"fmt"
 	"net/http"
-	"path"
-	"reflect"
-	"runtime"
-	"strings"
-	"unicode"
+	"time"
 
-	"github.com/RangelReale/osin"
 	"github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/auth"
+	"github.com/backstage/backstage/errors"
 	. "github.com/backstage/backstage/log"
-	"github.com/zenazn/goji"
-	"github.com/zenazn/goji/web"
-	"github.com/zenazn/goji/web/middleware"
+	"github.com/codegangsta/negroni"
+	"github.com/gorilla/mux"
+	"github.com/tylerb/graceful"
 )
 
-const API_DEFAULT_PORT string = ":8000"
+const (
+	DEFAULT_PORT    = ":8000"
+	DEFAULT_TIMEOUT = 10 * time.Second
+)
 
 type Api struct {
-	store         account.Storable
-	privateRoutes *web.Mux
-	oAuthServer   *osin.Server
+	auth   auth.Authenticatable
+	router *mux.Router
 }
 
-func NewApi(store account.Storable) *Api {
-	var api = &Api{store: store}
-	api.init()
+func NewApi(store func() (account.Storable, error)) *Api {
+	// FIXME need to improve this.
+	account.NewStorable = store
+
+	api := &Api{router: mux.NewRouter(), auth: auth.NewAuth(store)}
+	api.router.HandleFunc("/", homeHandler)
+	api.router.NotFoundHandler = http.HandlerFunc(api.notFoundHandler)
+
+	//  Auth (login, logout, signup)
+	auth := api.router.PathPrefix("/auth").Subrouter()
+	auth.Methods("POST").Path("/login").HandlerFunc(api.userLogin)
+	auth.Methods("DELETE").Path("/logout").HandlerFunc(api.userLogout)
+	auth.Methods("POST").Path("/signup").HandlerFunc(api.userSignup)
+	auth.Methods("PUT").Path("/password").HandlerFunc(api.userChangePassword)
+
+	//  Private Routes
+	private := mux.NewRouter()
+	private.NotFoundHandler = http.HandlerFunc(api.notFoundHandler)
+
+	// Middlewares
+	api.router.PathPrefix("/api").Handler(negroni.New(
+		negroni.NewRecovery(),
+		negroni.HandlerFunc(api.errorMiddleware),
+		negroni.HandlerFunc(api.requestIdMiddleware),
+		negroni.HandlerFunc(api.authorizationMiddleware),
+		negroni.HandlerFunc(api.contextClearerMiddleware),
+		negroni.Wrap(private),
+	))
+	pr := private.PathPrefix("/api").Subrouter()
+
+	// Users
+	pr.Methods("DELETE").Path("/users").HandlerFunc(api.userDelete)
+
+	// Teams
+	teams := pr.Path("/teams").Subrouter()
+	teams.Methods("POST").HandlerFunc(teamCreate)
+	teams.Methods("GET").HandlerFunc(teamList)
+
+	team := pr.PathPrefix("/teams/{alias}").Subrouter()
+	team.Methods("DELETE").HandlerFunc(teamDelete)
+
 	return api
 }
 
-func (api *Api) init() {
-	Logger.Info("Show time: Starting Backstage API.")
-	api.privateRoutes = web.New()
-
-	storage := NewOAuthMongoStorage()
-	api.LoadOauthServer(storage)
-}
-
-func (api *Api) Start() {
-	api.drawDefaultRoutes()
-	flag.Set("bind", API_DEFAULT_PORT)
-	goji.Serve()
-}
-
-func (api *Api) LoadOauthServer(storage osin.Storage) {
-	sconfig := &osin.ServerConfig{
-		AuthorizationExpiration:   300,
-		AccessExpiration:          3600,
-		TokenType:                 "Bearer",
-		AllowedAuthorizeTypes:     osin.AllowedAuthorizeType{osin.CODE, osin.TOKEN},
-		AllowedAccessTypes:        osin.AllowedAccessType{osin.AUTHORIZATION_CODE, osin.CLIENT_CREDENTIALS, osin.REFRESH_TOKEN},
-		ErrorStatusCode:           400,
-		AllowClientSecretInParams: false,
-		AllowGetAccessRequest:     false,
-	}
-	api.oAuthServer = osin.NewServer(sconfig, storage)
-}
-
-// Logger() allows to replace the log mechanism.
-func (api *Api) Logger(logger Log) {
-	Logger = logger
-}
-
-// Log() returns the current Log mechanism.
-func (api *Api) Log() Log {
-	return Logger
-}
-
-// AddPrivateRoute allows to add a new route. The default middlewares will be applied.
-func (api *Api) AddPrivateRoute(httpMethod, path string, handler interface{}, fn string) {
-	httpMethod = strings.ToLower(httpMethod)
-	r := []rune(httpMethod)
-	r[0] = unicode.ToUpper(r[0])
-	httpMethod = string(r)
-	methodValue := reflect.ValueOf(api.privateRoutes).MethodByName(httpMethod)
-	methodInterface := methodValue.Interface()
-	method := methodInterface.(func(pattern interface{}, handler interface{}))
-	method(path, api.route(handler, fn))
-}
-
-// Register all the routes to be used by the API.
-// There are two kind of routes: public and private.
-// "Public routes" don't need to receive a valid http authorization token.
-// On the other hand, "Private routes" expects to receive a valid http authorization token.
-func (api *Api) drawDefaultRoutes() {
-	goji.Use(RequestIdMiddleware)
-	goji.NotFound(NotFoundHandler)
-
-	// Handlers
-	handler := Handler{store: api.store}
-	servicesHandler := &ServicesHandler{Handler: handler}
-	clientsHandler := &ClientsHandler{Handler: handler}
-	debugHandler := &DebugHandler{Handler: handler}
-	usersHandler := &UsersHandler{Handler: handler}
-	teamsHandler := &TeamsHandler{Handler: handler}
-	oauthHandler := &OAuthHandler{Handler: handler}
-	pluginsHandler := &PluginsHandler{Handler: handler}
-
-	//Assets
-	_, filename, _, _ := runtime.Caller(1)
-	assetsFilesLocation := path.Join(path.Dir(filename), "views")
-	goji.Handle("/assets/*", http.FileServer(http.Dir(assetsFilesLocation)))
-
-	// Public Routes
-	goji.Post("/api/users", api.route(usersHandler, "CreateUser"))
-	goji.Post("/api/login", api.route(usersHandler, "Login"))
-	goji.Delete("/api/logout", api.route(usersHandler, "Logout"))
-	goji.Put("/api/password", api.route(usersHandler, "ChangePassword"))
-	goji.Get("/helloworld", api.route(debugHandler, "HelloWorld"))
-	Logger.Info("Public routes registered.")
-
-	//OAuth 2.0 routes
-	goji.Post("/login/oauth/token", api.route(oauthHandler, "Token"))
-	goji.Get("/me", api.route(oauthHandler, "Info"))
-	goji.Get("/login/oauth/authorize", api.route(oauthHandler, "Authorize"))
-	goji.Post("/login/oauth/authorize", api.route(oauthHandler, "Authorize"))
-	Logger.Info("OAuth routes registered.")
-	goji.Use(ErrorMiddleware)
-
-	// Private Routes
-	goji.Handle("/api/*", api.privateRoutes)
-	api.privateRoutes.Use(middleware.SubRouter)
-	api.privateRoutes.NotFound(NotFoundHandler)
-	api.privateRoutes.Use(AuthorizationMiddleware)
-	api.privateRoutes.Delete("/users", api.route(usersHandler, "DeleteUser"))
-
-	api.privateRoutes.Post("/teams", api.route(teamsHandler, "CreateTeam"))
-	api.privateRoutes.Get("/teams", api.route(teamsHandler, "GetUserTeams"))
-	api.privateRoutes.Delete("/teams/:alias", api.route(teamsHandler, "DeleteTeam"))
-	api.privateRoutes.Put("/teams/:alias", api.route(teamsHandler, "UpdateTeam"))
-	api.privateRoutes.Get("/teams/:alias", api.route(teamsHandler, "GetTeamInfo"))
-	api.privateRoutes.Post("/teams/:alias/users", api.route(teamsHandler, "AddUsersToTeam"))
-	api.privateRoutes.Delete("/teams/:alias/users", api.route(teamsHandler, "RemoveUsersFromTeam"))
-
-	api.privateRoutes.Post("/clients", api.route(clientsHandler, "CreateClient"))
-	api.privateRoutes.Put("/clients/:id", api.route(clientsHandler, "UpdateClient"))
-	api.privateRoutes.Get("/clients/:id", api.route(clientsHandler, "GetClientInfo"))
-	api.privateRoutes.Delete("/clients/:id", api.route(clientsHandler, "DeleteClient"))
-
-	api.privateRoutes.Post("/services", api.route(servicesHandler, "CreateService"))
-	api.privateRoutes.Get("/services", api.route(servicesHandler, "GetUserServices"))
-	api.privateRoutes.Delete("/services/:subdomain", api.route(servicesHandler, "DeleteService"))
-	api.privateRoutes.Put("/services/:subdomain", api.route(servicesHandler, "UpdateService"))
-	api.privateRoutes.Get("/services/:subdomain", api.route(servicesHandler, "GetServiceInfo"))
-
-	api.privateRoutes.Put("/plugins/:name/subscriptions", api.route(pluginsHandler, "SubscribePlugin"))
-	api.privateRoutes.Delete("/plugins/:name/subscriptions", api.route(pluginsHandler, "UnsubscribePlugin"))
-	Logger.Info("Private routes registered.")
-}
-
-// Create a router based on given handler and method.
-// Use reflection to find the method and execute it.
-func (api *Api) route(handler interface{}, route string) interface{} {
-	fn := func(c web.C, w http.ResponseWriter, r *http.Request) {
-		c.Env["Api"] = api
-
-		Logger.Debug("[REQUEST] Headers: %#v.", r.Header)
-		methodValue := reflect.ValueOf(handler).MethodByName(route)
-		methodInterface := methodValue.Interface()
-		method := methodInterface.(func(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse)
-		response := method(&c, w, r)
-		if response != nil {
-			w.WriteHeader(response.StatusCode)
-			if _, exists := c.Env["Content-Type"]; exists {
-				w.Header().Set("Content-Type", c.Env["Content-Type"].(string))
-			} else {
-				w.Header().Set("Content-Type", "application/json")
-			}
-			io.WriteString(w, response.Output())
-			Logger.Debug("[RESPONSE] Headers: %#v. Output: %s", w.Header(), response.Output())
+// Split Authenticate and CreateUserToken because we can override only the authentication method and still use the token method.
+func (api *Api) Login(email, password string) (*account.TokenInfo, error) {
+	user, ok := api.auth.Authenticate(email, password)
+	if ok {
+		token, err := api.auth.CreateUserToken(user)
+		if err != nil {
+			Logger.Warn(err.Error())
+			return nil, err
 		}
+		return token, nil
 	}
-	return fn
+
+	return nil, errors.ErrAuthenticationFailed
+}
+
+func (api *Api) Handler() http.Handler {
+	return api.router
+}
+
+// Allow to override the default authentication method.
+// To be compatible, it is needed to implement the Authenticatable interface.
+func (api *Api) SetAuth(auth auth.Authenticatable) {
+	api.auth = auth
+}
+
+func (api *Api) Run() {
+	graceful.Run(DEFAULT_PORT, DEFAULT_TIMEOUT, api.Handler())
+}
+
+func homeHandler(rw http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(rw, "Hello Backstage!")
 }

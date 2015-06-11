@@ -1,128 +1,84 @@
-package api
+package api_test
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/RangelReale/osin"
 	"github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/account/mem"
 	"github.com/backstage/backstage/account/mongore"
-	"github.com/backstage/backstage/db"
-	"github.com/backstage/backstage/log"
-	"github.com/zenazn/goji/web"
+	"github.com/backstage/backstage/api"
 	. "gopkg.in/check.v1"
-	"gopkg.in/mgo.v2/bson"
 )
 
-var oAuthHandler *OAuthHandler
-var servicesHandler *ServicesHandler
-var teamsHandler *TeamsHandler
-var usersHandler *UsersHandler
-var clientsHandler *ClientsHandler
-var pluginsHandler *PluginsHandler
-
-var alice *account.User
-var bob *account.User
-var mary *account.User
-var owner *account.User
-var service *account.Service
-var client *account.Client
-var team *account.Team
-
-var osinClient *osin.DefaultClient = &osin.DefaultClient{
-	Id:          "test-1234",
-	Secret:      "super-secret-string",
-	RedirectUri: "http://www.example.org/auth",
-}
-
-var authorizeData *osin.AuthorizeData = &osin.AuthorizeData{
-	Client:      osinClient,
-	Code:        "test-123456789",
-	ExpiresIn:   3600,
-	CreatedAt:   bson.Now(),
-	RedirectUri: "http://www.example.org/auth",
-}
-
-var accessData *osin.AccessData = &osin.AccessData{
-	Client:        osinClient,
-	AuthorizeData: authorizeData,
-	AccessToken:   "test-123456",
-	RefreshToken:  "test-refresh-7890",
-	ExpiresIn:     3600,
-	CreatedAt:     bson.Now(),
-}
+var httpClient HTTPClient
 
 func Test(t *testing.T) { TestingT(t) }
 
+var user account.User
+
 type S struct {
-	Api          *Api
-	env          map[string]interface{}
-	handler      http.HandlerFunc
-	recorder     *httptest.ResponseRecorder
-	router       *web.Mux
-	oAuthStorage *OAuthMongoStorage
+	api        *api.Api
+	authHeader string
+	store      func() (account.Storable, error)
+	server     *httptest.Server
 }
 
 func (s *S) SetUpSuite(c *C) {
+	// setUpMemoryTest(s)
+	setUpMongoreTest(s)
+
+	s.api = api.NewApi(s.store)
+	s.server = httptest.NewServer(s.api.Handler())
+	httpClient = NewHTTPClient(s.server.URL)
+}
+
+func (s *S) SetUpTest(c *C) {
+	user = account.User{Name: "Bob", Email: "bob@bar.example.org", Password: "secret"}
+	user.Create()
+	token, err := s.api.Login(user.Email, "secret")
+	if err != nil {
+		panic(err)
+	}
+	s.authHeader = fmt.Sprintf("%s %s", token.Type, token.Token)
+}
+
+func (s *S) TearDownTest(c *C) {
+	user.Delete()
+}
+
+func (s *S) TearDownSuite(c *C) {
+	s.server.Close()
+}
+
+var _ = Suite(&S{})
+
+// Run the tests in memory
+func setUpMemoryTest(s *S) {
+	mem := mem.New()
+	s.store = func() (account.Storable, error) {
+		return mem, nil
+	}
+}
+
+// Run the tests using MongoRe
+func setUpMongoreTest(s *S) {
 	cfg := mongore.Config{
 		Host:         "127.0.0.1:27017",
 		DatabaseName: "backstage_api_test",
 	}
-	account.NewStorable = func() (account.Storable, error) {
-		m, err := mongore.New(cfg)
-		return m, err
+	s.store = func() (account.Storable, error) {
+		return mongore.New(cfg)
 	}
-
-	log.Logger.Disable()
 }
 
-func (s *S) SetUpTest(c *C) {
-	s.Api = &Api{}
-	teamsHandler = &TeamsHandler{}
-	usersHandler = &UsersHandler{}
-	servicesHandler = &ServicesHandler{}
-	clientsHandler = &ClientsHandler{}
-	oAuthHandler = &OAuthHandler{}
-	pluginsHandler = &PluginsHandler{}
+func testWithoutSignIn(reqArgs RequestArgs, c *C) {
+	headers, code, body, err := httpClient.MakeRequest(reqArgs)
 
-	s.recorder = httptest.NewRecorder()
-	s.env = map[string]interface{}{}
-
-	s.router = web.New()
-	s.router.Post("/api/clients", s.Api.route(clientsHandler, "CreateClient"))
-	s.router.Put("/api/clients/:id", s.Api.route(clientsHandler, "UpdateClient"))
-	s.router.Get("/api/clients/:id", s.Api.route(clientsHandler, "GetClientInfo"))
-	s.router.Delete("/api/clients/:id", s.Api.route(clientsHandler, "DeleteClient"))
-
-	s.router.Post("/api/services", s.Api.route(servicesHandler, "CreateService"))
-	s.router.Get("/api/services", s.Api.route(servicesHandler, "GetUserServices"))
-	s.router.Put("/api/services/:subdomain", s.Api.route(servicesHandler, "UpdateService"))
-	s.router.Get("/api/services/:subdomain", s.Api.route(servicesHandler, "GetServiceInfo"))
-	s.router.Delete("/api/services/:subdomain", s.Api.route(servicesHandler, "DeleteService"))
-
-	s.router.Post("/api/users", s.Api.route(usersHandler, "CreateUser"))
-	s.router.Delete("/api/users", s.Api.route(usersHandler, "DeleteUser"))
-	s.router.Post("/api/login", s.Api.route(usersHandler, "Login"))
-	s.router.Delete("/api/logout", s.Api.route(usersHandler, "Logout"))
-	s.router.Put("/api/password", s.Api.route(usersHandler, "ChangePassword"))
-
-	s.handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
-	s.oAuthStorage = &OAuthMongoStorage{}
-
-	alice = &account.User{Name: "Alice", Email: "alice@example.org", Username: "alice", Password: "123456"}
-	bob = &account.User{Name: "Bob", Email: "bob@example.org", Username: "bob", Password: "123456"}
-	mary = &account.User{Name: "Mary", Email: "mary@example.org", Username: "mary", Password: "123456"}
-	owner = &account.User{Name: "Owner", Email: "owner@example.org", Username: "owner", Password: "123456"}
-	team = &account.Team{Name: "Team", Alias: "team"}
-	service = &account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage"}
-	client = &account.Client{Id: "backstage", Secret: "SuperSecret", Name: "Backstage", RedirectUri: "http://example.org/auth"}
+	c.Assert(string(body), Equals, `{"error":"unauthorized_access","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(code, Equals, http.StatusUnauthorized)
+	c.Check(err, IsNil)
 }
-
-func (s *S) TearDownSuite(c *C) {
-	storage, err := db.Conn()
-	c.Assert(err, IsNil)
-	defer storage.Close()
-}
-
-var _ = Suite(&S{})

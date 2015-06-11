@@ -1,4 +1,4 @@
-package api_new_test
+package api_test
 
 import (
 	"io/ioutil"

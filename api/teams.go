@@ -1,137 +1,63 @@
 package api
 
 import (
+	"encoding/json"
 	"net/http"
 
-	. "github.com/backstage/backstage/account"
-	"github.com/zenazn/goji/web"
+	"github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/errors"
+	"github.com/gorilla/mux"
 )
 
-type TeamsHandler struct {
-	Handler
+func teamCreate(rw http.ResponseWriter, r *http.Request) {
+	user, err := GetCurrentUser(r)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	team := account.Team{}
+	if err := json.NewDecoder(r.Body).Decode(&team); err != nil {
+		handleError(rw, errors.ErrBadRequest)
+		return
+	}
+
+	if err := team.Create(*user); err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	Created(rw, team)
 }
 
-func (handler *TeamsHandler) CreateTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
-	currentUser, err := handler.getCurrentUser(c)
+func teamList(rw http.ResponseWriter, r *http.Request) {
+	user, err := GetCurrentUser(r)
 	if err != nil {
-		return handler.handleError(err)
+		handleError(rw, err)
+		return
 	}
 
-	team := &Team{}
-	err = handler.parseBody(r.Body, team)
-	if err != nil {
-		return handler.handleError(err)
-	}
-	err = team.Save(currentUser)
-	if err != nil {
-		return handler.handleError(err)
-	}
-	return Created(team.ToString())
+	teams, _ := user.Teams()
+	Ok(rw, CollectionSerializer{Items: teams, Count: len(teams)})
 }
 
-func (handler *TeamsHandler) UpdateTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
-	currentUser, err := handler.getCurrentUser(c)
+func teamDelete(rw http.ResponseWriter, r *http.Request) {
+	user, err := GetCurrentUser(r)
 	if err != nil {
-		return handler.handleError(err)
+		handleError(rw, err)
+		return
 	}
 
-	team, err := FindTeamByAlias(c.URLParams["alias"], currentUser)
+	team, err := account.FindTeamByAlias(mux.Vars(r)["alias"])
 	if err != nil {
-		return handler.handleError(err)
+		handleError(rw, err)
+		return
 	}
 
-	err = handler.parseBody(r.Body, team)
-	if err != nil {
-		return handler.handleError(err)
-	}
-	err = team.Save(currentUser)
-	if err != nil {
-		return handler.handleError(err)
-	}
-	return OK(team.ToString())
-}
-
-func (handler *TeamsHandler) DeleteTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
-	currentUser, err := handler.getCurrentUser(c)
-	if err != nil {
-		return handler.handleError(err)
+	if err = team.Delete(*user); err != nil {
+		handleError(rw, err)
+		return
 	}
 
-	team, err := DeleteTeamByAlias(c.URLParams["alias"], currentUser)
-	if err != nil {
-		return handler.handleError(err)
-	}
-	return OK(team.ToString())
-}
-
-func (handler *TeamsHandler) GetUserTeams(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
-	currentUser, err := handler.getCurrentUser(c)
-	if err != nil {
-		return handler.handleError(err)
-	}
-
-	teams, _ := currentUser.GetTeams()
-	s := CollectionSerializer{Items: teams, Count: len(teams)}
-	payload := s.Serializer()
-	return OK(payload)
-}
-
-func (handler *TeamsHandler) GetTeamInfo(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
-	currentUser, err := handler.getCurrentUser(c)
-	if err != nil {
-		return handler.handleError(err)
-	}
-
-	team, err := FindTeamByAlias(c.URLParams["alias"], currentUser)
-	if err != nil {
-		return handler.handleError(err)
-	}
-
-	return OK(team.ToString())
-}
-
-func (handler *TeamsHandler) AddUsersToTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
-	currentUser, err := handler.getCurrentUser(c)
-	if err != nil {
-		return handler.handleError(err)
-	}
-
-	team, err := FindTeamByAlias(c.URLParams["alias"], currentUser)
-	if err != nil {
-		return handler.handleError(err)
-	}
-
-	var t *Team
-	err = handler.parseBody(r.Body, &t)
-	if err != nil {
-		return handler.handleError(err)
-	}
-	err = team.AddUsers(t.Users)
-	if err != nil {
-		return handler.handleError(err)
-	}
-	return OK(team.ToString())
-}
-
-func (handler *TeamsHandler) RemoveUsersFromTeam(c *web.C, w http.ResponseWriter, r *http.Request) *HTTPResponse {
-	currentUser, err := handler.getCurrentUser(c)
-	if err != nil {
-		return handler.handleError(err)
-	}
-
-	team, err := FindTeamByAlias(c.URLParams["alias"], currentUser)
-	if err != nil {
-		return handler.handleError(err)
-	}
-
-	var t *Team
-	err = handler.parseBody(r.Body, &t)
-	if err != nil {
-		return handler.handleError(err)
-	}
-	err = team.RemoveUsers(t.Users)
-	if err != nil {
-		return Forbidden(err.Error())
-	}
-	return OK(team.ToString())
+	Ok(rw, team)
 }

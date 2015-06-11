@@ -1,4 +1,4 @@
-package account_new
+package account
 
 type TokenInfo struct {
 	Token     string `json:"access_token"`

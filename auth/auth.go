@@ -1,4 +1,4 @@
-package auth_new
+package auth
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"code.google.com/p/go.crypto/bcrypt"
-	"github.com/backstage/backstage/account_new"
+	"github.com/backstage/backstage/account"
 	"github.com/backstage/backstage/errors"
 	. "github.com/backstage/backstage/log"
 	"github.com/backstage/backstage/util"
@@ -18,21 +18,21 @@ const (
 )
 
 type Authenticatable interface {
-	Authenticate(email, password string) (*account_new.User, bool)
-	CreateUserToken(*account_new.User) (*account_new.TokenInfo, error)
-	UserFromToken(token string) (*account_new.User, error)
+	Authenticate(email, password string) (*account.User, bool)
+	CreateUserToken(*account.User) (*account.TokenInfo, error)
+	UserFromToken(token string) (*account.User, error)
 	RevokeUserToken(token string) error
 }
 
 type auth struct {
-	store func() (account_new.Storable, error)
+	store func() (account.Storable, error)
 }
 
-func NewAuth(store func() (account_new.Storable, error)) *auth {
+func NewAuth(store func() (account.Storable, error)) *auth {
 	return &auth{store: store}
 }
 
-func (a *auth) Authenticate(email, password string) (*account_new.User, bool) {
+func (a *auth) Authenticate(email, password string) (*account.User, bool) {
 	// FIXME
 	store, err := a.store()
 	if err != nil {
@@ -56,7 +56,7 @@ func (a *auth) Authenticate(email, password string) (*account_new.User, bool) {
 	return &user, true
 }
 
-func (a *auth) CreateUserToken(user *account_new.User) (*account_new.TokenInfo, error) {
+func (a *auth) CreateUserToken(user *account.User) (*account.TokenInfo, error) {
 	store, err := a.store()
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -64,7 +64,7 @@ func (a *auth) CreateUserToken(user *account_new.User) (*account_new.TokenInfo, 
 	}
 	defer store.Close()
 
-	api := account_new.TokenInfo{
+	api := account.TokenInfo{
 		CreatedAt: time.Now().In(time.UTC).Format("2006-01-02T15:04:05Z07:00"),
 		Expires:   EXPIRES_IN_SECONDS,
 		Type:      TOKEN_TYPE,
@@ -76,13 +76,13 @@ func (a *auth) CreateUserToken(user *account_new.User) (*account_new.TokenInfo, 
 	return &api, err
 }
 
-func (a *auth) UserFromToken(token string) (*account_new.User, error) {
+func (a *auth) UserFromToken(token string) (*account.User, error) {
 	h := strings.Split(token, " ")
 	if len(h) == 2 {
-		apiToken := account_new.TokenInfo{Type: h[0], Token: h[1]}
+		apiToken := account.TokenInfo{Type: h[0], Token: h[1]}
 
 		if apiToken.Type == TOKEN_TYPE {
-			var user account_new.User
+			var user account.User
 
 			store, err := a.store()
 			if err != nil {
