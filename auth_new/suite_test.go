@@ -18,8 +18,8 @@ type S struct {
 }
 
 func (s *S) SetUpSuite(c *C) {
-	// setUpMemoryTest(s)
-	setUpMongoreTestngoreTest(s)
+	setUpMemoryTest(s)
+	// setUpMongoreTest(s)
 }
 
 func (s *S) SetUpTest(c *C) {

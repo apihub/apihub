@@ -2,10 +2,13 @@ package mongore
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/backstage/backstage/account_new"
+	"github.com/backstage/backstage/db"
 	"github.com/backstage/backstage/errors"
 	. "github.com/backstage/backstage/log"
+	"github.com/fatih/structs"
 	"github.com/tsuru/tsuru/db/storage"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -99,6 +102,37 @@ func (m *Mongore) FindTeamByAlias(alias string) (account_new.Team, error) {
 	}
 
 	return team, err
+}
+
+func (m *Mongore) CreateToken(token account_new.TokenInfo) error {
+	key := fmt.Sprintf("%s: %s", token.Type, token.User.Email)
+	db.Cache.Set(key, nil, time.Duration(token.Expires)*time.Minute)
+	db.HMSET(key, token.Expires, structs.Map(token))
+
+	db.Cache.Set(token.Token, nil, time.Duration(token.Expires))
+	db.HMSET(token.Token, token.Expires, structs.Map(token.User))
+	return nil
+}
+
+func (m *Mongore) DecodeToken(key string, t interface{}) error {
+	conn, err := db.Conn()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	return conn.GetTokenValue(key, t)
+}
+
+func (m *Mongore) DeleteToken(key string) error {
+	conn, err := db.Conn()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	_, err = conn.DeleteToken(key)
+	return err
 }
 
 func (m *Mongore) Close() {

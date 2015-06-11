@@ -2,19 +2,25 @@
 package mem
 
 import (
+	"fmt"
+
 	"github.com/backstage/backstage/account_new"
 	"github.com/backstage/backstage/errors"
 )
 
 type Mem struct {
-	Users map[string]account_new.User
-	Teams map[string]account_new.Team
+	Users      map[string]account_new.User
+	Teams      map[string]account_new.Team
+	Tokens     map[string]account_new.TokenInfo
+	UserTokens map[string]account_new.User
 }
 
 func New() account_new.Storable {
 	return &Mem{
-		Users: make(map[string]account_new.User),
-		Teams: make(map[string]account_new.Team),
+		Users:      make(map[string]account_new.User),
+		Teams:      make(map[string]account_new.Team),
+		Tokens:     make(map[string]account_new.TokenInfo),
+		UserTokens: make(map[string]account_new.User),
 	}
 }
 
@@ -60,6 +66,30 @@ func (m *Mem) FindTeamByAlias(alias string) (account_new.Team, error) {
 	} else {
 		return team, nil
 	}
+}
+
+func (m *Mem) CreateToken(token account_new.TokenInfo) error {
+	key := fmt.Sprintf("%s: %s", token.Type, token.User.Email)
+	m.Tokens[key] = token
+	m.UserTokens[token.Token] = *token.User
+	return nil
+}
+
+func (m *Mem) DecodeToken(key string, t interface{}) error {
+	if token, ok := m.Tokens[key]; ok {
+		*t.(*account_new.TokenInfo) = token
+	}
+
+	if token, ok := m.UserTokens[key]; ok {
+		*t.(*account_new.User) = token
+	}
+	return nil
+}
+
+func (m *Mem) DeleteToken(key string) error {
+	delete(m.Tokens, key)
+	delete(m.UserTokens, key)
+	return nil
 }
 
 func (m *Mem) Close() {}

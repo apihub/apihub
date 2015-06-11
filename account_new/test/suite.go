@@ -10,6 +10,7 @@ import (
 
 var user account_new.User
 var team account_new.Team
+var token account_new.TokenInfo
 
 //Hook up gocheck into the "go test" runner.
 func Test(t *testing.T) { TestingT(t) }
@@ -21,6 +22,7 @@ type StorableSuite struct {
 func (s *StorableSuite) SetUpTest(c *C) {
 	user = account_new.User{Name: "Alice", Email: "alice@example.org", Password: "123456"}
 	team = account_new.Team{Name: "Backstage Team", Alias: "backstage", Users: []string{}, Owner: user.Email}
+	token = account_new.TokenInfo{Token: "secret-token", Expires: 10, Type: "Token", User: &user}
 }
 
 func (s *StorableSuite) TestUpsertUser(c *C) {
@@ -93,4 +95,24 @@ func (s *StorableSuite) TestFindTeamByAliasNotFound(c *C) {
 	_, err := s.Storage.FindTeamByAlias("not-found")
 	_, ok := err.(errors.NotFoundErrorNEW)
 	c.Assert(ok, Equals, true)
+}
+
+func (s *StorableSuite) TestCreateToken(c *C) {
+	defer s.Storage.DeleteToken(token.Token)
+	err := s.Storage.CreateToken(token)
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestDeleteToken(c *C) {
+	err := s.Storage.CreateToken(token)
+	c.Check(err, IsNil)
+	err = s.Storage.DeleteToken(token.Token)
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestDecodeToken(c *C) {
+	s.Storage.CreateToken(token)
+	var u account_new.User
+	s.Storage.DecodeToken(token.Token, &u)
+	c.Assert(u, DeepEquals, user)
 }

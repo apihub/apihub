@@ -19,8 +19,8 @@ var _ = Suite(&S{})
 func Test(t *testing.T) { TestingT(t) }
 
 func (s *S) SetUpSuite(c *C) {
-	setUpMemoryTest(s)
-	// setUpMongoreTest(s)
+	// setUpMemoryTest(s)
+	setUpMongoreTest(s)
 }
 
 func (s *S) TearDownSuite(c *C) {

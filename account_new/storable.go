@@ -11,6 +11,10 @@ type Storable interface {
 	UpsertTeam(Team) error
 	DeleteTeam(Team) error
 	FindTeamByAlias(string) (Team, error)
+
+	CreateToken(TokenInfo) error
+	DeleteToken(string) error
+	DecodeToken(key string, t interface{}) error
 	Close()
 }
 
