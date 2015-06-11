@@ -57,7 +57,7 @@ func NewApi(store func() (account_new.Storable, error)) *Api {
 	return api
 }
 
-// Split Authenticate and CreateUserToken because we can override only the authentication method and still use the token creation.
+// Split Authenticate and CreateUserToken because we can override only the authentication method and still use the token method.
 func (api *Api) Login(email, password string) (*account_new.TokenInfo, error) {
 	user, ok := api.auth.Authenticate(email, password)
 	if ok {
@@ -72,7 +72,7 @@ func (api *Api) Login(email, password string) (*account_new.TokenInfo, error) {
 	return nil, errors.ErrAuthenticationFailed
 }
 
-func (api *Api) GetHandler() http.Handler {
+func (api *Api) Handler() http.Handler {
 	return api.router
 }
 
@@ -81,7 +81,7 @@ func (api *Api) SetAuth(auth auth_new.Authenticatable) {
 }
 
 func (api *Api) Run() {
-	graceful.Run(DEFAULT_PORT, DEFAULT_TIMEOUT, api.GetHandler())
+	graceful.Run(DEFAULT_PORT, DEFAULT_TIMEOUT, api.Handler())
 }
 
 func homeHandler(rw http.ResponseWriter, r *http.Request) {

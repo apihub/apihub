@@ -29,7 +29,7 @@ func (s *S) SetUpTest(c *C) {
 	// setUpMongoreTest(s)
 
 	api := api_new.NewApi(s.store)
-	s.server = httptest.NewServer(api.GetHandler())
+	s.server = httptest.NewServer(api.Handler())
 	httpClient = NewHTTPClient(s.server.URL)
 
 	user = &account_new.User{Name: "Bob", Email: "bob@bar.example.org", Password: "secret"}
