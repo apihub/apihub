@@ -126,7 +126,6 @@ func (s *S) TestDeleteServiceWithoutPermission(c *C) {
 	c.Assert(code, Equals, http.StatusForbidden)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
 	c.Assert(string(body), Equals, `{"error":"access_denied","error_description":"Only the owner has permission to perform this operation."}`)
-
 }
 
 func (s *S) TestDeleteServiceIsNotFound(c *C) {
@@ -144,4 +143,65 @@ func (s *S) TestDeleteServiceIsNotFound(c *C) {
 
 func (s *S) TestDeleteServiceWithoutSignIn(c *C) {
 	testWithoutSignIn(RequestArgs{Method: "DELETE", Path: "/api/services/subdomain", Body: `{}`}, c)
+}
+
+func (s *S) TestServiceInfo(c *C) {
+	team.Create(user)
+	service.Create(user, team)
+	defer func() {
+		store, _ := s.store()
+		serv, _ := store.FindServiceBySubdomain(service.Subdomain)
+		store.DeleteService(serv)
+		store.DeleteTeamByAlias(team.Alias)
+	}()
+
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "GET",
+		Path:    fmt.Sprintf("/api/services/%s", service.Subdomain),
+		Headers: http.Header{"Authorization": {s.authHeader}},
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusOK)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"subdomain":"backstage","disabled":false,"documentation":"","endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"backstage","timeout":0}`)
+}
+
+func (s *S) TestServiceInfoNotMember(c *C) {
+	alice := account.User{Name: "alice", Email: "alice@bar.example.org", Password: "secret"}
+	alice.Create()
+	t := account.Team{Name: "example"}
+	t.Create(alice)
+	service.Create(alice, t)
+	defer func() {
+		store, _ := s.store()
+		serv, _ := store.FindServiceBySubdomain(service.Subdomain)
+		store.DeleteService(serv)
+		store.DeleteTeamByAlias(t.Alias)
+		alice.Delete()
+	}()
+
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "GET",
+		Path:    fmt.Sprintf("/api/services/%s", service.Subdomain),
+		Headers: http.Header{"Authorization": {s.authHeader}},
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusForbidden)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"error":"access_denied","error_description":"You do not belong to this team!"}`)
+}
+
+func (s *S) TestServiceInfoNotFound(c *C) {
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "GET",
+		Path:    "/api/services/not-found",
+		Headers: http.Header{"Authorization": {s.authHeader}},
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusNotFound)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"error":"not_found","error_description":"Service not found."}`)
 }

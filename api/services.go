@@ -56,3 +56,25 @@ func serviceDelete(rw http.ResponseWriter, r *http.Request) {
 
 	Ok(rw, service)
 }
+
+func serviceInfo(rw http.ResponseWriter, r *http.Request) {
+	user, err := GetCurrentUser(r)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	service, err := account.FindServiceBySubdomain(mux.Vars(r)["subdomain"])
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	_, err = findTeamByAlias(service.Team, user)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	Ok(rw, service)
+}
