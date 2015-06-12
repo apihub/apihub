@@ -6,7 +6,7 @@ import (
 
 	"github.com/backstage/backstage/account"
 	"github.com/backstage/backstage/errors"
-	// "github.com/gorilla/mux"
+	"github.com/gorilla/mux"
 )
 
 func serviceCreate(rw http.ResponseWriter, r *http.Request) {
@@ -34,4 +34,25 @@ func serviceCreate(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	Created(rw, service)
+}
+
+func serviceDelete(rw http.ResponseWriter, r *http.Request) {
+	user, err := GetCurrentUser(r)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	service, err := account.FindServiceBySubdomain(mux.Vars(r)["subdomain"])
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	if err = service.Delete(*user); err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	Ok(rw, service)
 }
