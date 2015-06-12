@@ -10,6 +10,7 @@ import (
 
 var user account.User
 var team account.Team
+var service account.Service
 var token account.TokenInfo
 
 //Hook up gocheck into the "go test" runner.
@@ -21,8 +22,9 @@ type StorableSuite struct {
 
 func (s *StorableSuite) SetUpTest(c *C) {
 	user = account.User{Name: "Alice", Email: "alice@example.org", Password: "123456"}
-	team = account.Team{Name: "Backstage Team", Alias: "backstage", Users: []string{user.Email}, Owner: user.Email}
 	token = account.TokenInfo{Token: "secret-token", Expires: 10, Type: "Token", User: &user}
+	team = account.Team{Name: "Backstage Team", Alias: "backstage", Users: []string{user.Email}, Owner: user.Email}
+	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage", Team: team.Alias, Owner: user.Email, Transformers: []string{}}
 }
 
 func (s *StorableSuite) TestUpsertUser(c *C) {
@@ -141,4 +143,36 @@ func (s *StorableSuite) TestDecodeToken(c *C) {
 	var u account.User
 	s.Storage.DecodeToken(token.Token, &u)
 	c.Assert(u, DeepEquals, user)
+}
+
+func (s *StorableSuite) TestUpsertService(c *C) {
+	defer s.Storage.DeleteService(service)
+	err := s.Storage.UpsertService(service)
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestDeleteService(c *C) {
+	s.Storage.UpsertService(service)
+	err := s.Storage.DeleteService(service)
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestDeleteServiceNotFound(c *C) {
+	err := s.Storage.DeleteService(service)
+	_, ok := err.(errors.NotFoundErrorNEW)
+	c.Assert(ok, Equals, true)
+}
+
+func (s *StorableSuite) TestFindServiceBySubdomain(c *C) {
+	defer s.Storage.DeleteService(service)
+	s.Storage.UpsertService(service)
+	serv, err := s.Storage.FindServiceBySubdomain(service.Subdomain)
+	c.Assert(serv, DeepEquals, service)
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestFindServiceBySubdomainNotFound(c *C) {
+	_, err := s.Storage.FindServiceBySubdomain("not-found")
+	_, ok := err.(errors.NotFoundErrorNEW)
+	c.Assert(ok, Equals, true)
 }

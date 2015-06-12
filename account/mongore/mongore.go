@@ -154,6 +154,43 @@ func (m *Mongore) DeleteToken(key string) error {
 	return err
 }
 
+func (m *Mongore) UpsertService(s account.Service) error {
+	_, err := m.Services().Upsert(bson.M{"subdomain": s.Subdomain}, s)
+
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
+
+	return err
+}
+
+func (m *Mongore) DeleteService(s account.Service) error {
+	err := m.Services().Remove(s)
+
+	if err == mgo.ErrNotFound {
+		return errors.NewNotFoundErrorNEW(errors.ErrServiceNotFound)
+	}
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
+
+	return err
+}
+
+func (m *Mongore) FindServiceBySubdomain(subdomain string) (account.Service, error) {
+	var service account.Service
+	err := m.Services().Find(bson.M{"subdomain": subdomain}).One(&service)
+
+	if err == mgo.ErrNotFound {
+		return account.Service{}, errors.NewNotFoundErrorNEW(errors.ErrServiceNotFound)
+	}
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
+
+	return service, err
+}
+
 func (m *Mongore) Close() {
 	m.store.Close()
 }

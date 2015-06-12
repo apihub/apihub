@@ -172,6 +172,7 @@ func (team *Team) RemoveUsers(emails []string) error {
 		removedUsers bool
 		user         *User
 	)
+
 	for _, email := range emails {
 		if team.Owner == email {
 			errOwner = errors.NewValidationErrorNEW(errors.ErrRemoveOwnerFromTeam)
@@ -192,6 +193,7 @@ func (team *Team) RemoveUsers(emails []string) error {
 			removedUsers = true
 		}
 	}
+
 	if removedUsers {
 		return store.UpsertTeam(*team)
 	}

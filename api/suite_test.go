@@ -17,6 +17,8 @@ var httpClient HTTPClient
 
 func Test(t *testing.T) { TestingT(t) }
 
+var service account.Service
+var team account.Team
 var user account.User
 
 type S struct {
@@ -33,6 +35,9 @@ func (s *S) SetUpSuite(c *C) {
 	s.api = api.NewApi(s.store)
 	s.server = httptest.NewServer(s.api.Handler())
 	httpClient = NewHTTPClient(s.server.URL)
+
+	team = account.Team{Name: "Backstage Team", Alias: "backstage"}
+	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage"}
 }
 
 func (s *S) SetUpTest(c *C) {

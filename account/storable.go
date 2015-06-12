@@ -17,6 +17,10 @@ type Storable interface {
 	CreateToken(TokenInfo) error
 	DeleteToken(string) error
 	DecodeToken(key string, t interface{}) error
+
+	UpsertService(Service) error
+	DeleteService(Service) error
+	FindServiceBySubdomain(string) (Service, error)
 	Close()
 }
 

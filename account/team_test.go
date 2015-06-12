@@ -74,6 +74,8 @@ func (s *S) TestDeleteTeam(c *C) {
 func (s *S) TestDeleteTeamNotOwner(c *C) {
 	team.Create(alice)
 	c.Assert(team.Exists(), Equals, true)
+	defer team.Delete(alice)
+
 	err := team.Delete(owner)
 	_, ok := err.(errors.ForbiddenErrorNEW)
 	c.Assert(ok, Equals, true)

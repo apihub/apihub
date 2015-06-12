@@ -1,0 +1,37 @@
+package api
+
+import (
+	"encoding/json"
+	"net/http"
+
+	"github.com/backstage/backstage/account"
+	"github.com/backstage/backstage/errors"
+	// "github.com/gorilla/mux"
+)
+
+func serviceCreate(rw http.ResponseWriter, r *http.Request) {
+	user, err := GetCurrentUser(r)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	service := account.Service{}
+	if err := json.NewDecoder(r.Body).Decode(&service); err != nil {
+		handleError(rw, errors.ErrBadRequest)
+		return
+	}
+
+	team, err := findTeamByAlias(service.Team, user)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	if err := service.Create(*user, *team); err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	Created(rw, service)
+}

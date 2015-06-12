@@ -30,6 +30,31 @@ func teamCreate(rw http.ResponseWriter, r *http.Request) {
 	Created(rw, team)
 }
 
+func teamUpdate(rw http.ResponseWriter, r *http.Request) {
+	user, err := GetCurrentUser(r)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	team, err := findTeamByAlias(mux.Vars(r)["alias"], user)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&team); err != nil {
+		handleError(rw, errors.ErrBadRequest)
+		return
+	}
+
+	if err := team.Update(); err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	Ok(rw, team)
+}
 func teamList(rw http.ResponseWriter, r *http.Request) {
 	user, err := GetCurrentUser(r)
 	if err != nil {
@@ -130,32 +155,6 @@ func teamRemoveUsers(rw http.ResponseWriter, r *http.Request) {
 	}
 	err = team.RemoveUsers(t.Users)
 	if err != nil {
-		handleError(rw, err)
-		return
-	}
-
-	Ok(rw, team)
-}
-
-func teamUpdate(rw http.ResponseWriter, r *http.Request) {
-	user, err := GetCurrentUser(r)
-	if err != nil {
-		handleError(rw, err)
-		return
-	}
-
-	team, err := findTeamByAlias(mux.Vars(r)["alias"], user)
-	if err != nil {
-		handleError(rw, err)
-		return
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&team); err != nil {
-		handleError(rw, errors.ErrBadRequest)
-		return
-	}
-
-	if err := team.Update(); err != nil {
 		handleError(rw, err)
 		return
 	}

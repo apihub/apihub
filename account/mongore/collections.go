@@ -13,8 +13,15 @@ func (m *Mongore) Users() *storage.Collection {
 }
 
 func (m *Mongore) Teams() *storage.Collection {
-	aliasIndex := mgo.Index{Key: []string{"alias"}, Unique: true, Background: false}
+	index := mgo.Index{Key: []string{"alias"}, Unique: true, Background: false}
 	collection := m.store.Collection("teams")
-	collection.EnsureIndex(aliasIndex)
+	collection.EnsureIndex(index)
+	return collection
+}
+
+func (m *Mongore) Services() *storage.Collection {
+	index := mgo.Index{Key: []string{"subdomain"}, Unique: true, Background: false}
+	collection := m.store.Collection("services")
+	collection.EnsureIndex(index)
 	return collection
 }

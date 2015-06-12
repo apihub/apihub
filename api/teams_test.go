@@ -50,6 +50,29 @@ func (s *S) TestCreateTeamWithCustomAlias(c *C) {
 	c.Assert(string(body), Equals, fmt.Sprintf(`{"name":"Backstage Team","alias":"%s","users":["%s"],"owner":"%s"}`, alias, user.Email, user.Email))
 }
 
+func (s *S) TestCreateTeamWhenAlreadyExists(c *C) {
+	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team.Create(user)
+
+	defer func() {
+		store, _ := s.store()
+		store.DeleteTeamByAlias(team.Alias)
+	}()
+
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "POST",
+		Path:    "/api/teams",
+		Body:    fmt.Sprintf(`{"name": "Backstage Team", "alias": "%s"}`, team.Alias),
+		Headers: http.Header{"Authorization": {s.authHeader}},
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusBadRequest)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"error":"bad_request","error_description":"Someone already has that team alias. Could you try another?"}`)
+
+}
+
 func (s *S) TestCreateTeamWithoutSignIn(c *C) {
 	testWithoutSignIn(RequestArgs{Method: "POST", Path: "/api/teams", Body: `{"name": "Backstage Team"}`}, c)
 }

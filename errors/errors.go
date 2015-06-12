@@ -34,6 +34,9 @@ var (
 	ErrUserNotFound              = errors.New("User not found.")
 	ErrUserMissingRequiredFields = errors.New("Name/Email/Password cannot be empty.")
 
+	ErrServiceMissingRequiredFields = errors.New("Endpoint/Subdomain/Team cannot be empty.")
+	ErrServiceDuplicateEntry        = errors.New("There is another service with this subdomain.")
+
 	ErrTeamMissingRequiredFields = errors.New("Name cannot be empty.")
 	ErrTeamDuplicateEntry        = errors.New("Someone already has that team alias. Could you try another?")
 )

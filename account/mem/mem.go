@@ -9,6 +9,7 @@ import (
 )
 
 type Mem struct {
+	Services   map[string]account.Service
 	Users      map[string]account.User
 	Teams      map[string]account.Team
 	Tokens     map[string]account.TokenInfo
@@ -17,6 +18,7 @@ type Mem struct {
 
 func New() account.Storable {
 	return &Mem{
+		Services:   make(map[string]account.Service),
 		Users:      make(map[string]account.User),
 		Teams:      make(map[string]account.Team),
 		Tokens:     make(map[string]account.TokenInfo),
@@ -109,4 +111,25 @@ func (m *Mem) DeleteToken(key string) error {
 	return nil
 }
 
+func (m *Mem) UpsertService(s account.Service) error {
+	m.Services[s.Subdomain] = s
+	return nil
+}
+
+func (m *Mem) DeleteService(s account.Service) error {
+	if _, ok := m.Services[s.Subdomain]; !ok {
+		return errors.NewNotFoundErrorNEW(errors.ErrServiceNotFound)
+	}
+
+	delete(m.Services, s.Subdomain)
+	return nil
+}
+
+func (m *Mem) FindServiceBySubdomain(subdomain string) (account.Service, error) {
+	if service, ok := m.Services[subdomain]; !ok {
+		return account.Service{}, errors.NewNotFoundErrorNEW(errors.ErrServiceNotFound)
+	} else {
+		return service, nil
+	}
+}
 func (m *Mem) Close() {}

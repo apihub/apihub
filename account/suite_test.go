@@ -29,11 +29,13 @@ func (s *S) TearDownSuite(c *C) {
 var team account.Team
 var owner account.User
 var alice account.User
+var service account.Service
 
 func (s *S) SetUpTest(c *C) {
 	team = account.Team{Name: "Backstage Team", Alias: "backstage"}
 	alice = account.User{Name: "Alice", Email: "alice@example.org", Password: "123456"}
 	owner = account.User{Name: "Owner", Email: "owner@example.org", Password: "123456"}
+	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage"}
 }
 
 // Run the tests in memory
