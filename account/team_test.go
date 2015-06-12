@@ -29,6 +29,30 @@ func (s *S) TestCreateTeamWithoutRequiredFields(c *C) {
 	c.Assert(ok, Equals, true)
 }
 
+func (s *S) TestUpdateTeam(c *C) {
+	err := team.Create(owner)
+	c.Assert(err, IsNil)
+	c.Assert(team.Name, Equals, "Backstage Team")
+
+	team.Name = "New name"
+	err = team.Update()
+	c.Assert(err, IsNil)
+	c.Assert(team.Name, Equals, "New name")
+	defer team.Delete(owner)
+}
+
+func (s *S) TestUpdateTeamWithoutRequiredFields(c *C) {
+	err := team.Create(owner)
+	c.Assert(err, IsNil)
+	c.Assert(team.Name, Equals, "Backstage Team")
+
+	team.Name = ""
+	err = team.Update()
+	_, ok := err.(errors.ValidationErrorNEW)
+	c.Assert(ok, Equals, true)
+	defer team.Delete(owner)
+}
+
 func (s *S) TestTeamExists(c *C) {
 	team.Create(owner)
 	c.Assert(team.Exists(), Equals, true)

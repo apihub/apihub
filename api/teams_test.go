@@ -260,6 +260,20 @@ func (s *S) TestAddUserWithoutSignIn(c *C) {
 		c)
 }
 
+func (s *S) TestAddUserNotFound(c *C) {
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "PUT",
+		Path:    "/api/teams/not-found/users",
+		Body:    `{"name": "New name"}`,
+		Headers: http.Header{"Authorization": {s.authHeader}},
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusNotFound)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"error":"not_found","error_description":"Team not found."}`)
+}
+
 func (s *S) TestRemoveUser(c *C) {
 	alice := account.User{Name: "alice", Email: "alice@bar.example.org", Password: "secret"}
 	alice.Create()
@@ -323,4 +337,80 @@ func (s *S) TestRemoveUserNotMember(c *C) {
 	c.Assert(code, Equals, http.StatusForbidden)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
 	c.Assert(string(body), Equals, `{"error":"access_denied","error_description":"You do not belong to this team!"}`)
+}
+
+func (s *S) TestRemoveUserNotFound(c *C) {
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "DELETE",
+		Path:    "/api/teams/not-found/users",
+		Body:    `{"name": "New name"}`,
+		Headers: http.Header{"Authorization": {s.authHeader}},
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusNotFound)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"error":"not_found","error_description":"Team not found."}`)
+}
+
+func (s *S) TestUpdateTeam(c *C) {
+	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team.Create(user)
+
+	defer func() {
+		store, _ := s.store()
+		store.DeleteTeamByAlias(team.Alias)
+	}()
+
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "PUT",
+		Path:    fmt.Sprintf("/api/teams/%s", team.Alias),
+		Body:    `{"name": "New name"}`,
+		Headers: http.Header{"Authorization": {s.authHeader}},
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusOK)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, fmt.Sprintf(`{"name":"New name","alias":"%s","users":["%s"],"owner":"%s"}`, team.Alias, user.Email, user.Email))
+}
+
+func (s *S) TestUpdateTeamNotMember(c *C) {
+	alice := account.User{Name: "alice", Email: "alice@bar.example.org", Password: "secret"}
+	alice.Create()
+	defer alice.Delete()
+
+	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team.Create(alice)
+
+	defer func() {
+		store, _ := s.store()
+		store.DeleteTeamByAlias(team.Alias)
+	}()
+
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "PUT",
+		Path:    fmt.Sprintf("/api/teams/%s", team.Alias),
+		Body:    `{"name": "New name"}`,
+		Headers: http.Header{"Authorization": {s.authHeader}},
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusForbidden)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"error":"access_denied","error_description":"You do not belong to this team!"}`)
+}
+
+func (s *S) TestUpdateTeamNotFound(c *C) {
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "PUT",
+		Path:    "/api/teams/not-found",
+		Body:    `{"name": "New name"}`,
+		Headers: http.Header{"Authorization": {s.authHeader}},
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusNotFound)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"error":"not_found","error_description":"Team not found."}`)
 }

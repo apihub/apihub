@@ -21,7 +21,7 @@ type Team struct {
 // It requires to inform the owner and a name.
 // If the `alias` is not informed, it will be generate based on the team name.
 func (team *Team) Create(owner User) error {
-	if team.Name == "" {
+	if !team.valid() {
 		return errors.NewValidationErrorNEW(errors.ErrTeamMissingRequiredFields)
 	}
 
@@ -43,6 +43,21 @@ func (team *Team) Create(owner User) error {
 	if team.Exists() {
 		return errors.NewValidationErrorNEW(errors.ErrTeamDuplicateEntry)
 	}
+
+	return store.UpsertTeam(*team)
+}
+
+func (team *Team) Update() error {
+	if !team.valid() {
+		return errors.NewValidationErrorNEW(errors.ErrTeamMissingRequiredFields)
+	}
+
+	store, err := NewStorable()
+	if err != nil {
+		Logger.Warn(err.Error())
+		return err
+	}
+	defer store.Close()
 
 	return store.UpsertTeam(*team)
 }
@@ -184,4 +199,11 @@ func (team *Team) RemoveUsers(emails []string) error {
 		return errOwner
 	}
 	return nil
+}
+
+func (team *Team) valid() bool {
+	if team.Name == "" {
+		return false
+	}
+	return true
 }

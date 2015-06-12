@@ -137,6 +137,32 @@ func teamRemoveUsers(rw http.ResponseWriter, r *http.Request) {
 	Ok(rw, team)
 }
 
+func teamUpdate(rw http.ResponseWriter, r *http.Request) {
+	user, err := GetCurrentUser(r)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	team, err := findTeamByAlias(mux.Vars(r)["alias"], user)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&team); err != nil {
+		handleError(rw, errors.ErrBadRequest)
+		return
+	}
+
+	if err := team.Update(); err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	Ok(rw, team)
+}
+
 func findTeamByAlias(alias string, user *account.User) (*account.Team, error) {
 	team, err := account.FindTeamByAlias(alias)
 	if err != nil {
