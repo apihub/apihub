@@ -194,3 +194,133 @@ func (s *S) TestTeamInfoWithoutPermission(c *C) {
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
 	c.Assert(string(body), Equals, `{"error":"access_denied","error_description":"You do not belong to this team!"}`)
 }
+
+func (s *S) TestAddUser(c *C) {
+	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team.Create(user)
+	defer func() {
+		store, _ := s.store()
+		store.DeleteTeamByAlias(team.Alias)
+	}()
+
+	alice := account.User{Name: "alice", Email: "alice@bar.example.org", Password: "secret"}
+	alice.Create()
+	defer alice.Delete()
+
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "PUT",
+		Path:    fmt.Sprintf("/api/teams/%s/users", team.Alias),
+		Headers: http.Header{"Authorization": {s.authHeader}},
+		Body:    fmt.Sprintf(`{"users": ["%s"]}`, alice.Email),
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusOK)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"name":"Backstage Team","alias":"backstage","users":["bob@bar.example.org","alice@bar.example.org"],"owner":"bob@bar.example.org"}`)
+}
+
+func (s *S) TestAddUserNotMember(c *C) {
+	alice := account.User{Name: "alice", Email: "alice@bar.example.org", Password: "secret"}
+	alice.Create()
+	defer alice.Delete()
+
+	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team.Create(alice)
+	defer func() {
+		store, _ := s.store()
+		store.DeleteTeamByAlias(team.Alias)
+	}()
+
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "PUT",
+		Path:    fmt.Sprintf("/api/teams/%s/users", team.Alias),
+		Headers: http.Header{"Authorization": {s.authHeader}},
+		Body:    fmt.Sprintf(`{"users": ["%s"]}`, alice.Email),
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusForbidden)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"error":"access_denied","error_description":"You do not belong to this team!"}`)
+}
+
+func (s *S) TestAddUserWithoutSignIn(c *C) {
+	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team.Create(user)
+	defer func() {
+		store, _ := s.store()
+		store.DeleteTeamByAlias(team.Alias)
+	}()
+
+	testWithoutSignIn(RequestArgs{
+		Method: "PUT",
+		Path:   fmt.Sprintf("/api/teams/%s/users", team.Alias),
+		Body:   `{"users": ["bob@example.org"]}`},
+		c)
+}
+
+func (s *S) TestRemoveUser(c *C) {
+	alice := account.User{Name: "alice", Email: "alice@bar.example.org", Password: "secret"}
+	alice.Create()
+	defer alice.Delete()
+
+	team := account.Team{Name: "Backstage Team", Alias: "backstage", Users: []string{alice.Email}}
+	team.Create(user)
+	defer func() {
+		store, _ := s.store()
+		store.DeleteTeamByAlias(team.Alias)
+	}()
+
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "DELETE",
+		Path:    fmt.Sprintf("/api/teams/%s/users", team.Alias),
+		Headers: http.Header{"Authorization": {s.authHeader}},
+		Body:    fmt.Sprintf(`{"users": ["%s"]}`, alice.Email),
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusOK)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"name":"Backstage Team","alias":"backstage","users":["bob@bar.example.org"],"owner":"bob@bar.example.org"}`)
+}
+
+func (s *S) TestRemoveUserWithoutSignIn(c *C) {
+	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team.Create(user)
+	defer func() {
+		store, _ := s.store()
+		store.DeleteTeamByAlias(team.Alias)
+	}()
+
+	testWithoutSignIn(RequestArgs{
+		Method: "DELETE",
+		Path:   fmt.Sprintf("/api/teams/%s/users", team.Alias),
+		Body:   `{"users": ["bob@example.org"]}`},
+		c)
+}
+
+func (s *S) TestRemoveUserNotMember(c *C) {
+	alice := account.User{Name: "alice", Email: "alice@bar.example.org", Password: "secret"}
+	alice.Create()
+	defer alice.Delete()
+
+	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team.Create(alice)
+	defer func() {
+		store, _ := s.store()
+		store.DeleteTeamByAlias(team.Alias)
+	}()
+
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "DELETE",
+		Path:    fmt.Sprintf("/api/teams/%s/users", team.Alias),
+		Headers: http.Header{"Authorization": {s.authHeader}},
+		Body:    fmt.Sprintf(`{"users": ["%s"]}`, alice.Email),
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusForbidden)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"error":"access_denied","error_description":"You do not belong to this team!"}`)
+}

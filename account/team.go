@@ -25,7 +25,7 @@ func (team *Team) Create(owner User) error {
 		return errors.NewValidationErrorNEW(errors.ErrTeamMissingRequiredFields)
 	}
 
-	team.Users = []string{owner.Email}
+	team.Users = append(team.Users, owner.Email)
 	team.Owner = owner.Email
 	if team.Alias == "" {
 		team.Alias = utils.GenerateSlug(team.Name)
@@ -106,4 +106,82 @@ func (team *Team) ContainsUser(user *User) (int, error) {
 		}
 	}
 	return -1, errors.NewForbiddenErrorNEW(errors.ErrUserNotInTeam)
+}
+
+// Add valid user in the team.
+//
+// Update the database only if the user is valid.
+// Otherwise, ignore invalid or non-existing users.
+// Do nothing if the user is already in the team.
+func (team *Team) AddUsers(emails []string) error {
+	store, err := NewStorable()
+	if err != nil {
+		Logger.Warn(err.Error())
+		return err
+	}
+	defer store.Close()
+
+	var newUser bool
+	var user *User
+	for _, email := range emails {
+		user = &User{Email: email}
+		if !user.Exists() {
+			continue
+		}
+		if _, err := team.ContainsUser(user); err != nil {
+			team.Users = append(team.Users, user.Email)
+			newUser = true
+		}
+	}
+
+	if newUser {
+		return store.UpsertTeam(*team)
+	}
+	return nil
+}
+
+// Remove a user from the team.
+//
+// Do nothing if the user is not in the team.
+// Return an error if trying to remove the owner. It's not allowed to do that.
+func (team *Team) RemoveUsers(emails []string) error {
+	store, err := NewStorable()
+	if err != nil {
+		Logger.Warn(err.Error())
+		return err
+	}
+	defer store.Close()
+
+	var (
+		errOwner     errors.ValidationErrorNEW
+		removedUsers bool
+		user         *User
+	)
+	for _, email := range emails {
+		if team.Owner == email {
+			errOwner = errors.NewValidationErrorNEW(errors.ErrRemoveOwnerFromTeam)
+			err = &errOwner
+			continue
+		}
+
+		user = &User{Email: email}
+		if !user.Exists() {
+			continue
+		}
+		if i, err := team.ContainsUser(user); err == nil {
+			hi := len(team.Users) - 1
+			if hi > i {
+				team.Users[i] = team.Users[hi]
+			}
+			team.Users = team.Users[:hi]
+			removedUsers = true
+		}
+	}
+	if removedUsers {
+		return store.UpsertTeam(*team)
+	}
+	if err != nil {
+		return errOwner
+	}
+	return nil
 }

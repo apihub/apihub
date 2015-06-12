@@ -81,3 +81,67 @@ func teamInfo(rw http.ResponseWriter, r *http.Request) {
 
 	Ok(rw, team)
 }
+
+func teamAddUsers(rw http.ResponseWriter, r *http.Request) {
+	user, err := GetCurrentUser(r)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	team, err := account.FindTeamByAlias(mux.Vars(r)["alias"])
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+	if _, err := team.ContainsUser(user); err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	var t *account.Team
+	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
+		handleError(rw, errors.ErrBadRequest)
+		return
+	}
+
+	err = team.AddUsers(t.Users)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	Ok(rw, team)
+}
+
+func teamRemoveUsers(rw http.ResponseWriter, r *http.Request) {
+	user, err := GetCurrentUser(r)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	team, err := account.FindTeamByAlias(mux.Vars(r)["alias"])
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+	if _, err := team.ContainsUser(user); err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	var t *account.Team
+	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
+		handleError(rw, errors.ErrBadRequest)
+		return
+	}
+
+	err = team.RemoveUsers(t.Users)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	Ok(rw, team)
+}

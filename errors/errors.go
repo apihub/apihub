@@ -15,6 +15,7 @@ const (
 
 var (
 	ErrAuthenticationFailed   = errors.New("Authentication failed.")
+	ErrRemoveOwnerFromTeam    = errors.New("It is not possible to remove the owner from the team.")
 	ErrUnauthorizedAccess     = errors.New("Request refused or access is not allowed.")
 	ErrBadRequest             = errors.New("The request was invalid or cannot be served.")
 	ErrClientNotFound         = errors.New("Client not found.")
