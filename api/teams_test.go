@@ -12,8 +12,7 @@ func (s *S) TestCreateTeam(c *C) {
 	alias := "backstage-team"
 
 	defer func() {
-		store, _ := s.store()
-		store.DeleteTeamByAlias(alias)
+		s.store.DeleteTeamByAlias(alias)
 	}()
 
 	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
@@ -33,8 +32,7 @@ func (s *S) TestCreateTeamWithCustomAlias(c *C) {
 	alias := "backstage"
 
 	defer func() {
-		store, _ := s.store()
-		store.DeleteTeamByAlias(alias)
+		s.store.DeleteTeamByAlias(alias)
 	}()
 
 	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
@@ -55,8 +53,7 @@ func (s *S) TestCreateTeamWhenAlreadyExists(c *C) {
 	team.Create(user)
 
 	defer func() {
-		store, _ := s.store()
-		store.DeleteTeamByAlias(team.Alias)
+		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
 	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
@@ -136,8 +133,7 @@ func (s *S) TestDeleteTeamWithoutPermission(c *C) {
 	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
 	team.Create(alice)
 	defer func() {
-		store, _ := s.store()
-		store.DeleteTeamByAlias(team.Alias)
+		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
 	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
@@ -202,8 +198,7 @@ func (s *S) TestTeamInfoWithoutPermission(c *C) {
 	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
 	team.Create(alice)
 	defer func() {
-		store, _ := s.store()
-		store.DeleteTeamByAlias(team.Alias)
+		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
 	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
@@ -222,8 +217,7 @@ func (s *S) TestAddUser(c *C) {
 	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
 	team.Create(user)
 	defer func() {
-		store, _ := s.store()
-		store.DeleteTeamByAlias(team.Alias)
+		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
 	alice := account.User{Name: "alice", Email: "alice@bar.example.org", Password: "secret"}
@@ -251,8 +245,7 @@ func (s *S) TestAddUserNotMember(c *C) {
 	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
 	team.Create(alice)
 	defer func() {
-		store, _ := s.store()
-		store.DeleteTeamByAlias(team.Alias)
+		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
 	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
@@ -272,8 +265,7 @@ func (s *S) TestAddUserWithoutSignIn(c *C) {
 	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
 	team.Create(user)
 	defer func() {
-		store, _ := s.store()
-		store.DeleteTeamByAlias(team.Alias)
+		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
 	testWithoutSignIn(RequestArgs{
@@ -305,8 +297,7 @@ func (s *S) TestRemoveUser(c *C) {
 	team := account.Team{Name: "Backstage Team", Alias: "backstage", Users: []string{alice.Email}}
 	team.Create(user)
 	defer func() {
-		store, _ := s.store()
-		store.DeleteTeamByAlias(team.Alias)
+		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
 	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
@@ -326,8 +317,7 @@ func (s *S) TestRemoveUserWithoutSignIn(c *C) {
 	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
 	team.Create(user)
 	defer func() {
-		store, _ := s.store()
-		store.DeleteTeamByAlias(team.Alias)
+		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
 	testWithoutSignIn(RequestArgs{
@@ -345,8 +335,7 @@ func (s *S) TestRemoveUserNotMember(c *C) {
 	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
 	team.Create(alice)
 	defer func() {
-		store, _ := s.store()
-		store.DeleteTeamByAlias(team.Alias)
+		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
 	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
@@ -381,8 +370,7 @@ func (s *S) TestUpdateTeam(c *C) {
 	team.Create(user)
 
 	defer func() {
-		store, _ := s.store()
-		store.DeleteTeamByAlias(team.Alias)
+		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
 	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
@@ -407,8 +395,7 @@ func (s *S) TestUpdateTeamNotMember(c *C) {
 	team.Create(alice)
 
 	defer func() {
-		store, _ := s.store()
-		store.DeleteTeamByAlias(team.Alias)
+		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
 	headers, code, body, err := httpClient.MakeRequest(RequestArgs{

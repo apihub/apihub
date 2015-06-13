@@ -13,10 +13,9 @@ func (s *S) TestCreateService(c *C) {
 	subdomain := "backstage"
 
 	defer func() {
-		store, _ := s.store()
-		serv, _ := store.FindServiceBySubdomain(subdomain)
-		store.DeleteService(serv)
-		store.DeleteTeamByAlias(team.Alias)
+		serv, _ := s.store.FindServiceBySubdomain(subdomain)
+		s.store.DeleteService(serv)
+		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
 	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
@@ -38,10 +37,9 @@ func (s *S) TestCreateServiceWhenAlreadyExists(c *C) {
 	service.Create(user, team)
 
 	defer func() {
-		store, _ := s.store()
-		serv, _ := store.FindServiceBySubdomain(service.Subdomain)
-		store.DeleteService(serv)
-		store.DeleteTeamByAlias(team.Alias)
+		serv, _ := s.store.FindServiceBySubdomain(service.Subdomain)
+		s.store.DeleteService(serv)
+		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
 	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
@@ -94,10 +92,9 @@ func (s *S) TestUpdateService(c *C) {
 	service.Create(user, team)
 
 	defer func() {
-		store, _ := s.store()
-		serv, _ := store.FindServiceBySubdomain(service.Subdomain)
-		store.DeleteService(serv)
-		store.DeleteTeamByAlias(team.Alias)
+		serv, _ := s.store.FindServiceBySubdomain(service.Subdomain)
+		s.store.DeleteService(serv)
+		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
 	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
@@ -134,10 +131,9 @@ func (s *S) TestUpdateServiceNotMember(c *C) {
 	t.Create(alice)
 	service.Create(alice, t)
 	defer func() {
-		store, _ := s.store()
-		serv, _ := store.FindServiceBySubdomain(service.Subdomain)
-		store.DeleteService(serv)
-		store.DeleteTeamByAlias(t.Alias)
+		serv, _ := s.store.FindServiceBySubdomain(service.Subdomain)
+		s.store.DeleteService(serv)
+		s.store.DeleteTeamByAlias(t.Alias)
 		alice.Delete()
 	}()
 
@@ -180,9 +176,8 @@ func (s *S) TestDeleteServiceWithoutPermission(c *C) {
 
 	service.Create(alice, team)
 	defer func() {
-		store, _ := s.store()
-		serv, _ := store.FindServiceBySubdomain(service.Subdomain)
-		store.DeleteService(serv)
+		serv, _ := s.store.FindServiceBySubdomain(service.Subdomain)
+		s.store.DeleteService(serv)
 	}()
 
 	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
@@ -218,10 +213,9 @@ func (s *S) TestServiceInfo(c *C) {
 	team.Create(user)
 	service.Create(user, team)
 	defer func() {
-		store, _ := s.store()
-		serv, _ := store.FindServiceBySubdomain(service.Subdomain)
-		store.DeleteService(serv)
-		store.DeleteTeamByAlias(team.Alias)
+		serv, _ := s.store.FindServiceBySubdomain(service.Subdomain)
+		s.store.DeleteService(serv)
+		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
 	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
@@ -243,10 +237,9 @@ func (s *S) TestServiceInfoNotMember(c *C) {
 	t.Create(alice)
 	service.Create(alice, t)
 	defer func() {
-		store, _ := s.store()
-		serv, _ := store.FindServiceBySubdomain(service.Subdomain)
-		store.DeleteService(serv)
-		store.DeleteTeamByAlias(t.Alias)
+		serv, _ := s.store.FindServiceBySubdomain(service.Subdomain)
+		s.store.DeleteService(serv)
+		s.store.DeleteTeamByAlias(t.Alias)
 		alice.Delete()
 	}()
 
@@ -279,10 +272,9 @@ func (s *S) TestServiceList(c *C) {
 	team.Create(user)
 	service.Create(user, team)
 	defer func() {
-		store, _ := s.store()
-		serv, _ := store.FindServiceBySubdomain(service.Subdomain)
-		store.DeleteService(serv)
-		store.DeleteTeamByAlias(team.Alias)
+		serv, _ := s.store.FindServiceBySubdomain(service.Subdomain)
+		s.store.DeleteService(serv)
+		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
 	headers, code, body, err := httpClient.MakeRequest(RequestArgs{

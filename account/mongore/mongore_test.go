@@ -13,10 +13,10 @@ func TestMongore(t *testing.T) {
 		DatabaseName: "backstage_mongore_test",
 	}
 
-	m, _ := New(config)
+	m := New(config)
 	Suite(&test.StorableSuite{Storage: m})
 	TestingT(t)
 
-	m.(*Mongore).store.Collection("db").Database.DropDatabase()
+	m.(*Mongore).openSession().Collection("db").Database.DropDatabase()
 	m.Close()
 }

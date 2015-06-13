@@ -2,7 +2,6 @@ package account
 
 import (
 	"github.com/backstage/backstage/errors"
-	. "github.com/backstage/backstage/log"
 	utils "github.com/mrvdot/golang-utils"
 )
 
@@ -33,13 +32,6 @@ func (team *Team) Create(owner User) error {
 		team.Alias = utils.GenerateSlug(team.Alias)
 	}
 
-	store, err := NewStorable()
-	if err != nil {
-		Logger.Warn(err.Error())
-		return err
-	}
-	defer store.Close()
-
 	if team.Exists() {
 		return errors.NewValidationErrorNEW(errors.ErrTeamDuplicateEntry)
 	}
@@ -52,45 +44,22 @@ func (team *Team) Update() error {
 		return errors.NewValidationErrorNEW(errors.ErrTeamMissingRequiredFields)
 	}
 
-	store, err := NewStorable()
-	if err != nil {
-		Logger.Warn(err.Error())
-		return err
-	}
-	defer store.Close()
-
 	return store.UpsertTeam(*team)
 }
 
 // Delete removes an existing team from the server.
 func (team Team) Delete(owner User) error {
-	store, err := NewStorable()
-	if err != nil {
-		Logger.Warn(err.Error())
-		return err
-	}
-	defer store.Close()
-
-	if err != nil || team.Owner != owner.Email {
+	if team.Owner != owner.Email {
 		return errors.NewForbiddenErrorNEW(errors.ErrOnlyOwnerHasPermission)
 	}
 
-	err = store.DeleteTeam(team)
-
-	return err
+	return store.DeleteTeam(team)
 }
 
 // Exists checks if there is a team with the same alias in the database.
 // Returns `true` if so, and `false` otherwise.
 func (team Team) Exists() bool {
-	store, err := NewStorable()
-	if err != nil {
-		Logger.Warn(err.Error())
-		return false
-	}
-	defer store.Close()
-
-	_, err = store.FindTeamByAlias(team.Alias)
+	_, err := store.FindTeamByAlias(team.Alias)
 	if err != nil {
 		return false
 	}
@@ -98,13 +67,6 @@ func (team Team) Exists() bool {
 }
 
 func FindTeamByAlias(alias string) (*Team, error) {
-	store, err := NewStorable()
-	if err != nil {
-		Logger.Warn(err.Error())
-		return nil, err
-	}
-	defer store.Close()
-
 	team, err := store.FindTeamByAlias(alias)
 	if err != nil {
 		return nil, err
@@ -129,13 +91,6 @@ func (team *Team) ContainsUser(user *User) (int, error) {
 // Otherwise, ignore invalid or non-existing users.
 // Do nothing if the user is already in the team.
 func (team *Team) AddUsers(emails []string) error {
-	store, err := NewStorable()
-	if err != nil {
-		Logger.Warn(err.Error())
-		return err
-	}
-	defer store.Close()
-
 	var newUser bool
 	var user *User
 	for _, email := range emails {
@@ -160,17 +115,11 @@ func (team *Team) AddUsers(emails []string) error {
 // Do nothing if the user is not in the team.
 // Return an error if trying to remove the owner. It's not allowed to do that.
 func (team *Team) RemoveUsers(emails []string) error {
-	store, err := NewStorable()
-	if err != nil {
-		Logger.Warn(err.Error())
-		return err
-	}
-	defer store.Close()
-
 	var (
 		errOwner     errors.ValidationErrorNEW
 		removedUsers bool
 		user         *User
+		err          interface{}
 	)
 
 	for _, email := range emails {

@@ -25,37 +25,21 @@ func (user *User) Create() error {
 	}
 
 	user.hashPassword()
-	store, err := NewStorable()
-	if err != nil {
-		Logger.Warn(err.Error())
-		return err
-	}
-	defer store.Close()
-
 	if user.Exists() {
 		return errors.NewValidationErrorNEW(errors.ErrUserDuplicateEntry)
 	}
 
-	err = store.UpsertUser(*user)
-	return err
+	return store.UpsertUser(*user)
 }
 
 // Updates the password for an existing account.
 func (user *User) ChangePassword() error {
-	store, err := NewStorable()
-	if err != nil {
-		Logger.Warn(err.Error())
-		return err
-	}
-	defer store.Close()
-
 	if !user.Exists() {
 		return errors.NewNotFoundErrorNEW(errors.ErrUserNotFound)
 	}
 
 	user.hashPassword()
-	err = store.UpsertUser(*user)
-	return err
+	return store.UpsertUser(*user)
 }
 
 // Delete removes an existing user from the server.
@@ -64,28 +48,13 @@ func (user *User) ChangePassword() error {
 // is the only member are deleted along with the user account.
 // It returns an error if the user is not found.
 func (user User) Delete() error {
-	store, err := NewStorable()
-	if err != nil {
-		Logger.Warn(err.Error())
-		return err
-	}
-	defer store.Close()
-
-	err = store.DeleteUser(user)
-	return err
+	return store.DeleteUser(user)
 }
 
 // Exists checks if there is a user with the same email in the database.
 // Returns `true` if so, and `false` otherwise.
 func (user User) Exists() bool {
-	store, err := NewStorable()
-	if err != nil {
-		Logger.Warn(err.Error())
-		return false
-	}
-	defer store.Close()
-
-	_, err = store.FindUserByEmail(user.Email)
+	_, err := store.FindUserByEmail(user.Email)
 	if err != nil {
 		return false
 	}
@@ -93,24 +62,10 @@ func (user User) Exists() bool {
 }
 
 func (user *User) Teams() ([]Team, error) {
-	store, err := NewStorable()
-	if err != nil {
-		Logger.Warn(err.Error())
-		return []Team{}, err
-	}
-	defer store.Close()
-
 	return store.UserTeams(*user)
 }
 
 func (user *User) Services() ([]Service, error) {
-	store, err := NewStorable()
-	if err != nil {
-		Logger.Warn(err.Error())
-		return []Service{}, err
-	}
-	defer store.Close()
-
 	return store.UserServices(*user)
 }
 

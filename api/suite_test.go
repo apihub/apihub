@@ -24,13 +24,14 @@ var user account.User
 type S struct {
 	api        *api.Api
 	authHeader string
-	store      func() (account.Storable, error)
+	store      account.Storable
 	server     *httptest.Server
 }
 
-func (s *S) SetUpSuite(c *C) {
-	// setUpMemoryTest(s)
+// func (s *S) SetUpSuite(c *C) {
+func (s *S) SetUpTest(c *C) {
 	setUpMongoreTest(s)
+	// setUpMemoryTest(s)
 
 	s.api = api.NewApi(s.store)
 	s.server = httptest.NewServer(s.api.Handler())
@@ -38,9 +39,6 @@ func (s *S) SetUpSuite(c *C) {
 
 	team = account.Team{Name: "Backstage Team", Alias: "backstage"}
 	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage"}
-}
-
-func (s *S) SetUpTest(c *C) {
 	user = account.User{Name: "Bob", Email: "bob@bar.example.org", Password: "secret"}
 	user.Create()
 	token, err := s.api.Login(user.Email, "secret")
@@ -62,21 +60,15 @@ var _ = Suite(&S{})
 
 // Run the tests in memory
 func setUpMemoryTest(s *S) {
-	mem := mem.New()
-	s.store = func() (account.Storable, error) {
-		return mem, nil
-	}
+	s.store = mem.New()
 }
 
 // Run the tests using MongoRe
 func setUpMongoreTest(s *S) {
-	cfg := mongore.Config{
+	s.store = mongore.New(mongore.Config{
 		Host:         "127.0.0.1:27017",
 		DatabaseName: "backstage_api_test",
-	}
-	s.store = func() (account.Storable, error) {
-		return mongore.New(cfg)
-	}
+	})
 }
 
 func testWithoutSignIn(reqArgs RequestArgs, c *C) {

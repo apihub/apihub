@@ -25,23 +25,15 @@ type Authenticatable interface {
 }
 
 type auth struct {
-	store func() (account.Storable, error)
+	store account.Storable
 }
 
-func NewAuth(store func() (account.Storable, error)) *auth {
+func NewAuth(store account.Storable) *auth {
 	return &auth{store: store}
 }
 
 func (a *auth) Authenticate(email, password string) (*account.User, bool) {
-	// FIXME
-	store, err := a.store()
-	if err != nil {
-		Logger.Warn(err.Error())
-		return nil, false
-	}
-	defer store.Close()
-
-	user, err := store.FindUserByEmail(email)
+	user, err := a.store.FindUserByEmail(email)
 	if err != nil {
 		Logger.Info("Failed trying to find the user '%s' to log in. Original Error: '%s'.", email, err.Error())
 		return nil, false
@@ -57,13 +49,6 @@ func (a *auth) Authenticate(email, password string) (*account.User, bool) {
 }
 
 func (a *auth) CreateUserToken(user *account.User) (*account.TokenInfo, error) {
-	store, err := a.store()
-	if err != nil {
-		Logger.Warn(err.Error())
-		return nil, err
-	}
-	defer store.Close()
-
 	api := account.TokenInfo{
 		CreatedAt: time.Now().In(time.UTC).Format("2006-01-02T15:04:05Z07:00"),
 		Expires:   EXPIRES_IN_SECONDS,
@@ -72,7 +57,11 @@ func (a *auth) CreateUserToken(user *account.User) (*account.TokenInfo, error) {
 		User:      user,
 	}
 
-	err = store.CreateToken(api)
+	err := a.store.CreateToken(api)
+	if err != nil {
+		return nil, err
+	}
+
 	return &api, err
 }
 
@@ -84,15 +73,7 @@ func (a *auth) UserFromToken(token string) (*account.User, error) {
 		if apiToken.Type == TOKEN_TYPE {
 			var user account.User
 
-			store, err := a.store()
-			if err != nil {
-				Logger.Warn(err.Error())
-				return nil, err
-			}
-			defer store.Close()
-
-			err = store.DecodeToken(apiToken.Token, &user)
-			if err != nil {
+			if err := a.store.DecodeToken(apiToken.Token, &user); err != nil {
 				return nil, err
 			}
 			if user.Email == "" {
@@ -110,18 +91,11 @@ func (a *auth) RevokeUserToken(token string) error {
 	user, err := a.UserFromToken(token)
 
 	if err == nil && user.Email != "" {
-		store, err := a.store()
-		if err != nil {
-			Logger.Warn(err.Error())
-			return err
-		}
-		defer store.Close()
-
 		key := fmt.Sprintf("%s: %s", TOKEN_TYPE, user.Email)
-		err = store.DeleteToken(key)
+		err = a.store.DeleteToken(key)
 		if err == nil {
 			h := strings.Split(token, " ")
-			err = store.DeleteToken(h[1])
+			err = a.store.DeleteToken(h[1])
 		}
 	}
 

@@ -26,4 +26,9 @@ type Storable interface {
 	Close()
 }
 
-var NewStorable func() (Storable, error)
+// var NewStorable func() (Storable, error)
+var store Storable
+
+func Storage(s Storable) {
+	store = s
+}

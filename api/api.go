@@ -24,11 +24,10 @@ type Api struct {
 	router *mux.Router
 }
 
-func NewApi(store func() (account.Storable, error)) *Api {
-	// FIXME need to improve this.
-	account.NewStorable = store
-
+func NewApi(store account.Storable) *Api {
 	api := &Api{router: mux.NewRouter(), auth: auth.NewAuth(store)}
+	api.Storage(store)
+
 	api.router.HandleFunc("/", homeHandler)
 	api.router.NotFoundHandler = http.HandlerFunc(api.notFoundHandler)
 
@@ -105,6 +104,13 @@ func (api *Api) Handler() http.Handler {
 // To be compatible, it is needed to implement the Authenticatable interface.
 func (api *Api) SetAuth(auth auth.Authenticatable) {
 	api.auth = auth
+}
+
+// Allow to override the default storage engine.
+// To be compatible, it is needed to implement the Storable interface.
+func (api *Api) Storage(store account.Storable) {
+	account.Storage(store)
+	api.auth = auth.NewAuth(store)
 }
 
 func (api *Api) Run() {

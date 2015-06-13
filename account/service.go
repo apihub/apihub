@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/backstage/backstage/errors"
-	. "github.com/backstage/backstage/log"
 )
 
 type Service struct {
@@ -28,13 +27,6 @@ func (service *Service) Create(owner User, team Team) error {
 		return errors.NewValidationErrorNEW(errors.ErrServiceMissingRequiredFields)
 	}
 
-	store, err := NewStorable()
-	if err != nil {
-		Logger.Warn(err.Error())
-		return err
-	}
-	defer store.Close()
-
 	if service.Exists() {
 		return errors.NewValidationErrorNEW(errors.ErrServiceDuplicateEntry)
 	}
@@ -47,13 +39,6 @@ func (service *Service) Update() error {
 		return errors.NewValidationErrorNEW(errors.ErrServiceMissingRequiredFields)
 	}
 
-	store, err := NewStorable()
-	if err != nil {
-		Logger.Warn(err.Error())
-		return err
-	}
-	defer store.Close()
-
 	if !service.Exists() {
 		return errors.NewNotFoundErrorNEW(errors.ErrServiceNotFound)
 	}
@@ -62,31 +47,17 @@ func (service *Service) Update() error {
 }
 
 func (service Service) Delete(owner User) error {
-	store, err := NewStorable()
-	if err != nil {
-		Logger.Warn(err.Error())
-		return err
-	}
-	defer store.Close()
-
-	if err != nil || service.Owner != owner.Email {
+	if service.Owner != owner.Email {
 		return errors.NewForbiddenErrorNEW(errors.ErrOnlyOwnerHasPermission)
 	}
 
-	err = store.DeleteService(service)
+	err := store.DeleteService(service)
 
 	return err
 }
 
 func (service Service) Exists() bool {
-	store, err := NewStorable()
-	if err != nil {
-		Logger.Warn(err.Error())
-		return false
-	}
-	defer store.Close()
-
-	_, err = store.FindServiceBySubdomain(service.Subdomain)
+	_, err := store.FindServiceBySubdomain(service.Subdomain)
 	if err != nil {
 		return false
 	}
@@ -94,13 +65,6 @@ func (service Service) Exists() bool {
 }
 
 func FindServiceBySubdomain(subdomain string) (*Service, error) {
-	store, err := NewStorable()
-	if err != nil {
-		Logger.Warn(err.Error())
-		return nil, err
-	}
-	defer store.Close()
-
 	service, err := store.FindServiceBySubdomain(subdomain)
 	if err != nil {
 		return nil, err

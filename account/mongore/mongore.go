@@ -9,25 +9,16 @@ import (
 	"github.com/backstage/backstage/errors"
 	. "github.com/backstage/backstage/log"
 	"github.com/fatih/structs"
-	"github.com/tsuru/tsuru/db/storage"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
 type Mongore struct {
-	store *storage.Storage
+	config Config
 }
 
-func New(config Config) (account.Storable, error) {
-	conn, err := getConnection(config)
-	if err != nil {
-		panic(fmt.Sprintf("Error while establishing connection to MongoDB: %s", err.Error()))
-		return nil, err
-	}
-
-	return &Mongore{
-		store: conn,
-	}, nil
+func New(config Config) account.Storable {
+	return &Mongore{config: config}
 }
 
 func (m *Mongore) UpsertUser(u account.User) error {
@@ -219,5 +210,5 @@ func (m *Mongore) UserServices(user account.User) ([]account.Service, error) {
 }
 
 func (m *Mongore) Close() {
-	m.store.Close()
+
 }

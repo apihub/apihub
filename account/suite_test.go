@@ -18,11 +18,6 @@ var _ = Suite(&S{})
 //Hook up gocheck into the "go test" runner.
 func Test(t *testing.T) { TestingT(t) }
 
-func (s *S) SetUpSuite(c *C) {
-	// setUpMemoryTest(s)
-	setUpMongoreTest(s)
-}
-
 func (s *S) TearDownSuite(c *C) {
 }
 
@@ -32,6 +27,9 @@ var alice account.User
 var service account.Service
 
 func (s *S) SetUpTest(c *C) {
+	// setUpMemoryTest(s)
+	setUpMongoreTest(s)
+
 	team = account.Team{Name: "Backstage Team", Alias: "backstage"}
 	alice = account.User{Name: "Alice", Email: "alice@example.org", Password: "123456"}
 	owner = account.User{Name: "Owner", Email: "owner@example.org", Password: "123456"}
@@ -40,19 +38,13 @@ func (s *S) SetUpTest(c *C) {
 
 // Run the tests in memory
 func setUpMemoryTest(s *S) {
-	s.store = mem.New()
-	account.NewStorable = func() (account.Storable, error) {
-		return s.store, nil
-	}
+	account.Storage(mem.New())
 }
 
 // Run the tests using MongoRe
 func setUpMongoreTest(s *S) {
-	cfg := mongore.Config{
+	account.Storage(mongore.New(mongore.Config{
 		Host:         "127.0.0.1:27017",
 		DatabaseName: "backstage_account_test",
-	}
-	account.NewStorable = func() (account.Storable, error) {
-		return mongore.New(cfg)
-	}
+	}))
 }

@@ -10,8 +10,7 @@ import (
 
 func (s *S) TestCreateUser(c *C) {
 	defer func() {
-		store, _ := s.store()
-		u, _ := store.FindUserByEmail("alice@example.org")
+		u, _ := s.store.FindUserByEmail("alice@example.org")
 		u.Delete()
 	}()
 
@@ -126,8 +125,7 @@ func (s *S) TestLogoutUserWithInvalidToken(c *C) {
 
 func (s *S) TestChangePassword(c *C) {
 	defer func() {
-		store, _ := s.store()
-		u, _ := store.FindUserByEmail("bob@bar.example.org")
+		u, _ := s.store.FindUserByEmail("bob@bar.example.org")
 		u.Delete()
 	}()
 

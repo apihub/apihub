@@ -1,6 +1,8 @@
 package mongore
 
 import (
+	"fmt"
+
 	"github.com/tsuru/tsuru/db/storage"
 )
 
@@ -9,14 +11,18 @@ const (
 	DefaultDatabaseName = "backstage"
 )
 
-func getConnection(config Config) (*storage.Storage, error) {
-	if config.Host == "" {
-		config.Host = DefaultDatabaseHost
+func (m *Mongore) openSession() *storage.Storage {
+	if m.config.Host == "" {
+		m.config.Host = DefaultDatabaseHost
 	}
-	if config.DatabaseName == "" {
-		config.DatabaseName = DefaultDatabaseName
+	if m.config.DatabaseName == "" {
+		m.config.DatabaseName = DefaultDatabaseName
 	}
 
-	s, err := storage.Open(config.Host, config.DatabaseName)
-	return s, err
+	s, err := storage.Open(m.config.Host, m.config.DatabaseName)
+	if err != nil {
+		panic(fmt.Sprintf("Error while establishing connection to MongoDB: %s", err.Error()))
+		return nil
+	}
+	return s
 }
