@@ -22,7 +22,11 @@ func New(config Config) account.Storable {
 }
 
 func (m *Mongore) UpsertUser(u account.User) error {
-	_, err := m.Users().Upsert(bson.M{"email": u.Email}, u)
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
+	_, err := strg.Users().Upsert(bson.M{"email": u.Email}, u)
 
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -32,7 +36,11 @@ func (m *Mongore) UpsertUser(u account.User) error {
 }
 
 func (m *Mongore) DeleteUser(u account.User) error {
-	err := m.Users().Remove(u)
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
+	err := strg.Users().Remove(u)
 
 	if err == mgo.ErrNotFound {
 		return errors.NewNotFoundErrorNEW(errors.ErrUserNotFound)
@@ -45,8 +53,12 @@ func (m *Mongore) DeleteUser(u account.User) error {
 }
 
 func (m *Mongore) FindUserByEmail(email string) (account.User, error) {
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
 	user := account.User{}
-	err := m.Users().Find(bson.M{"email": email}).One(&user)
+	err := strg.Users().Find(bson.M{"email": email}).One(&user)
 
 	if err == mgo.ErrNotFound {
 		return account.User{}, errors.NewNotFoundErrorNEW(errors.ErrUserNotFound)
@@ -59,13 +71,21 @@ func (m *Mongore) FindUserByEmail(email string) (account.User, error) {
 }
 
 func (m *Mongore) UserTeams(user account.User) ([]account.Team, error) {
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
 	teams := []account.Team{}
-	err := m.Teams().Find(bson.M{"users": bson.M{"$in": []string{user.Email}}}).All(&teams)
+	err := strg.Teams().Find(bson.M{"users": bson.M{"$in": []string{user.Email}}}).All(&teams)
 	return teams, err
 }
 
 func (m *Mongore) UpsertTeam(t account.Team) error {
-	_, err := m.Teams().Upsert(bson.M{"alias": t.Alias}, t)
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
+	_, err := strg.Teams().Upsert(bson.M{"alias": t.Alias}, t)
 
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -75,7 +95,11 @@ func (m *Mongore) UpsertTeam(t account.Team) error {
 }
 
 func (m *Mongore) DeleteTeam(t account.Team) error {
-	err := m.Teams().Remove(t)
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
+	err := strg.Teams().Remove(t)
 
 	if err == mgo.ErrNotFound {
 		return errors.NewNotFoundErrorNEW(errors.ErrTeamNotFound)
@@ -88,8 +112,12 @@ func (m *Mongore) DeleteTeam(t account.Team) error {
 }
 
 func (m *Mongore) FindTeamByAlias(alias string) (account.Team, error) {
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
 	team := account.Team{}
-	err := m.Teams().Find(bson.M{"alias": alias}).One(&team)
+	err := strg.Teams().Find(bson.M{"alias": alias}).One(&team)
 
 	if err == mgo.ErrNotFound {
 		return account.Team{}, errors.NewNotFoundErrorNEW(errors.ErrTeamNotFound)
@@ -102,7 +130,11 @@ func (m *Mongore) FindTeamByAlias(alias string) (account.Team, error) {
 }
 
 func (m *Mongore) DeleteTeamByAlias(alias string) error {
-	err := m.Teams().Remove(bson.M{"alias": alias})
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
+	err := strg.Teams().Remove(bson.M{"alias": alias})
 
 	if err == mgo.ErrNotFound {
 		return errors.NewNotFoundErrorNEW(errors.ErrTeamNotFound)
@@ -115,8 +147,12 @@ func (m *Mongore) DeleteTeamByAlias(alias string) error {
 }
 
 func (m *Mongore) TeamServices(team account.Team) ([]account.Service, error) {
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
 	services := []account.Service{}
-	err := m.Services().Find(bson.M{"team": team.Alias}).All(&services)
+	err := strg.Services().Find(bson.M{"team": team.Alias}).All(&services)
 
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -157,7 +193,11 @@ func (m *Mongore) DeleteToken(key string) error {
 }
 
 func (m *Mongore) UpsertService(s account.Service) error {
-	_, err := m.Services().Upsert(bson.M{"subdomain": s.Subdomain}, s)
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
+	_, err := strg.Services().Upsert(bson.M{"subdomain": s.Subdomain}, s)
 
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -167,7 +207,11 @@ func (m *Mongore) UpsertService(s account.Service) error {
 }
 
 func (m *Mongore) DeleteService(s account.Service) error {
-	err := m.Services().Remove(s)
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
+	err := strg.Services().Remove(s)
 
 	if err == mgo.ErrNotFound {
 		return errors.NewNotFoundErrorNEW(errors.ErrServiceNotFound)
@@ -180,8 +224,12 @@ func (m *Mongore) DeleteService(s account.Service) error {
 }
 
 func (m *Mongore) FindServiceBySubdomain(subdomain string) (account.Service, error) {
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
 	var service account.Service
-	err := m.Services().Find(bson.M{"subdomain": subdomain}).One(&service)
+	err := strg.Services().Find(bson.M{"subdomain": subdomain}).One(&service)
 
 	if err == mgo.ErrNotFound {
 		return account.Service{}, errors.NewNotFoundErrorNEW(errors.ErrServiceNotFound)
@@ -194,6 +242,10 @@ func (m *Mongore) FindServiceBySubdomain(subdomain string) (account.Service, err
 }
 
 func (m *Mongore) UserServices(user account.User) ([]account.Service, error) {
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
 	var services []account.Service = []account.Service{}
 
 	teams, err := m.UserTeams(user)
@@ -205,7 +257,7 @@ func (m *Mongore) UserServices(user account.User) ([]account.Service, error) {
 		st[i] = team.Alias
 	}
 
-	err = m.Services().Find(bson.M{"team": bson.M{"$in": st}}).All(&services)
+	err = strg.Services().Find(bson.M{"team": bson.M{"$in": st}}).All(&services)
 	return services, err
 }
 
