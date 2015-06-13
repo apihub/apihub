@@ -36,6 +36,41 @@ func serviceCreate(rw http.ResponseWriter, r *http.Request) {
 	Created(rw, service)
 }
 
+func serviceUpdate(rw http.ResponseWriter, r *http.Request) {
+	user, err := GetCurrentUser(r)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	service, err := account.FindServiceBySubdomain(mux.Vars(r)["subdomain"])
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	_, err = findTeamByAlias(service.Team, user)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&service); err != nil {
+		handleError(rw, errors.ErrBadRequest)
+		return
+	}
+	// It is not allowed to change the subdomain yet.
+	service.Subdomain = mux.Vars(r)["subdomain"]
+
+	err = service.Update()
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	Ok(rw, service)
+}
+
 func serviceDelete(rw http.ResponseWriter, r *http.Request) {
 	user, err := GetCurrentUser(r)
 	if err != nil {
