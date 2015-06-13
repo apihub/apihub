@@ -72,6 +72,7 @@ func NewApi(store func() (account.Storable, error)) *Api {
 	// Services
 	services := pr.Path("/services").Subrouter()
 	services.Methods("POST").HandlerFunc(serviceCreate)
+	services.Methods("GET").HandlerFunc(serviceList)
 
 	service := pr.PathPrefix("/services/{subdomain}").Subrouter()
 	service.Methods("GET").HandlerFunc(serviceInfo)

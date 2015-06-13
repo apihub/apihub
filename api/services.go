@@ -78,3 +78,14 @@ func serviceInfo(rw http.ResponseWriter, r *http.Request) {
 
 	Ok(rw, service)
 }
+
+func serviceList(rw http.ResponseWriter, r *http.Request) {
+	user, err := GetCurrentUser(r)
+	if err != nil {
+		handleError(rw, err)
+		return
+	}
+
+	services, _ := user.Services()
+	Ok(rw, CollectionSerializer{Items: services, Count: len(services)})
+}

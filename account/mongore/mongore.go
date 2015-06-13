@@ -54,7 +54,7 @@ func (m *Mongore) DeleteUser(u account.User) error {
 }
 
 func (m *Mongore) FindUserByEmail(email string) (account.User, error) {
-	var user account.User
+	user := account.User{}
 	err := m.Users().Find(bson.M{"email": email}).One(&user)
 
 	if err == mgo.ErrNotFound {
@@ -67,9 +67,9 @@ func (m *Mongore) FindUserByEmail(email string) (account.User, error) {
 	return user, err
 }
 
-func (m *Mongore) UserTeams(email string) ([]account.Team, error) {
+func (m *Mongore) UserTeams(user account.User) ([]account.Team, error) {
 	teams := []account.Team{}
-	err := m.Teams().Find(bson.M{"users": bson.M{"$in": []string{email}}}).All(&teams)
+	err := m.Teams().Find(bson.M{"users": bson.M{"$in": []string{user.Email}}}).All(&teams)
 	return teams, err
 }
 
@@ -97,7 +97,7 @@ func (m *Mongore) DeleteTeam(t account.Team) error {
 }
 
 func (m *Mongore) FindTeamByAlias(alias string) (account.Team, error) {
-	var team account.Team
+	team := account.Team{}
 	err := m.Teams().Find(bson.M{"alias": alias}).One(&team)
 
 	if err == mgo.ErrNotFound {
@@ -121,6 +121,17 @@ func (m *Mongore) DeleteTeamByAlias(alias string) error {
 	}
 
 	return err
+}
+
+func (m *Mongore) TeamServices(team account.Team) ([]account.Service, error) {
+	services := []account.Service{}
+	err := m.Services().Find(bson.M{"team": team.Alias}).All(&services)
+
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
+
+	return services, err
 }
 
 func (m *Mongore) CreateToken(token account.TokenInfo) error {
@@ -189,6 +200,22 @@ func (m *Mongore) FindServiceBySubdomain(subdomain string) (account.Service, err
 	}
 
 	return service, err
+}
+
+func (m *Mongore) UserServices(user account.User) ([]account.Service, error) {
+	var services []account.Service = []account.Service{}
+
+	teams, err := m.UserTeams(user)
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
+	var st []string = make([]string, len(teams))
+	for i, team := range teams {
+		st[i] = team.Alias
+	}
+
+	err = m.Services().Find(bson.M{"team": bson.M{"$in": st}}).All(&services)
+	return services, err
 }
 
 func (m *Mongore) Close() {

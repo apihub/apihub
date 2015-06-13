@@ -48,11 +48,11 @@ func (m *Mem) FindUserByEmail(email string) (account.User, error) {
 	}
 }
 
-func (m *Mem) UserTeams(email string) ([]account.Team, error) {
+func (m *Mem) UserTeams(user account.User) ([]account.Team, error) {
 	teams := []account.Team{}
 	for _, team := range m.Teams {
-		for _, user := range team.Users {
-			if email == user {
+		for _, u := range team.Users {
+			if user.Email == u {
 				teams = append(teams, team)
 			}
 		}
@@ -85,6 +85,16 @@ func (m *Mem) FindTeamByAlias(alias string) (account.Team, error) {
 func (m *Mem) DeleteTeamByAlias(alias string) error {
 	team := account.Team{Alias: alias}
 	return m.DeleteTeam(team)
+}
+
+func (m *Mem) TeamServices(team account.Team) ([]account.Service, error) {
+	services := []account.Service{}
+	for _, service := range m.Services {
+		if service.Team == team.Alias {
+			services = append(services, service)
+		}
+	}
+	return services, nil
 }
 
 func (m *Mem) CreateToken(token account.TokenInfo) error {
@@ -132,4 +142,19 @@ func (m *Mem) FindServiceBySubdomain(subdomain string) (account.Service, error) 
 		return service, nil
 	}
 }
+
+func (m *Mem) UserServices(user account.User) ([]account.Service, error) {
+	teams, _ := m.UserTeams(user)
+	services := []account.Service{}
+
+	var teamServices []account.Service
+	for _, team := range teams {
+		teamServices, _ = m.TeamServices(team)
+		if len(teamServices) > 0 {
+			services = append(services, teamServices...)
+		}
+	}
+	return services, nil
+}
+
 func (m *Mem) Close() {}

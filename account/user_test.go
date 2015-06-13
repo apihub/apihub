@@ -73,3 +73,14 @@ func (s *S) TestDeleteUser(c *C) {
 	alice.Delete()
 	c.Assert(alice.Exists(), Equals, false)
 }
+
+func (s *S) TestServices(c *C) {
+	err := team.Create(alice)
+	defer team.Delete(alice)
+	err = service.Create(alice, team)
+	defer service.Delete(alice)
+
+	services, err := alice.Services()
+	c.Assert(err, IsNil)
+	c.Assert(services, DeepEquals, []account.Service{service})
+}

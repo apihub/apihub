@@ -35,7 +35,7 @@ func (s *S) SetUpTest(c *C) {
 	team = account.Team{Name: "Backstage Team", Alias: "backstage"}
 	alice = account.User{Name: "Alice", Email: "alice@example.org", Password: "123456"}
 	owner = account.User{Name: "Owner", Email: "owner@example.org", Password: "123456"}
-	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage"}
+	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage", Transformers: []string{}}
 }
 
 // Run the tests in memory

@@ -44,13 +44,13 @@ func (s *StorableSuite) TestUpdateUser(c *C) {
 func (s *StorableSuite) TestTeams(c *C) {
 	defer s.Storage.DeleteTeam(team)
 	s.Storage.UpsertTeam(team)
-	teams, err := s.Storage.UserTeams(team.Owner)
+	teams, err := s.Storage.UserTeams(account.User{Email: team.Owner})
 	c.Check(err, IsNil)
 	c.Assert(teams, DeepEquals, []account.Team{team})
 }
 
 func (s *StorableSuite) TestTeamsNotFound(c *C) {
-	teams, err := s.Storage.UserTeams("not-found")
+	teams, err := s.Storage.UserTeams(account.User{})
 	c.Check(err, IsNil)
 	c.Assert(teams, DeepEquals, []account.Team{})
 }
@@ -125,6 +125,21 @@ func (s *StorableSuite) TestFindTeamByAliasNotFound(c *C) {
 	c.Assert(ok, Equals, true)
 }
 
+func (s *StorableSuite) TestTeamServices(c *C) {
+	s.Storage.UpsertService(service)
+	defer s.Storage.DeleteService(service)
+
+	services, err := s.Storage.TeamServices(team)
+	c.Assert(err, IsNil)
+	c.Assert(services, DeepEquals, []account.Service{service})
+}
+
+func (s *StorableSuite) TestTeamServiceNotFound(c *C) {
+	services, err := s.Storage.TeamServices(team)
+	c.Assert(err, IsNil)
+	c.Assert(services, DeepEquals, []account.Service{})
+}
+
 func (s *StorableSuite) TestCreateToken(c *C) {
 	defer s.Storage.DeleteToken(token.Token)
 	err := s.Storage.CreateToken(token)
@@ -175,4 +190,25 @@ func (s *StorableSuite) TestFindServiceBySubdomainNotFound(c *C) {
 	_, err := s.Storage.FindServiceBySubdomain("not-found")
 	_, ok := err.(errors.NotFoundErrorNEW)
 	c.Assert(ok, Equals, true)
+}
+
+func (s *StorableSuite) TestUserServices(c *C) {
+	s.Storage.UpsertTeam(team)
+	defer s.Storage.DeleteTeam(team)
+	s.Storage.UpsertService(service)
+	defer s.Storage.DeleteService(service)
+	another_service := account.Service{Endpoint: "http://example.org/api", Subdomain: "example", Team: team.Alias, Owner: user.Email, Transformers: []string{}}
+	s.Storage.UpsertService(another_service)
+	defer s.Storage.DeleteService(another_service)
+
+	services, err := s.Storage.UserServices(account.User{Email: team.Owner})
+	c.Check(err, IsNil)
+	c.Assert(len(services), Equals, 2)
+	c.Assert(services, DeepEquals, []account.Service{service, another_service})
+}
+
+func (s *StorableSuite) TestUserServicesNotFound(c *C) {
+	services, err := s.Storage.UserServices(user)
+	c.Assert(err, IsNil)
+	c.Assert(services, DeepEquals, []account.Service{})
 }

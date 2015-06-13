@@ -205,3 +205,29 @@ func (s *S) TestServiceInfoNotFound(c *C) {
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
 	c.Assert(string(body), Equals, `{"error":"not_found","error_description":"Service not found."}`)
 }
+
+func (s *S) TestServiceList(c *C) {
+	team.Create(user)
+	service.Create(user, team)
+	defer func() {
+		store, _ := s.store()
+		serv, _ := store.FindServiceBySubdomain(service.Subdomain)
+		store.DeleteService(serv)
+		store.DeleteTeamByAlias(team.Alias)
+	}()
+
+	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
+		Method:  "GET",
+		Path:    "/api/services",
+		Headers: http.Header{"Authorization": {s.authHeader}},
+	})
+
+	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusOK)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"items":[{"subdomain":"backstage","disabled":false,"documentation":"","endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"backstage","timeout":0}],"item_count":1}`)
+}
+
+func (s *S) TestServiceListWithoutSignIn(c *C) {
+	testWithoutSignIn(RequestArgs{Method: "GET", Path: "/api/services", Body: `{}`}, c)
+}

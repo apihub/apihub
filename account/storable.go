@@ -7,7 +7,8 @@ type Storable interface {
 	UpsertUser(User) error
 	DeleteUser(User) error
 	FindUserByEmail(string) (User, error)
-	UserTeams(string) ([]Team, error)
+	UserTeams(User) ([]Team, error)
+	UserServices(User) ([]Service, error)
 
 	UpsertTeam(Team) error
 	DeleteTeam(Team) error
@@ -21,6 +22,7 @@ type Storable interface {
 	UpsertService(Service) error
 	DeleteService(Service) error
 	FindServiceBySubdomain(string) (Service, error)
+	TeamServices(Team) ([]Service, error)
 	Close()
 }
 

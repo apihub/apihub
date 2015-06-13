@@ -100,7 +100,18 @@ func (user *User) Teams() ([]Team, error) {
 	}
 	defer store.Close()
 
-	return store.UserTeams(user.Email)
+	return store.UserTeams(*user)
+}
+
+func (user *User) Services() ([]Service, error) {
+	store, err := NewStorable()
+	if err != nil {
+		Logger.Warn(err.Error())
+		return []Service{}, err
+	}
+	defer store.Close()
+
+	return store.UserServices(*user)
 }
 
 // Encrypts the user password before saving it in the database.
