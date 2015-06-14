@@ -172,10 +172,10 @@ func (s *S) TestTeamInfo(c *C) {
 		Headers: http.Header{"Authorization": {s.authHeader}},
 	})
 
+	c.Assert(string(body), Equals, fmt.Sprintf(`{"name":"%s","alias":"%s","users":["%s"],"owner":"%s"}`, team.Name, team.Alias, user.Email, user.Email))
 	c.Check(err, IsNil)
 	c.Assert(code, Equals, http.StatusOK)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, fmt.Sprintf(`{"name":"%s","alias":"%s","users":["%s"],"owner":"%s"}`, team.Name, team.Alias, user.Email, user.Email))
 }
 
 func (s *S) TestTeamInfoNotFound(c *C) {
@@ -405,10 +405,10 @@ func (s *S) TestUpdateTeamNotMember(c *C) {
 		Headers: http.Header{"Authorization": {s.authHeader}},
 	})
 
+	c.Assert(string(body), Equals, `{"error":"access_denied","error_description":"You do not belong to this team!"}`)
 	c.Check(err, IsNil)
 	c.Assert(code, Equals, http.StatusForbidden)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"error":"access_denied","error_description":"You do not belong to this team!"}`)
 }
 
 func (s *S) TestUpdateTeamNotFound(c *C) {

@@ -136,8 +136,8 @@ func (s *S) TestChangePassword(c *C) {
 	})
 
 	c.Check(err, IsNil)
-	c.Assert(string(body), Equals, "")
 	c.Assert(code, Equals, http.StatusNoContent)
+	c.Assert(string(body), Equals, "")
 }
 
 func (s *S) TestChangePasswordWithInvalidCredentials(c *C) {

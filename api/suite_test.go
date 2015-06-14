@@ -30,8 +30,8 @@ type S struct {
 
 // func (s *S) SetUpSuite(c *C) {
 func (s *S) SetUpTest(c *C) {
-	setUpMongoreTest(s)
-	// setUpMemoryTest(s)
+	// setUpMongoreTest(s)
+	setUpMemoryTest(s)
 
 	s.api = api.NewApi(s.store)
 	s.server = httptest.NewServer(s.api.Handler())

@@ -6,6 +6,7 @@ import (
 
 	"github.com/backstage/backstage/account"
 	"github.com/backstage/backstage/errors"
+	. "github.com/backstage/backstage/log"
 )
 
 func (api *Api) userSignup(rw http.ResponseWriter, r *http.Request) {
@@ -96,4 +97,19 @@ func (api *Api) userLogout(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	NoContent(rw)
+}
+
+// Split Authenticate and CreateUserToken because we can override only the authentication method and still use the token method.
+func (api *Api) Login(email, password string) (*account.TokenInfo, error) {
+	user, ok := api.auth.Authenticate(email, password)
+	if ok {
+		token, err := api.auth.CreateUserToken(user)
+		if err != nil {
+			Logger.Warn(err.Error())
+			return nil, err
+		}
+		return token, nil
+	}
+
+	return nil, errors.ErrAuthenticationFailed
 }

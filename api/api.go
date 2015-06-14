@@ -7,10 +7,7 @@ import (
 
 	"github.com/backstage/backstage/account"
 	"github.com/backstage/backstage/auth"
-	"github.com/backstage/backstage/errors"
-	. "github.com/backstage/backstage/log"
 	"github.com/codegangsta/negroni"
-	"github.com/gorilla/mux"
 	"github.com/tylerb/graceful"
 )
 
@@ -21,29 +18,25 @@ const (
 
 type Api struct {
 	auth   auth.Authenticatable
-	router *mux.Router
+	router *router
 }
 
 func NewApi(store account.Storable) *Api {
-	api := &Api{router: mux.NewRouter(), auth: auth.NewAuth(store)}
+	api := &Api{router: NewRouter(), auth: auth.NewAuth(store)}
 	api.Storage(store)
 
-	api.router.HandleFunc("/", homeHandler)
-	api.router.NotFoundHandler = http.HandlerFunc(api.notFoundHandler)
+	api.router.NotFoundHandler(http.HandlerFunc(api.notFoundHandler))
+	api.router.AddHandler(routerArguments{Path: "/", Methods: []string{"GET"}, Handler: homeHandler})
 
 	//  Auth (login, logout, signup)
-	auth := api.router.PathPrefix("/auth").Subrouter()
-	auth.Methods("POST").Path("/login").HandlerFunc(api.userLogin)
-	auth.Methods("DELETE").Path("/logout").HandlerFunc(api.userLogout)
-	auth.Methods("POST").Path("/signup").HandlerFunc(api.userSignup)
-	auth.Methods("PUT").Path("/password").HandlerFunc(api.userChangePassword)
-
-	//  Private Routes
-	private := mux.NewRouter()
-	private.NotFoundHandler = http.HandlerFunc(api.notFoundHandler)
+	api.router.AddHandler(routerArguments{Path: "/auth/login", Methods: []string{"POST"}, Handler: api.userLogin})
+	api.router.AddHandler(routerArguments{Path: "/auth/logout", Methods: []string{"DELETE"}, Handler: api.userLogout})
+	api.router.AddHandler(routerArguments{Path: "/auth/signup", Methods: []string{"POST"}, Handler: api.userSignup})
+	api.router.AddHandler(routerArguments{Path: "/auth/password", Methods: []string{"PUT"}, Handler: api.userChangePassword})
 
 	// Middlewares
-	api.router.PathPrefix("/api").Handler(negroni.New(
+	private := api.router.AddSubrouter("/api")
+	api.router.AddMiddleware("/api", negroni.New(
 		negroni.NewRecovery(),
 		negroni.HandlerFunc(api.errorMiddleware),
 		negroni.HandlerFunc(api.requestIdMiddleware),
@@ -51,53 +44,31 @@ func NewApi(store account.Storable) *Api {
 		negroni.HandlerFunc(api.contextClearerMiddleware),
 		negroni.Wrap(private),
 	))
-	pr := private.PathPrefix("/api").Subrouter()
 
 	// Users
-	pr.Methods("DELETE").Path("/users").HandlerFunc(api.userDelete)
+	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/users", Methods: []string{"DELETE"}, Handler: api.userDelete})
 
 	// Teams
-	teams := pr.Path("/teams").Subrouter()
-	teams.Methods("POST").HandlerFunc(teamCreate)
-	teams.Methods("GET").HandlerFunc(teamList)
-
-	team := pr.PathPrefix("/teams/{alias}").Subrouter()
-	team.Methods("DELETE").Path("/users").HandlerFunc(teamRemoveUsers)
-	team.Methods("PUT").Path("/users").HandlerFunc(teamAddUsers)
-	team.Methods("PUT").HandlerFunc(teamUpdate)
-	team.Methods("DELETE").HandlerFunc(teamDelete)
-	team.Methods("GET").HandlerFunc(teamInfo)
+	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/teams", Methods: []string{"POST"}, Handler: teamCreate})
+	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/teams", Methods: []string{"GET"}, Handler: teamList})
+	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"PUT"}, Handler: teamUpdate})
+	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"DELETE"}, Handler: teamDelete})
+	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"GET"}, Handler: teamInfo})
+	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/teams/{alias}/users", Methods: []string{"PUT"}, Handler: teamAddUsers})
+	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/teams/{alias}/users", Methods: []string{"DELETE"}, Handler: teamRemoveUsers})
 
 	// Services
-	services := pr.Path("/services").Subrouter()
-	services.Methods("POST").HandlerFunc(serviceCreate)
-	services.Methods("GET").HandlerFunc(serviceList)
-
-	service := pr.PathPrefix("/services/{subdomain}").Subrouter()
-	service.Methods("GET").HandlerFunc(serviceInfo)
-	service.Methods("DELETE").HandlerFunc(serviceDelete)
-	service.Methods("PUT").HandlerFunc(serviceUpdate)
+	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/services", Methods: []string{"POST"}, Handler: serviceCreate})
+	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/services", Methods: []string{"GET"}, Handler: serviceList})
+	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"GET"}, Handler: serviceInfo})
+	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"DELETE"}, Handler: serviceDelete})
+	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"PUT"}, Handler: serviceUpdate})
 
 	return api
 }
 
-// Split Authenticate and CreateUserToken because we can override only the authentication method and still use the token method.
-func (api *Api) Login(email, password string) (*account.TokenInfo, error) {
-	user, ok := api.auth.Authenticate(email, password)
-	if ok {
-		token, err := api.auth.CreateUserToken(user)
-		if err != nil {
-			Logger.Warn(err.Error())
-			return nil, err
-		}
-		return token, nil
-	}
-
-	return nil, errors.ErrAuthenticationFailed
-}
-
 func (api *Api) Handler() http.Handler {
-	return api.router
+	return api.router.Handler()
 }
 
 // Allow to override the default authentication method.
