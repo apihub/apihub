@@ -22,7 +22,7 @@ func pluginSubsribe(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = findTeamByAlias(service.Team, user)
+	_, err = userBelongsToTeam(service.Team, user)
 	if err != nil {
 		handleError(rw, err)
 		return
@@ -56,7 +56,7 @@ func pluginUnsubsribe(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = findTeamByAlias(service.Team, user)
+	_, err = userBelongsToTeam(service.Team, user)
 	if err != nil {
 		handleError(rw, err)
 		return

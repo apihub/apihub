@@ -22,7 +22,7 @@ func serviceCreate(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	team, err := findTeamByAlias(service.Team, user)
+	team, err := userBelongsToTeam(service.Team, user)
 	if err != nil {
 		handleError(rw, err)
 		return
@@ -49,7 +49,7 @@ func serviceUpdate(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = findTeamByAlias(service.Team, user)
+	_, err = userBelongsToTeam(service.Team, user)
 	if err != nil {
 		handleError(rw, err)
 		return
@@ -105,7 +105,7 @@ func serviceInfo(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = findTeamByAlias(service.Team, user)
+	_, err = userBelongsToTeam(service.Team, user)
 	if err != nil {
 		handleError(rw, err)
 		return

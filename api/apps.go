@@ -22,7 +22,7 @@ func appCreate(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	team, err := findTeamByAlias(app.Team, user)
+	team, err := userBelongsToTeam(app.Team, user)
 	if err != nil {
 		handleError(rw, err)
 		return
@@ -49,7 +49,7 @@ func appUpdate(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = findTeamByAlias(app.Team, user)
+	_, err = userBelongsToTeam(app.Team, user)
 	if err != nil {
 		handleError(rw, err)
 		return
@@ -105,7 +105,7 @@ func appInfo(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = findTeamByAlias(app.Team, user)
+	_, err = userBelongsToTeam(app.Team, user)
 	if err != nil {
 		handleError(rw, err)
 		return

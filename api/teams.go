@@ -37,7 +37,7 @@ func teamUpdate(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	team, err := findTeamByAlias(mux.Vars(r)["alias"], user)
+	team, err := userBelongsToTeam(mux.Vars(r)["alias"], user)
 	if err != nil {
 		handleError(rw, err)
 		return
@@ -94,7 +94,7 @@ func teamInfo(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	team, err := findTeamByAlias(mux.Vars(r)["alias"], user)
+	team, err := userBelongsToTeam(mux.Vars(r)["alias"], user)
 	if err != nil {
 		handleError(rw, err)
 		return
@@ -110,7 +110,7 @@ func teamAddUsers(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	team, err := findTeamByAlias(mux.Vars(r)["alias"], user)
+	team, err := userBelongsToTeam(mux.Vars(r)["alias"], user)
 	if err != nil {
 		handleError(rw, err)
 		return
@@ -138,7 +138,7 @@ func teamRemoveUsers(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	team, err := findTeamByAlias(mux.Vars(r)["alias"], user)
+	team, err := userBelongsToTeam(mux.Vars(r)["alias"], user)
 	if err != nil {
 		handleError(rw, err)
 		return
@@ -158,7 +158,7 @@ func teamRemoveUsers(rw http.ResponseWriter, r *http.Request) {
 	Ok(rw, team)
 }
 
-func findTeamByAlias(alias string, user *account.User) (*account.Team, error) {
+func userBelongsToTeam(alias string, user *account.User) (*account.Team, error) {
 	team, err := account.FindTeamByAlias(alias)
 	if err != nil {
 		return nil, err
