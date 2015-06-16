@@ -1,83 +1,39 @@
 package auth_test
 
 import (
-	"fmt"
+	"testing"
 
 	"github.com/backstage/backstage/account"
-	"github.com/backstage/backstage/errors"
+	"github.com/backstage/backstage/account/mem"
+	"github.com/backstage/backstage/account/mongore"
+	"github.com/backstage/backstage/auth"
+	"github.com/backstage/backstage/auth/test"
 	. "gopkg.in/check.v1"
 )
 
-func (s *S) TestAuthenticate(c *C) {
-	user := &account.User{Name: "Alice", Email: "alice@bar.example.org", Password: "123"}
-	user.Create()
-	defer user.Delete()
+func TestAuth(t *testing.T) {
+	// store := setUpMemoryTest()
+	store := setUpMongoreTest()
+	auth := auth.NewAuth(store)
 
-	found, ok := s.auth.Authenticate("alice@bar.example.org", "123")
-	c.Assert(found, DeepEquals, user)
-	c.Assert(ok, Equals, true)
+	Suite(&test.AuthenticatableSuite{Auth: auth})
+	TestingT(t)
 }
 
-func (s *S) TestAuthenticateWithInvalidCredentials(c *C) {
-	user := account.User{Name: "Alice", Email: "alice@bar.example.org", Password: "123"}
-	user.Create()
-	defer user.Delete()
-
-	_, ok := s.auth.Authenticate(user.Email, "invalid-password")
-	c.Assert(ok, Equals, false)
+// // Run the tests in memory
+func setUpMemoryTest() account.Storable {
+	store := mem.New()
+	account.Storage(store)
+	return store
 }
 
-func (s *S) TestAuthenticateWithNotFound(c *C) {
-	_, ok := s.auth.Authenticate("invalid-email", "invalid-password")
-	c.Assert(ok, Equals, false)
-}
-
-func (s *S) TestCreateUserToken(c *C) {
-	user := &account.User{Name: "Alice", Email: "alice@bar.example.org", Password: "123"}
-	user.Create()
-	defer user.Delete()
-
-	token, err := s.auth.CreateUserToken(user)
-	c.Check(err, IsNil)
-	c.Assert(token.AccessToken, Not(Equals), "")
-}
-
-func (s *S) TestUserFromToken(c *C) {
-	user := &account.User{Name: "Alice", Email: "alice@bar.example.org", Password: "123"}
-	user.Create()
-	defer user.Delete()
-
-	token, _ := s.auth.CreateUserToken(user)
-	foundUser, err := s.auth.UserFromToken(fmt.Sprintf("%s %s", token.Type, token.AccessToken))
-	c.Check(err, IsNil)
-	c.Assert(foundUser, DeepEquals, user)
-}
-
-func (s *S) TestUserFromTokenWithNotFound(c *C) {
-	foundUser, err := s.auth.UserFromToken("Token invalid-token")
-	c.Check(err, Not(IsNil))
-	c.Check(foundUser, IsNil)
-}
-
-func (s *S) TestUserFromTokenWithInvalidFormat(c *C) {
-	foundUser, err := s.auth.UserFromToken("invalid-format")
-	c.Check(err, Not(IsNil))
-	c.Check(foundUser, IsNil)
-}
-
-func (s *S) TestRevokeUserToken(c *C) {
-	user := &account.User{Name: "Alice", Email: "alice@bar.example.org", Password: "123"}
-	user.Create()
-	defer user.Delete()
-
-	token, _ := s.auth.CreateUserToken(user)
-	tstr := fmt.Sprintf("%s %s", token.Type, token.AccessToken)
-	foundUser, err := s.auth.UserFromToken(tstr)
-	c.Check(err, IsNil)
-	c.Assert(foundUser, DeepEquals, user)
-
-	s.auth.RevokeUserToken(tstr)
-	foundUser, err = s.auth.UserFromToken(tstr)
-	c.Assert(err, Equals, errors.ErrTokenNotFound)
-	c.Check(foundUser, IsNil)
+// Run the tests using MongoRe
+func setUpMongoreTest() account.Storable {
+	cfg := mongore.Config{
+		Host:         "127.0.0.1:27017",
+		DatabaseName: "backstage_auth_test",
+	}
+	store := mongore.New(cfg)
+	account.Storage(store)
+	return store
 }
