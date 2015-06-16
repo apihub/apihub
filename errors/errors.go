@@ -43,6 +43,9 @@ var (
 	ErrAppNotFound              = errors.New("App not found.")
 	ErrAppMissingRequiredFields = errors.New("Name cannot be empty.")
 	ErrAppDuplicateEntry        = errors.New("There is another app with this client id.")
+
+	ErrPluginConfigNotFound              = errors.New("Plugin Config not found.")
+	ErrPluginConfigMissingRequiredFields = errors.New("Name and Service cannot be empty.")
 )
 
 // The ValidationError type indicates that any validation has failed.

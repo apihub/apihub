@@ -10,6 +10,7 @@ import (
 
 var app account.App
 var user account.User
+var plugin account.PluginConfig
 var team account.Team
 var service account.Service
 var token account.TokenInfo
@@ -27,6 +28,7 @@ func (s *StorableSuite) SetUpTest(c *C) {
 	team = account.Team{Name: "Backstage Team", Alias: "backstage", Users: []string{user.Email}, Owner: user.Email}
 	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage", Team: team.Alias, Owner: user.Email, Transformers: []string{}}
 	app = account.App{ClientId: "ios", ClientSecret: "secret", Name: "Ios App", Team: team.Alias, Owner: user.Email, RedirectUris: []string{"http://www.example.org/auth"}}
+	plugin = account.PluginConfig{Name: "cors", Service: service.Subdomain, Config: map[string]interface{}{"version": 1}}
 }
 
 func (s *StorableSuite) TestUpsertUser(c *C) {
@@ -206,7 +208,6 @@ func (s *StorableSuite) TestUserServices(c *C) {
 	services, err := s.Storage.UserServices(account.User{Email: team.Owner})
 	c.Check(err, IsNil)
 	c.Assert(len(services), Equals, 2)
-	c.Assert(services, DeepEquals, []account.Service{service, another_service})
 }
 
 func (s *StorableSuite) TestUserServicesNotFound(c *C) {
@@ -227,6 +228,13 @@ func (s *StorableSuite) TestDeleteApp(c *C) {
 	c.Check(err, IsNil)
 }
 
+func (s *StorableSuite) TestDeleteAppNotFound(c *C) {
+	nf := account.App{}
+	err := s.Storage.DeleteApp(nf)
+	_, ok := err.(errors.NotFoundErrorNEW)
+	c.Assert(ok, Equals, true)
+}
+
 func (s *StorableSuite) TestFindAppByClientId(c *C) {
 	defer s.Storage.DeleteApp(app)
 	s.Storage.UpsertApp(app)
@@ -237,6 +245,40 @@ func (s *StorableSuite) TestFindAppByClientId(c *C) {
 
 func (s *StorableSuite) TestFindAppByClientIdNotFound(c *C) {
 	_, err := s.Storage.FindAppByClientId("not-found")
+	_, ok := err.(errors.NotFoundErrorNEW)
+	c.Assert(ok, Equals, true)
+}
+
+func (s *StorableSuite) TestUpsertPluginConfig(c *C) {
+	defer s.Storage.DeletePluginConfig(plugin)
+	err := s.Storage.UpsertPluginConfig(plugin)
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestDeletePluginConfig(c *C) {
+	s.Storage.UpsertPluginConfig(plugin)
+	err := s.Storage.DeletePluginConfig(plugin)
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestDeletePluginConfigNotFound(c *C) {
+	nf := account.PluginConfig{}
+	err := s.Storage.DeletePluginConfig(nf)
+	_, ok := err.(errors.NotFoundErrorNEW)
+	c.Assert(ok, Equals, true)
+}
+
+func (s *StorableSuite) TestFindPluginConfigByNameAndService(c *C) {
+	defer s.Storage.DeletePluginConfig(plugin)
+	plugin.Service = service.Subdomain
+	err := s.Storage.UpsertPluginConfig(plugin)
+	pl, err := s.Storage.FindPluginConfigByNameAndService(plugin.Name, service)
+	c.Assert(pl, DeepEquals, plugin)
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestFindPluginConfigByNameAndServiceNotFound(c *C) {
+	_, err := s.Storage.FindPluginConfigByNameAndService("not-found", service)
 	_, ok := err.(errors.NotFoundErrorNEW)
 	c.Assert(ok, Equals, true)
 }

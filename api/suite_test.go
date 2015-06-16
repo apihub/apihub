@@ -18,6 +18,7 @@ var httpClient HTTPClient
 func Test(t *testing.T) { TestingT(t) }
 
 var app account.App
+var pluginConfig account.PluginConfig
 var service account.Service
 var team account.Team
 var user account.User
@@ -42,6 +43,7 @@ func (s *S) SetUpTest(c *C) {
 	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage"}
 	user = account.User{Name: "Bob", Email: "bob@bar.example.org", Password: "secret"}
 	app = account.App{ClientId: "ios", ClientSecret: "secret", Name: "Ios App", Team: team.Alias, Owner: user.Email, RedirectUris: []string{"http://www.example.org/auth"}}
+	pluginConfig = account.PluginConfig{Name: "Plugin Config", Service: service.Subdomain, Config: map[string]interface{}{"version": 1}}
 
 	user.Create()
 	token, err := s.api.Login(user.Email, "secret")

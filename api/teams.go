@@ -94,12 +94,8 @@ func teamInfo(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	team, err := account.FindTeamByAlias(mux.Vars(r)["alias"])
+	team, err := findTeamByAlias(mux.Vars(r)["alias"], user)
 	if err != nil {
-		handleError(rw, err)
-		return
-	}
-	if _, err := team.ContainsUser(user); err != nil {
 		handleError(rw, err)
 		return
 	}

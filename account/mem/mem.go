@@ -9,22 +9,24 @@ import (
 )
 
 type Mem struct {
-	Apps       map[string]account.App
-	Services   map[string]account.Service
-	Users      map[string]account.User
-	Teams      map[string]account.Team
-	Tokens     map[string]account.TokenInfo
-	UserTokens map[string]account.User
+	Apps          map[string]account.App
+	Services      map[string]account.Service
+	Users         map[string]account.User
+	Teams         map[string]account.Team
+	PluginsConfig map[string]map[string]account.PluginConfig
+	Tokens        map[string]account.TokenInfo
+	UserTokens    map[string]account.User
 }
 
 func New() account.Storable {
 	return &Mem{
-		Apps:       make(map[string]account.App),
-		Services:   make(map[string]account.Service),
-		Users:      make(map[string]account.User),
-		Teams:      make(map[string]account.Team),
-		Tokens:     make(map[string]account.TokenInfo),
-		UserTokens: make(map[string]account.User),
+		Apps:          make(map[string]account.App),
+		Services:      make(map[string]account.Service),
+		Users:         make(map[string]account.User),
+		Teams:         make(map[string]account.Team),
+		PluginsConfig: make(map[string]map[string]account.PluginConfig),
+		Tokens:        make(map[string]account.TokenInfo),
+		UserTokens:    make(map[string]account.User),
 	}
 }
 
@@ -179,4 +181,26 @@ func (m *Mem) DeleteApp(a account.App) error {
 
 	delete(m.Apps, a.ClientId)
 	return nil
+}
+
+func (m *Mem) UpsertPluginConfig(pc account.PluginConfig) error {
+	m.PluginsConfig[pc.Service] = map[string]account.PluginConfig{pc.Name: pc}
+	return nil
+}
+
+func (m *Mem) DeletePluginConfig(pc account.PluginConfig) error {
+	if _, ok := m.PluginsConfig[pc.Service][pc.Name]; !ok {
+		return errors.NewNotFoundErrorNEW(errors.ErrPluginConfigNotFound)
+	}
+
+	delete(m.PluginsConfig, pc.Name)
+	return nil
+}
+
+func (m *Mem) FindPluginConfigByNameAndService(pluginName string, service account.Service) (account.PluginConfig, error) {
+	if plugin, ok := m.PluginsConfig[service.Subdomain][pluginName]; !ok {
+		return account.PluginConfig{}, errors.NewNotFoundErrorNEW(errors.ErrPluginConfigNotFound)
+	} else {
+		return plugin, nil
+	}
 }

@@ -27,6 +27,10 @@ type Storable interface {
 	UpsertApp(App) error
 	FindAppByClientId(string) (App, error)
 	DeleteApp(App) error
+
+	UpsertPluginConfig(PluginConfig) error
+	DeletePluginConfig(PluginConfig) error
+	FindPluginConfigByNameAndService(string, Service) (PluginConfig, error)
 }
 
 var store Storable

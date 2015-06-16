@@ -24,6 +24,7 @@ func (s *S) TearDownSuite(c *C) {
 var app account.App
 var alice account.User
 var owner account.User
+var pluginConfig account.PluginConfig
 var service account.Service
 var team account.Team
 
@@ -36,6 +37,7 @@ func (s *S) SetUpTest(c *C) {
 	owner = account.User{Name: "Owner", Email: "owner@example.org", Password: "123456"}
 	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage", Transformers: []string{}}
 	app = account.App{ClientId: "ios", ClientSecret: "secret", Name: "Ios App", Team: team.Alias, Owner: owner.Email, RedirectUris: []string{"http://www.example.org/auth"}}
+	pluginConfig = account.PluginConfig{Name: "Plugin Config", Service: service.Subdomain, Config: make(map[string]interface{})}
 }
 
 // Run the tests in memory
