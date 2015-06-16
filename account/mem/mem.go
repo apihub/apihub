@@ -9,6 +9,7 @@ import (
 )
 
 type Mem struct {
+	Apps       map[string]account.App
 	Services   map[string]account.Service
 	Users      map[string]account.User
 	Teams      map[string]account.Team
@@ -18,6 +19,7 @@ type Mem struct {
 
 func New() account.Storable {
 	return &Mem{
+		Apps:       make(map[string]account.App),
 		Services:   make(map[string]account.Service),
 		Users:      make(map[string]account.User),
 		Teams:      make(map[string]account.Team),
@@ -157,4 +159,24 @@ func (m *Mem) UserServices(user account.User) ([]account.Service, error) {
 	return services, nil
 }
 
-func (m *Mem) Close() {}
+func (m *Mem) UpsertApp(a account.App) error {
+	m.Apps[a.ClientId] = a
+	return nil
+}
+
+func (m *Mem) FindAppByClientId(id string) (account.App, error) {
+	if app, ok := m.Apps[id]; !ok {
+		return account.App{}, errors.NewNotFoundErrorNEW(errors.ErrAppNotFound)
+	} else {
+		return app, nil
+	}
+}
+
+func (m *Mem) DeleteApp(a account.App) error {
+	if _, ok := m.Apps[a.ClientId]; !ok {
+		return errors.NewNotFoundErrorNEW(errors.ErrAppNotFound)
+	}
+
+	delete(m.Apps, a.ClientId)
+	return nil
+}

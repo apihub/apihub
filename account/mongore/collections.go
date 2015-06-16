@@ -9,10 +9,17 @@ type Storage struct {
 	*storage.Storage
 }
 
+func (strg *Storage) Apps() *storage.Collection {
+	index := mgo.Index{Key: []string{"clientid"}, Unique: true, Background: false}
+	collection := strg.Collection("apps")
+	collection.EnsureIndex(index)
+	return collection
+}
+
 func (strg *Storage) Users() *storage.Collection {
-	emailIndex := mgo.Index{Key: []string{"email"}, Unique: true, Background: false}
+	index := mgo.Index{Key: []string{"email"}, Unique: true, Background: false}
 	collection := strg.Collection("users")
-	collection.EnsureIndex(emailIndex)
+	collection.EnsureIndex(index)
 	return collection
 }
 

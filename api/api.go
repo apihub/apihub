@@ -64,6 +64,12 @@ func NewApi(store account.Storable) *Api {
 	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"DELETE"}, Handler: serviceDelete})
 	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"PUT"}, Handler: serviceUpdate})
 
+	// Apps
+	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/apps", Methods: []string{"POST"}, Handler: appCreate})
+	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"DELETE"}, Handler: appDelete})
+	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"GET"}, Handler: appInfo})
+	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"PUT"}, Handler: appUpdate})
+
 	return api
 }
 

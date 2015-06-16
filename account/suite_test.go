@@ -21,10 +21,11 @@ func Test(t *testing.T) { TestingT(t) }
 func (s *S) TearDownSuite(c *C) {
 }
 
-var team account.Team
-var owner account.User
+var app account.App
 var alice account.User
+var owner account.User
 var service account.Service
+var team account.Team
 
 func (s *S) SetUpTest(c *C) {
 	// setUpMemoryTest(s)
@@ -34,6 +35,7 @@ func (s *S) SetUpTest(c *C) {
 	alice = account.User{Name: "Alice", Email: "alice@example.org", Password: "123456"}
 	owner = account.User{Name: "Owner", Email: "owner@example.org", Password: "123456"}
 	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage", Transformers: []string{}}
+	app = account.App{ClientId: "ios", ClientSecret: "secret", Name: "Ios App", Team: team.Alias, Owner: owner.Email, RedirectUris: []string{"http://www.example.org/auth"}}
 }
 
 // Run the tests in memory

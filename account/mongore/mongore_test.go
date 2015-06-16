@@ -18,5 +18,4 @@ func TestMongore(t *testing.T) {
 	TestingT(t)
 
 	m.(*Mongore).openSession().Collection("db").Database.DropDatabase()
-	m.Close()
 }

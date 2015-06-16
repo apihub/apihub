@@ -261,6 +261,54 @@ func (m *Mongore) UserServices(user account.User) ([]account.Service, error) {
 	return services, err
 }
 
-func (m *Mongore) Close() {
+func (m *Mongore) UpsertApp(app account.App) error {
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
 
+	_, err := strg.Apps().Upsert(bson.M{"clientid": app.ClientId}, app)
+
+	var ap account.App
+	strg.Apps().Find(bson.M{"clientid": app.ClientId}).One(&ap)
+
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
+
+	return err
+}
+
+func (m *Mongore) FindAppByClientId(clientid string) (account.App, error) {
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
+	var app account.App
+	err := strg.Apps().Find(bson.M{"clientid": clientid}).One(&app)
+
+	if err == mgo.ErrNotFound {
+		return account.App{}, errors.NewNotFoundErrorNEW(errors.ErrAppNotFound)
+	}
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
+
+	return app, err
+}
+
+func (m *Mongore) DeleteApp(app account.App) error {
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
+	err := strg.Apps().Remove(bson.M{"clientid": app.ClientId})
+
+	if err == mgo.ErrNotFound {
+		return errors.NewNotFoundErrorNEW(errors.ErrAppNotFound)
+	}
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
+
+	return err
 }

@@ -16,17 +16,19 @@ type Storable interface {
 	DeleteTeamByAlias(string) error
 
 	CreateToken(TokenInfo) error
-	DeleteToken(string) error
+	DeleteToken(key string) error
 	DecodeToken(key string, t interface{}) error
 
 	UpsertService(Service) error
 	DeleteService(Service) error
 	FindServiceBySubdomain(string) (Service, error)
 	TeamServices(Team) ([]Service, error)
-	Close()
+
+	UpsertApp(App) error
+	FindAppByClientId(string) (App, error)
+	DeleteApp(App) error
 }
 
-// var NewStorable func() (Storable, error)
 var store Storable
 
 func Storage(s Storable) {

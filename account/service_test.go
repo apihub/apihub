@@ -81,7 +81,7 @@ func (s *S) TestDeleteServiceNotOwner(c *C) {
 	c.Assert(ok, Equals, true)
 }
 
-func (s *S) FindServiceBySubdomain(c *C) {
+func (s *S) TestFindServiceBySubdomain(c *C) {
 	err := service.Create(owner, team)
 
 	t, err := account.FindServiceBySubdomain(service.Subdomain)
@@ -90,7 +90,7 @@ func (s *S) FindServiceBySubdomain(c *C) {
 	defer service.Delete(owner)
 }
 
-func (s *S) FindServiceBySubdomainNotFound(c *C) {
+func (s *S) TestFindServiceBySubdomainNotFound(c *C) {
 	t, err := account.FindServiceBySubdomain("not-found")
 	c.Check(t, IsNil)
 	_, ok := err.(errors.NotFoundErrorNEW)

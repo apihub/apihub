@@ -39,6 +39,10 @@ var (
 
 	ErrTeamMissingRequiredFields = errors.New("Name cannot be empty.")
 	ErrTeamDuplicateEntry        = errors.New("Someone already has that team alias. Could you try another?")
+
+	ErrAppNotFound              = errors.New("App not found.")
+	ErrAppMissingRequiredFields = errors.New("Name cannot be empty.")
+	ErrAppDuplicateEntry        = errors.New("There is another app with this client id.")
 )
 
 // The ValidationError type indicates that any validation has failed.

@@ -8,6 +8,7 @@ import (
 	. "gopkg.in/check.v1"
 )
 
+var app account.App
 var user account.User
 var team account.Team
 var service account.Service
@@ -25,6 +26,7 @@ func (s *StorableSuite) SetUpTest(c *C) {
 	token = account.TokenInfo{Token: "secret-token", Expires: 10, Type: "Token", User: &user}
 	team = account.Team{Name: "Backstage Team", Alias: "backstage", Users: []string{user.Email}, Owner: user.Email}
 	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage", Team: team.Alias, Owner: user.Email, Transformers: []string{}}
+	app = account.App{ClientId: "ios", ClientSecret: "secret", Name: "Ios App", Team: team.Alias, Owner: user.Email, RedirectUris: []string{"http://www.example.org/auth"}}
 }
 
 func (s *StorableSuite) TestUpsertUser(c *C) {
@@ -211,4 +213,30 @@ func (s *StorableSuite) TestUserServicesNotFound(c *C) {
 	services, err := s.Storage.UserServices(user)
 	c.Assert(err, IsNil)
 	c.Assert(services, DeepEquals, []account.Service{})
+}
+
+func (s *StorableSuite) TestUpsertApp(c *C) {
+	defer s.Storage.DeleteApp(app)
+	err := s.Storage.UpsertApp(app)
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestDeleteApp(c *C) {
+	s.Storage.UpsertApp(app)
+	err := s.Storage.DeleteApp(app)
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestFindAppByClientId(c *C) {
+	defer s.Storage.DeleteApp(app)
+	s.Storage.UpsertApp(app)
+	a, err := s.Storage.FindAppByClientId(app.ClientId)
+	c.Assert(a, DeepEquals, app)
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestFindAppByClientIdNotFound(c *C) {
+	_, err := s.Storage.FindAppByClientId("not-found")
+	_, ok := err.(errors.NotFoundErrorNEW)
+	c.Assert(ok, Equals, true)
 }
