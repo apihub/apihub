@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/backstage/backstage/account"
-	"github.com/backstage/backstage/auth"
+	"github.com/backstage/apimanager/account"
+	"github.com/backstage/apimanager/auth"
 	"github.com/codegangsta/negroni"
 	"github.com/tylerb/graceful"
 )

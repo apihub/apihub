@@ -6,10 +6,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/backstage/backstage/account"
-	"github.com/backstage/backstage/account/mem"
-	"github.com/backstage/backstage/account/mongore"
-	"github.com/backstage/backstage/api"
+	"github.com/backstage/apimanager/account"
+	"github.com/backstage/apimanager/account/mem"
+	"github.com/backstage/apimanager/account/mongore"
+	"github.com/backstage/apimanager/api"
 	. "gopkg.in/check.v1"
 )
 

@@ -1,7 +1,7 @@
 package account
 
 import (
-	"github.com/backstage/backstage/errors"
+	"github.com/backstage/apimanager/errors"
 )
 
 type PluginConfig struct {

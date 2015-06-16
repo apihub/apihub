@@ -16,7 +16,7 @@ Guidelines For Reporting An Issue/Feature
 
 Have you found any bug or have an awesome idea for a feature? If so, proceed with these:
 
-  * Even though we have different repositories on Github, we're used to open all issues at https://github.com/backstage/backstage/issues. Please, check if there's an existing issue for the feature or bug you have found. If so, post a comment there.
+  * Even though we have different repositories on Github, we're used to open all issues at https://github.com/backstage/apimanager/issues. Please, check if there's an existing issue for the feature or bug you have found. If so, post a comment there.
 
   * If you don't find anything there, please open an issue with:
 

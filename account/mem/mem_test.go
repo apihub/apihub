@@ -3,7 +3,7 @@ package mem
 import (
 	"testing"
 
-	"github.com/backstage/backstage/account/test"
+	"github.com/backstage/apimanager/account/test"
 	. "gopkg.in/check.v1"
 )
 

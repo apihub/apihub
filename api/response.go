@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/backstage/backstage/errors"
+	"github.com/backstage/apimanager/errors"
 )
 
 type HTTPError struct {

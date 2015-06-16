@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/backstage/backstage",
+	"ImportPath": "github.com/backstage/apimanager",
 	"GoVersion": "go1.4.2",
 	"Packages": [
 		"./..."

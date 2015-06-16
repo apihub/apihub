@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"github.com/backstage/backstage/account"
+	"github.com/backstage/apimanager/account"
 )
 
 type Authenticatable interface {

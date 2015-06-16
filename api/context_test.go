@@ -3,9 +3,9 @@ package api_test
 import (
 	"net/http"
 
-	"github.com/backstage/backstage/account"
-	"github.com/backstage/backstage/api"
-	"github.com/backstage/backstage/errors"
+	"github.com/backstage/apimanager/account"
+	"github.com/backstage/apimanager/api"
+	"github.com/backstage/apimanager/errors"
 	. "gopkg.in/check.v1"
 )
 

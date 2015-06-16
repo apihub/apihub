@@ -1,8 +1,8 @@
 package account
 
 import (
-	"github.com/backstage/backstage/errors"
-	"github.com/backstage/backstage/util"
+	"github.com/backstage/apimanager/errors"
+	"github.com/backstage/apimanager/util"
 	goutils "github.com/mrvdot/golang-utils"
 )
 

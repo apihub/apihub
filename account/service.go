@@ -3,7 +3,7 @@ package account
 import (
 	"strings"
 
-	"github.com/backstage/backstage/errors"
+	"github.com/backstage/apimanager/errors"
 )
 
 type Service struct {

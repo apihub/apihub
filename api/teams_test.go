@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/backstage/backstage/account"
+	"github.com/backstage/apimanager/account"
 	. "gopkg.in/check.v1"
 )
 

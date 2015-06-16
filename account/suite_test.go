@@ -3,9 +3,9 @@ package account_test
 import (
 	"testing"
 
-	"github.com/backstage/backstage/account"
-	"github.com/backstage/backstage/account/mem"
-	"github.com/backstage/backstage/account/mongore"
+	"github.com/backstage/apimanager/account"
+	"github.com/backstage/apimanager/account/mem"
+	"github.com/backstage/apimanager/account/mongore"
 	. "gopkg.in/check.v1"
 )
 
