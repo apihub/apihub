@@ -13,7 +13,7 @@ var user account.User
 var plugin account.PluginConfig
 var team account.Team
 var service account.Service
-var token account.TokenInfo
+var token account.Token
 
 //Hook up gocheck into the "go test" runner.
 func Test(t *testing.T) { TestingT(t) }
@@ -24,7 +24,7 @@ type StorableSuite struct {
 
 func (s *StorableSuite) SetUpTest(c *C) {
 	user = account.User{Name: "Alice", Email: "alice@example.org", Password: "123456"}
-	token = account.TokenInfo{Token: "secret-token", Expires: 10, Type: "Token", User: &user}
+	token = account.Token{AccessToken: "secret-token", Expires: 10, Type: "Token", User: &user}
 	team = account.Team{Name: "Backstage Team", Alias: "backstage", Users: []string{user.Email}, Owner: user.Email}
 	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage", Team: team.Alias, Owner: user.Email, Transformers: []string{}}
 	app = account.App{ClientId: "ios", ClientSecret: "secret", Name: "Ios App", Team: team.Alias, Owner: user.Email, RedirectUris: []string{"http://www.example.org/auth"}}
@@ -145,7 +145,7 @@ func (s *StorableSuite) TestTeamServiceNotFound(c *C) {
 }
 
 func (s *StorableSuite) TestCreateToken(c *C) {
-	defer s.Storage.DeleteToken(token.Token)
+	defer s.Storage.DeleteToken(token.AccessToken)
 	err := s.Storage.CreateToken(token)
 	c.Check(err, IsNil)
 }
@@ -153,14 +153,14 @@ func (s *StorableSuite) TestCreateToken(c *C) {
 func (s *StorableSuite) TestDeleteToken(c *C) {
 	err := s.Storage.CreateToken(token)
 	c.Check(err, IsNil)
-	err = s.Storage.DeleteToken(token.Token)
+	err = s.Storage.DeleteToken(token.AccessToken)
 	c.Check(err, IsNil)
 }
 
 func (s *StorableSuite) TestDecodeToken(c *C) {
 	s.Storage.CreateToken(token)
 	var u account.User
-	s.Storage.DecodeToken(token.Token, &u)
+	s.Storage.DecodeToken(token.AccessToken, &u)
 	c.Assert(u, DeepEquals, user)
 }
 

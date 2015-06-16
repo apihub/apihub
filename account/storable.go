@@ -15,7 +15,7 @@ type Storable interface {
 	FindTeamByAlias(string) (Team, error)
 	DeleteTeamByAlias(string) error
 
-	CreateToken(TokenInfo) error
+	CreateToken(Token) error
 	DeleteToken(key string) error
 	DecodeToken(key string, t interface{}) error
 

@@ -161,13 +161,13 @@ func (m *Mongore) TeamServices(team account.Team) ([]account.Service, error) {
 	return services, err
 }
 
-func (m *Mongore) CreateToken(token account.TokenInfo) error {
+func (m *Mongore) CreateToken(token account.Token) error {
 	key := fmt.Sprintf("%s: %s", token.Type, token.User.Email)
 	db.Cache.Set(key, nil, time.Duration(token.Expires)*time.Minute)
 	db.HMSET(key, token.Expires, structs.Map(token))
 
-	db.Cache.Set(token.Token, nil, time.Duration(token.Expires))
-	db.HMSET(token.Token, token.Expires, structs.Map(token.User))
+	db.Cache.Set(token.AccessToken, nil, time.Duration(token.Expires))
+	db.HMSET(token.AccessToken, token.Expires, structs.Map(token.User))
 	return nil
 }
 

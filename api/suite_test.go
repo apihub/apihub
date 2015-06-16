@@ -50,7 +50,7 @@ func (s *S) SetUpTest(c *C) {
 	if err != nil {
 		panic(err)
 	}
-	s.authHeader = fmt.Sprintf("%s %s", token.Type, token.Token)
+	s.authHeader = fmt.Sprintf("%s %s", token.Type, token.AccessToken)
 }
 
 func (s *S) TearDownTest(c *C) {

@@ -100,7 +100,7 @@ func (api *Api) userLogout(rw http.ResponseWriter, r *http.Request) {
 }
 
 // Split Authenticate and CreateUserToken because we can override only the authentication method and still use the token method.
-func (api *Api) Login(email, password string) (*account.TokenInfo, error) {
+func (api *Api) Login(email, password string) (*account.Token, error) {
 	user, ok := api.auth.Authenticate(email, password)
 	if ok {
 		token, err := api.auth.CreateUserToken(user)

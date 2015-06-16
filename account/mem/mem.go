@@ -14,7 +14,7 @@ type Mem struct {
 	Users         map[string]account.User
 	Teams         map[string]account.Team
 	PluginsConfig map[string]map[string]account.PluginConfig
-	Tokens        map[string]account.TokenInfo
+	Tokens        map[string]account.Token
 	UserTokens    map[string]account.User
 }
 
@@ -25,7 +25,7 @@ func New() account.Storable {
 		Users:         make(map[string]account.User),
 		Teams:         make(map[string]account.Team),
 		PluginsConfig: make(map[string]map[string]account.PluginConfig),
-		Tokens:        make(map[string]account.TokenInfo),
+		Tokens:        make(map[string]account.Token),
 		UserTokens:    make(map[string]account.User),
 	}
 }
@@ -101,16 +101,16 @@ func (m *Mem) TeamServices(team account.Team) ([]account.Service, error) {
 	return services, nil
 }
 
-func (m *Mem) CreateToken(token account.TokenInfo) error {
+func (m *Mem) CreateToken(token account.Token) error {
 	key := fmt.Sprintf("%s: %s", token.Type, token.User.Email)
 	m.Tokens[key] = token
-	m.UserTokens[token.Token] = *token.User
+	m.UserTokens[token.AccessToken] = *token.User
 	return nil
 }
 
 func (m *Mem) DecodeToken(key string, t interface{}) error {
 	if token, ok := m.Tokens[key]; ok {
-		*t.(*account.TokenInfo) = token
+		*t.(*account.Token) = token
 	}
 
 	if token, ok := m.UserTokens[key]; ok {

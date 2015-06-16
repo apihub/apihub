@@ -39,7 +39,7 @@ func (s *S) TestCreateUserToken(c *C) {
 
 	token, err := s.auth.CreateUserToken(user)
 	c.Check(err, IsNil)
-	c.Assert(token.Token, Not(Equals), "")
+	c.Assert(token.AccessToken, Not(Equals), "")
 }
 
 func (s *S) TestUserFromToken(c *C) {
@@ -48,7 +48,7 @@ func (s *S) TestUserFromToken(c *C) {
 	defer user.Delete()
 
 	token, _ := s.auth.CreateUserToken(user)
-	foundUser, err := s.auth.UserFromToken(fmt.Sprintf("%s %s", token.Type, token.Token))
+	foundUser, err := s.auth.UserFromToken(fmt.Sprintf("%s %s", token.Type, token.AccessToken))
 	c.Check(err, IsNil)
 	c.Assert(foundUser, DeepEquals, user)
 }
@@ -71,7 +71,7 @@ func (s *S) TestRevokeUserToken(c *C) {
 	defer user.Delete()
 
 	token, _ := s.auth.CreateUserToken(user)
-	tstr := fmt.Sprintf("%s %s", token.Type, token.Token)
+	tstr := fmt.Sprintf("%s %s", token.Type, token.AccessToken)
 	foundUser, err := s.auth.UserFromToken(tstr)
 	c.Check(err, IsNil)
 	c.Assert(foundUser, DeepEquals, user)
