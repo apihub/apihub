@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/backstage/backstage.png?branch=master)](https://travis-ci.org/backstage/backstage)
+[![Build Status](https://travis-ci.org/backstage/maestro.png?branch=master)](https://travis-ci.org/backstage/maestro)
 
 ##What is Backstage?
 
@@ -8,8 +8,8 @@ Several apis require a similar set of features on the backend, such as: authenti
 ##Quickstart
 
 ```bash
-  git clone https://github.com/backstage/backstage.git
-  cd backstage
+  git clone https://github.com/backstage/maestro.git
+  cd maestro
   make setup
   make run-api-sample
 ```
