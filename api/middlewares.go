@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"github.com/backstage/apimanager/errors"
+	"github.com/backstage/maestro/errors"
 	"github.com/gorilla/context"
 	"github.com/satori/go.uuid"
 )
@@ -30,7 +30,6 @@ func (api *Api) authorizationMiddleware(rw http.ResponseWriter, r *http.Request,
 
 func (api *Api) errorMiddleware(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	next(rw, r)
-
 	err, ok := GetRequestError(r)
 	if ok {
 		handleError(rw, err)
@@ -39,7 +38,7 @@ func (api *Api) errorMiddleware(rw http.ResponseWriter, r *http.Request, next ht
 }
 
 func (api *Api) notFoundHandler(rw http.ResponseWriter, r *http.Request) {
-	handleError(rw, errors.NewNotFoundErrorNEW(errors.ErrNotFound))
+	handleError(rw, errors.NewNotFoundError(errors.ErrNotFound))
 }
 
 func (api *Api) contextClearerMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {

@@ -1,8 +1,8 @@
 package account
 
 import (
-	"github.com/backstage/apimanager/errors"
-	"github.com/backstage/apimanager/util"
+	"github.com/backstage/maestro/errors"
+	"github.com/backstage/maestro/util"
 	goutils "github.com/mrvdot/golang-utils"
 )
 
@@ -20,7 +20,7 @@ func (app *App) Create(owner User, team Team) error {
 	app.Team = team.Alias
 
 	if !app.valid() {
-		return errors.NewValidationErrorNEW(errors.ErrAppMissingRequiredFields)
+		return errors.NewValidationError(errors.ErrAppMissingRequiredFields)
 	}
 
 	if app.ClientId == "" {
@@ -33,7 +33,7 @@ func (app *App) Create(owner User, team Team) error {
 	}
 
 	if app.Exists() {
-		return errors.NewValidationErrorNEW(errors.ErrAppDuplicateEntry)
+		return errors.NewValidationError(errors.ErrAppDuplicateEntry)
 	}
 
 	return store.UpsertApp(*app)
@@ -41,11 +41,11 @@ func (app *App) Create(owner User, team Team) error {
 
 func (app *App) Update() error {
 	if !app.valid() {
-		return errors.NewValidationErrorNEW(errors.ErrAppMissingRequiredFields)
+		return errors.NewValidationError(errors.ErrAppMissingRequiredFields)
 	}
 
 	if !app.Exists() {
-		return errors.NewNotFoundErrorNEW(errors.ErrAppNotFound)
+		return errors.NewNotFoundError(errors.ErrAppNotFound)
 	}
 
 	return store.UpsertApp(*app)
@@ -53,7 +53,7 @@ func (app *App) Update() error {
 
 func (app App) Delete(owner User) error {
 	if app.Owner != owner.Email {
-		return errors.NewForbiddenErrorNEW(errors.ErrOnlyOwnerHasPermission)
+		return errors.NewForbiddenError(errors.ErrOnlyOwnerHasPermission)
 	}
 
 	err := store.DeleteApp(app)

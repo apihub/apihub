@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/backstage/apimanager/account"
-	"github.com/backstage/apimanager/auth"
-	"github.com/backstage/apimanager/errors"
+	"github.com/backstage/maestro/account"
+	"github.com/backstage/maestro/auth"
+	"github.com/backstage/maestro/errors"
 	. "gopkg.in/check.v1"
 )
 

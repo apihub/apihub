@@ -31,6 +31,10 @@ type Storable interface {
 	UpsertPluginConfig(PluginConfig) error
 	DeletePluginConfig(PluginConfig) error
 	FindPluginConfigByNameAndService(string, Service) (PluginConfig, error)
+
+	UpsertWebhook(Webhook) error
+	DeleteWebhook(Webhook) error
+	FindWebhookByName(string) (Webhook, error)
 }
 
 var store Storable

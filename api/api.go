@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/backstage/apimanager/account"
-	"github.com/backstage/apimanager/auth"
+	"github.com/backstage/maestro/account"
+	"github.com/backstage/maestro/auth"
 	"github.com/codegangsta/negroni"
 	"github.com/tylerb/graceful"
 )
@@ -72,6 +72,9 @@ func NewApi(store account.Storable) *Api {
 	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"GET"}, Handler: appInfo})
 	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"PUT"}, Handler: appUpdate})
 
+	// Webhooks
+	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/webhooks", Methods: []string{"PUT"}, Handler: webhookSave})
+	api.router.AddHandler(routerArguments{PathPrefix: "/api", Path: "/webhooks/{name}", Methods: []string{"DELETE"}, Handler: webhookDelete})
 	return api
 }
 

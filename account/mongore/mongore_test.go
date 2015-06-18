@@ -3,7 +3,7 @@ package mongore
 import (
 	"testing"
 
-	"github.com/backstage/apimanager/account/test"
+	"github.com/backstage/maestro/account/test"
 	. "gopkg.in/check.v1"
 )
 

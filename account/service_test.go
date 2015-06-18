@@ -1,8 +1,8 @@
 package account_test
 
 import (
-	"github.com/backstage/apimanager/account"
-	"github.com/backstage/apimanager/errors"
+	"github.com/backstage/maestro/account"
+	"github.com/backstage/maestro/errors"
 	. "gopkg.in/check.v1"
 )
 
@@ -17,7 +17,7 @@ func (s *S) TestCreateServiceWithDuplicateAlias(c *C) {
 	c.Check(err, IsNil)
 
 	err = service.Create(owner, team)
-	_, ok := err.(errors.ValidationErrorNEW)
+	_, ok := err.(errors.ValidationError)
 	c.Assert(ok, Equals, true)
 	defer service.Delete(owner)
 }
@@ -25,7 +25,7 @@ func (s *S) TestCreateServiceWithDuplicateAlias(c *C) {
 func (s *S) TestCreateServiceWithoutRequiredFields(c *C) {
 	service = account.Service{}
 	err := service.Create(owner, team)
-	_, ok := err.(errors.ValidationErrorNEW)
+	_, ok := err.(errors.ValidationError)
 	c.Assert(ok, Equals, true)
 }
 
@@ -49,7 +49,7 @@ func (s *S) TestUpdateServiceWithoutRequiredFields(c *C) {
 
 	service.Endpoint = ""
 	err = service.Update()
-	_, ok := err.(errors.ValidationErrorNEW)
+	_, ok := err.(errors.ValidationError)
 	c.Assert(ok, Equals, true)
 }
 
@@ -77,7 +77,7 @@ func (s *S) TestDeleteServiceNotOwner(c *C) {
 	defer service.Delete(alice)
 
 	err := service.Delete(owner)
-	_, ok := err.(errors.ForbiddenErrorNEW)
+	_, ok := err.(errors.ForbiddenError)
 	c.Assert(ok, Equals, true)
 }
 
@@ -93,6 +93,6 @@ func (s *S) TestFindServiceBySubdomain(c *C) {
 func (s *S) TestFindServiceBySubdomainNotFound(c *C) {
 	t, err := account.FindServiceBySubdomain("not-found")
 	c.Check(t, IsNil)
-	_, ok := err.(errors.NotFoundErrorNEW)
+	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 }

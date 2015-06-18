@@ -4,8 +4,8 @@ package mem
 import (
 	"fmt"
 
-	"github.com/backstage/apimanager/account"
-	"github.com/backstage/apimanager/errors"
+	"github.com/backstage/maestro/account"
+	"github.com/backstage/maestro/errors"
 )
 
 type Mem struct {
@@ -16,6 +16,7 @@ type Mem struct {
 	PluginsConfig map[string]map[string]account.PluginConfig
 	Tokens        map[string]account.Token
 	UserTokens    map[string]account.User
+	Webhooks      map[string]account.Webhook
 }
 
 func New() account.Storable {
@@ -27,6 +28,7 @@ func New() account.Storable {
 		PluginsConfig: make(map[string]map[string]account.PluginConfig),
 		Tokens:        make(map[string]account.Token),
 		UserTokens:    make(map[string]account.User),
+		Webhooks:      make(map[string]account.Webhook),
 	}
 }
 
@@ -37,7 +39,7 @@ func (m *Mem) UpsertUser(u account.User) error {
 
 func (m *Mem) DeleteUser(u account.User) error {
 	if _, ok := m.Users[u.Email]; !ok {
-		return errors.NewNotFoundErrorNEW(errors.ErrUserNotFound)
+		return errors.NewNotFoundError(errors.ErrUserNotFound)
 	}
 
 	delete(m.Users, u.Email)
@@ -46,7 +48,7 @@ func (m *Mem) DeleteUser(u account.User) error {
 
 func (m *Mem) FindUserByEmail(email string) (account.User, error) {
 	if user, ok := m.Users[email]; !ok {
-		return account.User{}, errors.NewNotFoundErrorNEW(errors.ErrUserNotFound)
+		return account.User{}, errors.NewNotFoundError(errors.ErrUserNotFound)
 	} else {
 		return user, nil
 	}
@@ -71,7 +73,7 @@ func (m *Mem) UpsertTeam(t account.Team) error {
 
 func (m *Mem) DeleteTeam(t account.Team) error {
 	if _, ok := m.Teams[t.Alias]; !ok {
-		return errors.NewNotFoundErrorNEW(errors.ErrTeamNotFound)
+		return errors.NewNotFoundError(errors.ErrTeamNotFound)
 	}
 
 	delete(m.Teams, t.Alias)
@@ -80,7 +82,7 @@ func (m *Mem) DeleteTeam(t account.Team) error {
 
 func (m *Mem) FindTeamByAlias(alias string) (account.Team, error) {
 	if team, ok := m.Teams[alias]; !ok {
-		return account.Team{}, errors.NewNotFoundErrorNEW(errors.ErrTeamNotFound)
+		return account.Team{}, errors.NewNotFoundError(errors.ErrTeamNotFound)
 	} else {
 		return team, nil
 	}
@@ -132,7 +134,7 @@ func (m *Mem) UpsertService(s account.Service) error {
 
 func (m *Mem) DeleteService(s account.Service) error {
 	if _, ok := m.Services[s.Subdomain]; !ok {
-		return errors.NewNotFoundErrorNEW(errors.ErrServiceNotFound)
+		return errors.NewNotFoundError(errors.ErrServiceNotFound)
 	}
 
 	delete(m.Services, s.Subdomain)
@@ -141,7 +143,7 @@ func (m *Mem) DeleteService(s account.Service) error {
 
 func (m *Mem) FindServiceBySubdomain(subdomain string) (account.Service, error) {
 	if service, ok := m.Services[subdomain]; !ok {
-		return account.Service{}, errors.NewNotFoundErrorNEW(errors.ErrServiceNotFound)
+		return account.Service{}, errors.NewNotFoundError(errors.ErrServiceNotFound)
 	} else {
 		return service, nil
 	}
@@ -168,7 +170,7 @@ func (m *Mem) UpsertApp(a account.App) error {
 
 func (m *Mem) FindAppByClientId(id string) (account.App, error) {
 	if app, ok := m.Apps[id]; !ok {
-		return account.App{}, errors.NewNotFoundErrorNEW(errors.ErrAppNotFound)
+		return account.App{}, errors.NewNotFoundError(errors.ErrAppNotFound)
 	} else {
 		return app, nil
 	}
@@ -176,7 +178,7 @@ func (m *Mem) FindAppByClientId(id string) (account.App, error) {
 
 func (m *Mem) DeleteApp(a account.App) error {
 	if _, ok := m.Apps[a.ClientId]; !ok {
-		return errors.NewNotFoundErrorNEW(errors.ErrAppNotFound)
+		return errors.NewNotFoundError(errors.ErrAppNotFound)
 	}
 
 	delete(m.Apps, a.ClientId)
@@ -190,7 +192,7 @@ func (m *Mem) UpsertPluginConfig(pc account.PluginConfig) error {
 
 func (m *Mem) DeletePluginConfig(pc account.PluginConfig) error {
 	if _, ok := m.PluginsConfig[pc.Service][pc.Name]; !ok {
-		return errors.NewNotFoundErrorNEW(errors.ErrPluginConfigNotFound)
+		return errors.NewNotFoundError(errors.ErrPluginConfigNotFound)
 	}
 
 	delete(m.PluginsConfig, pc.Name)
@@ -199,8 +201,30 @@ func (m *Mem) DeletePluginConfig(pc account.PluginConfig) error {
 
 func (m *Mem) FindPluginConfigByNameAndService(pluginName string, service account.Service) (account.PluginConfig, error) {
 	if plugin, ok := m.PluginsConfig[service.Subdomain][pluginName]; !ok {
-		return account.PluginConfig{}, errors.NewNotFoundErrorNEW(errors.ErrPluginConfigNotFound)
+		return account.PluginConfig{}, errors.NewNotFoundError(errors.ErrPluginConfigNotFound)
 	} else {
 		return plugin, nil
+	}
+}
+
+func (m *Mem) UpsertWebhook(w account.Webhook) error {
+	m.Webhooks[w.Name] = w
+	return nil
+}
+
+func (m *Mem) DeleteWebhook(w account.Webhook) error {
+	if _, ok := m.Webhooks[w.Name]; !ok {
+		return errors.NewNotFoundError(errors.ErrWebhookNotFound)
+	}
+
+	delete(m.Webhooks, w.Name)
+	return nil
+}
+
+func (m *Mem) FindWebhookByName(name string) (account.Webhook, error) {
+	if webhook, ok := m.Webhooks[name]; !ok {
+		return account.Webhook{}, errors.NewNotFoundError(errors.ErrWebhookNotFound)
+	} else {
+		return webhook, nil
 	}
 }

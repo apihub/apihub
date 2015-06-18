@@ -1,7 +1,7 @@
 package account
 
 import (
-	"github.com/backstage/apimanager/errors"
+	"github.com/backstage/maestro/errors"
 )
 
 type PluginConfig struct {
@@ -13,7 +13,7 @@ type PluginConfig struct {
 func (pc *PluginConfig) Save(service Service) error {
 	pc.Service = service.Subdomain
 	if !pc.valid() {
-		return errors.NewValidationErrorNEW(errors.ErrPluginConfigMissingRequiredFields)
+		return errors.NewValidationError(errors.ErrPluginConfigMissingRequiredFields)
 	}
 
 	return store.UpsertPluginConfig(*pc)

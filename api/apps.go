@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/backstage/apimanager/account"
-	"github.com/backstage/apimanager/errors"
+	"github.com/backstage/maestro/account"
+	"github.com/backstage/maestro/errors"
 	"github.com/gorilla/mux"
 )
 

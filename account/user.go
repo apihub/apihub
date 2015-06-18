@@ -2,8 +2,8 @@ package account
 
 import (
 	"code.google.com/p/go.crypto/bcrypt"
-	"github.com/backstage/apimanager/errors"
-	. "github.com/backstage/apimanager/log"
+	"github.com/backstage/maestro/errors"
+	. "github.com/backstage/maestro/log"
 )
 
 // The User type is an encapsulation of a user details.
@@ -21,12 +21,12 @@ type User struct {
 // It returns an error if the user creation fails.
 func (user *User) Create() error {
 	if user.Name == "" || user.Email == "" || user.Password == "" {
-		return errors.NewValidationErrorNEW(errors.ErrUserMissingRequiredFields)
+		return errors.NewValidationError(errors.ErrUserMissingRequiredFields)
 	}
 
 	user.hashPassword()
 	if user.Exists() {
-		return errors.NewValidationErrorNEW(errors.ErrUserDuplicateEntry)
+		return errors.NewValidationError(errors.ErrUserDuplicateEntry)
 	}
 
 	return store.UpsertUser(*user)
@@ -35,7 +35,7 @@ func (user *User) Create() error {
 // Updates the password for an existing account.
 func (user *User) ChangePassword() error {
 	if !user.Exists() {
-		return errors.NewNotFoundErrorNEW(errors.ErrUserNotFound)
+		return errors.NewNotFoundError(errors.ErrUserNotFound)
 	}
 
 	user.hashPassword()

@@ -4,13 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/backstage/apimanager/errors"
+	"github.com/backstage/maestro/errors"
 )
-
-type HTTPError struct {
-	ErrorType        string `json:"error,omitempty"`
-	ErrorDescription string `json:"error_description,omitempty"`
-}
 
 type HTTPResponse struct {
 	ContentType string      `json:"-"`
@@ -30,17 +25,17 @@ func (h *HTTPResponse) ToJson() []byte {
 
 func handleError(rw http.ResponseWriter, err error) {
 	switch err.(type) {
-	case errors.NotFoundErrorNEW:
-		erro := HTTPError{ErrorType: errors.E_NOT_FOUND, ErrorDescription: err.Error()}
+	case errors.NotFoundError:
+		erro := errors.ErrorResponse{Type: errors.E_NOT_FOUND, Description: err.Error()}
 		NotFound(rw, erro)
-	case errors.ForbiddenErrorNEW:
-		erro := HTTPError{ErrorType: errors.E_FORBIDDEN_REQUEST, ErrorDescription: err.Error()}
+	case errors.ForbiddenError:
+		erro := errors.ErrorResponse{Type: errors.E_FORBIDDEN_REQUEST, Description: err.Error()}
 		Forbidden(rw, erro)
 	case errors.UnauthorizedError:
-		erro := HTTPError{ErrorType: errors.E_UNAUTHORIZED_REQUEST, ErrorDescription: err.Error()}
+		erro := errors.ErrorResponse{Type: errors.E_UNAUTHORIZED_REQUEST, Description: err.Error()}
 		Unauthorized(rw, erro)
 	default:
-		erro := HTTPError{ErrorType: errors.E_BAD_REQUEST, ErrorDescription: err.Error()}
+		erro := errors.ErrorResponse{Type: errors.E_BAD_REQUEST, Description: err.Error()}
 		BadRequest(rw, erro)
 	}
 }

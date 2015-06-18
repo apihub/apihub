@@ -3,8 +3,8 @@ package test
 import (
 	"testing"
 
-	"github.com/backstage/apimanager/account"
-	"github.com/backstage/apimanager/errors"
+	"github.com/backstage/maestro/account"
+	"github.com/backstage/maestro/errors"
 	. "gopkg.in/check.v1"
 )
 
@@ -14,6 +14,7 @@ var plugin account.PluginConfig
 var team account.Team
 var service account.Service
 var token account.Token
+var webhook account.Webhook
 
 //Hook up gocheck into the "go test" runner.
 func Test(t *testing.T) { TestingT(t) }
@@ -29,6 +30,7 @@ func (s *StorableSuite) SetUpTest(c *C) {
 	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage", Team: team.Alias, Owner: user.Email, Transformers: []string{}}
 	app = account.App{ClientId: "ios", ClientSecret: "secret", Name: "Ios App", Team: team.Alias, Owner: user.Email, RedirectUris: []string{"http://www.example.org/auth"}}
 	plugin = account.PluginConfig{Name: "cors", Service: service.Subdomain, Config: map[string]interface{}{"version": 1}}
+	webhook = account.Webhook{Name: "service.update", Events: []string{"service.update"}, Config: map[string]interface{}{"version": 1}}
 }
 
 func (s *StorableSuite) TestUpsertUser(c *C) {
@@ -67,7 +69,7 @@ func (s *StorableSuite) TestDeleteUser(c *C) {
 
 func (s *StorableSuite) TestDeleteUserNotFound(c *C) {
 	err := s.Storage.DeleteUser(user)
-	_, ok := err.(errors.NotFoundErrorNEW)
+	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 }
 
@@ -81,7 +83,7 @@ func (s *StorableSuite) TestFindUserByEmail(c *C) {
 
 func (s *StorableSuite) TestFindUserByEmailNotFound(c *C) {
 	_, err := s.Storage.FindUserByEmail("not-found")
-	_, ok := err.(errors.NotFoundErrorNEW)
+	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 }
 
@@ -99,7 +101,7 @@ func (s *StorableSuite) TestDeleteTeam(c *C) {
 
 func (s *StorableSuite) TestDeleteTeamNotFound(c *C) {
 	err := s.Storage.DeleteTeam(team)
-	_, ok := err.(errors.NotFoundErrorNEW)
+	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 }
 
@@ -111,7 +113,7 @@ func (s *StorableSuite) TestDeleteTeamByAlias(c *C) {
 
 func (s *StorableSuite) TestDeleteTeamByAliasNotFound(c *C) {
 	err := s.Storage.DeleteTeamByAlias(team.Alias)
-	_, ok := err.(errors.NotFoundErrorNEW)
+	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 }
 
@@ -125,7 +127,7 @@ func (s *StorableSuite) TestFindTeamByAlias(c *C) {
 
 func (s *StorableSuite) TestFindTeamByAliasNotFound(c *C) {
 	_, err := s.Storage.FindTeamByAlias("not-found")
-	_, ok := err.(errors.NotFoundErrorNEW)
+	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 }
 
@@ -178,7 +180,7 @@ func (s *StorableSuite) TestDeleteService(c *C) {
 
 func (s *StorableSuite) TestDeleteServiceNotFound(c *C) {
 	err := s.Storage.DeleteService(service)
-	_, ok := err.(errors.NotFoundErrorNEW)
+	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 }
 
@@ -192,7 +194,7 @@ func (s *StorableSuite) TestFindServiceBySubdomain(c *C) {
 
 func (s *StorableSuite) TestFindServiceBySubdomainNotFound(c *C) {
 	_, err := s.Storage.FindServiceBySubdomain("not-found")
-	_, ok := err.(errors.NotFoundErrorNEW)
+	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 }
 
@@ -231,7 +233,7 @@ func (s *StorableSuite) TestDeleteApp(c *C) {
 func (s *StorableSuite) TestDeleteAppNotFound(c *C) {
 	nf := account.App{}
 	err := s.Storage.DeleteApp(nf)
-	_, ok := err.(errors.NotFoundErrorNEW)
+	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 }
 
@@ -245,7 +247,7 @@ func (s *StorableSuite) TestFindAppByClientId(c *C) {
 
 func (s *StorableSuite) TestFindAppByClientIdNotFound(c *C) {
 	_, err := s.Storage.FindAppByClientId("not-found")
-	_, ok := err.(errors.NotFoundErrorNEW)
+	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 }
 
@@ -264,7 +266,7 @@ func (s *StorableSuite) TestDeletePluginConfig(c *C) {
 func (s *StorableSuite) TestDeletePluginConfigNotFound(c *C) {
 	nf := account.PluginConfig{}
 	err := s.Storage.DeletePluginConfig(nf)
-	_, ok := err.(errors.NotFoundErrorNEW)
+	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 }
 
@@ -279,6 +281,24 @@ func (s *StorableSuite) TestFindPluginConfigByNameAndService(c *C) {
 
 func (s *StorableSuite) TestFindPluginConfigByNameAndServiceNotFound(c *C) {
 	_, err := s.Storage.FindPluginConfigByNameAndService("not-found", service)
-	_, ok := err.(errors.NotFoundErrorNEW)
+	_, ok := err.(errors.NotFoundError)
+	c.Assert(ok, Equals, true)
+}
+
+func (s *StorableSuite) TestUpsertWebhook(c *C) {
+	defer s.Storage.DeleteWebhook(webhook)
+	err := s.Storage.UpsertWebhook(webhook)
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestDeleteWebhook(c *C) {
+	s.Storage.UpsertWebhook(webhook)
+	err := s.Storage.DeleteWebhook(webhook)
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestDeleteWebhookNotFound(c *C) {
+	err := s.Storage.DeleteWebhook(webhook)
+	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 }

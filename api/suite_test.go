@@ -6,14 +6,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/backstage/apimanager/account"
-	"github.com/backstage/apimanager/account/mem"
-	"github.com/backstage/apimanager/account/mongore"
-	"github.com/backstage/apimanager/api"
+	"github.com/backstage/maestro/account"
+	"github.com/backstage/maestro/account/mem"
+	"github.com/backstage/maestro/account/mongore"
+	"github.com/backstage/maestro/api"
 	. "gopkg.in/check.v1"
 )
 
-var httpClient HTTPClient
+var httpClient account.HTTPClient
 
 func Test(t *testing.T) { TestingT(t) }
 
@@ -37,7 +37,7 @@ func (s *S) SetUpTest(c *C) {
 
 	s.api = api.NewApi(s.store)
 	s.server = httptest.NewServer(s.api.Handler())
-	httpClient = NewHTTPClient(s.server.URL)
+	httpClient = account.NewHTTPClient(s.server.URL)
 
 	team = account.Team{Name: "Backstage Team", Alias: "backstage"}
 	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage"}
@@ -76,11 +76,11 @@ func setUpMongoreTest(s *S) {
 	})
 }
 
-func testWithoutSignIn(reqArgs RequestArgs, c *C) {
+func testWithoutSignIn(reqArgs account.RequestArgs, c *C) {
 	headers, code, body, err := httpClient.MakeRequest(reqArgs)
 
-	c.Assert(string(body), Equals, `{"error":"unauthorized_access","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
-	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(code, Equals, http.StatusUnauthorized)
 	c.Check(err, IsNil)
+	c.Assert(code, Equals, http.StatusUnauthorized)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(string(body), Equals, `{"error":"unauthorized_access","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
 }

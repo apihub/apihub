@@ -1,7 +1,7 @@
 package account
 
 import (
-	"github.com/backstage/apimanager/errors"
+	"github.com/backstage/maestro/errors"
 	utils "github.com/mrvdot/golang-utils"
 )
 
@@ -21,7 +21,7 @@ type Team struct {
 // If the `alias` is not informed, it will be generate based on the team name.
 func (team *Team) Create(owner User) error {
 	if !team.valid() {
-		return errors.NewValidationErrorNEW(errors.ErrTeamMissingRequiredFields)
+		return errors.NewValidationError(errors.ErrTeamMissingRequiredFields)
 	}
 
 	team.Users = append(team.Users, owner.Email)
@@ -33,7 +33,7 @@ func (team *Team) Create(owner User) error {
 	}
 
 	if team.Exists() {
-		return errors.NewValidationErrorNEW(errors.ErrTeamDuplicateEntry)
+		return errors.NewValidationError(errors.ErrTeamDuplicateEntry)
 	}
 
 	return store.UpsertTeam(*team)
@@ -41,7 +41,7 @@ func (team *Team) Create(owner User) error {
 
 func (team *Team) Update() error {
 	if !team.valid() {
-		return errors.NewValidationErrorNEW(errors.ErrTeamMissingRequiredFields)
+		return errors.NewValidationError(errors.ErrTeamMissingRequiredFields)
 	}
 
 	return store.UpsertTeam(*team)
@@ -50,7 +50,7 @@ func (team *Team) Update() error {
 // Delete removes an existing team from the server.
 func (team Team) Delete(owner User) error {
 	if team.Owner != owner.Email {
-		return errors.NewForbiddenErrorNEW(errors.ErrOnlyOwnerHasPermission)
+		return errors.NewForbiddenError(errors.ErrOnlyOwnerHasPermission)
 	}
 
 	return store.DeleteTeam(team)
@@ -82,7 +82,7 @@ func (team *Team) ContainsUser(user *User) (int, error) {
 			return i, nil
 		}
 	}
-	return -1, errors.NewForbiddenErrorNEW(errors.ErrUserNotInTeam)
+	return -1, errors.NewForbiddenError(errors.ErrUserNotInTeam)
 }
 
 // Add valid user in the team.
@@ -116,7 +116,7 @@ func (team *Team) AddUsers(emails []string) error {
 // Return an error if trying to remove the owner. It's not allowed to do that.
 func (team *Team) RemoveUsers(emails []string) error {
 	var (
-		errOwner     errors.ValidationErrorNEW
+		errOwner     errors.ValidationError
 		removedUsers bool
 		user         *User
 		err          interface{}
@@ -124,7 +124,7 @@ func (team *Team) RemoveUsers(emails []string) error {
 
 	for _, email := range emails {
 		if team.Owner == email {
-			errOwner = errors.NewValidationErrorNEW(errors.ErrRemoveOwnerFromTeam)
+			errOwner = errors.NewValidationError(errors.ErrRemoveOwnerFromTeam)
 			err = &errOwner
 			continue
 		}

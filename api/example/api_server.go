@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/backstage/apimanager/account/mem"
-	"github.com/backstage/apimanager/api"
+	"github.com/backstage/maestro/account/mem"
+	"github.com/backstage/maestro/api"
 )
 
 func main() {

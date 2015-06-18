@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/backstage/apimanager/account"
-	"github.com/backstage/apimanager/errors"
-	. "github.com/backstage/apimanager/log"
+	"github.com/backstage/maestro/account"
+	"github.com/backstage/maestro/errors"
+	. "github.com/backstage/maestro/log"
 )
 
 func (api *Api) userSignup(rw http.ResponseWriter, r *http.Request) {

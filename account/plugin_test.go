@@ -1,8 +1,8 @@
 package account_test
 
 import (
-	"github.com/backstage/apimanager/account"
-	"github.com/backstage/apimanager/errors"
+	"github.com/backstage/maestro/account"
+	"github.com/backstage/maestro/errors"
 	. "gopkg.in/check.v1"
 )
 
@@ -15,7 +15,7 @@ func (s *S) TestSavePlugin(c *C) {
 func (s *S) TestSavePluginWithoutRequiredFields(c *C) {
 	pluginConfig := account.PluginConfig{}
 	err := pluginConfig.Save(service)
-	_, ok := err.(errors.ValidationErrorNEW)
+	_, ok := err.(errors.ValidationError)
 	c.Assert(ok, Equals, true)
 }
 
@@ -31,6 +31,6 @@ func (s *S) TestFindPluginByNameAndService(c *C) {
 func (s *S) TestFindPluginByNameAndServiceNotFound(c *C) {
 	t, err := account.FindPluginByNameAndService("not-found", service)
 	c.Check(t, IsNil)
-	_, ok := err.(errors.NotFoundErrorNEW)
+	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 }

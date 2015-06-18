@@ -18,6 +18,7 @@ var (
 	ErrRemoveOwnerFromTeam    = errors.New("It is not possible to remove the owner from the team.")
 	ErrUnauthorizedAccess     = errors.New("Request refused or access is not allowed.")
 	ErrBadRequest             = errors.New("The request was invalid or cannot be served.")
+	ErrBadResponse            = errors.New("The response was invalid or cannot be served.")
 	ErrClientNotFound         = errors.New("Client not found.")
 	ErrClientNotFoundOnTeam   = errors.New("Client not found on this team.")
 	ErrInvalidTokenFormat     = errors.New("Invalid token format.")
@@ -46,56 +47,45 @@ var (
 
 	ErrPluginConfigNotFound              = errors.New("Plugin Config not found.")
 	ErrPluginConfigMissingRequiredFields = errors.New("Name and Service cannot be empty.")
+
+	ErrWebhookNotFound              = errors.New("Webhook not found.")
+	ErrWebhookMissingRequiredFields = errors.New("Name, Team and Events cannot be empty.")
 )
 
-// The ValidationError type indicates that any validation has failed.
-type ValidationError struct {
-	Payload string
+type ErrorResponse struct {
+	Type        string `json:"error,omitempty"`
+	Description string `json:"error_description,omitempty"`
 }
 
-func (err *ValidationError) Error() string {
-	return err.Payload
+func (err ErrorResponse) Error() string {
+	return err.Description
 }
 
-// The ForbiddenError type indicates that the user does not have
-// permission to perform some operation.
-type ForbiddenError struct {
-	Payload string
-}
-
-func (err *ForbiddenError) Error() string {
-	return err.Payload
+func NewErrorResponse(errType, description string) ErrorResponse {
+	return ErrorResponse{Type: errType, Description: description}
 }
 
 type NotFoundError struct {
-	Payload string
-}
-
-func (err *NotFoundError) Error() string {
-	return err.Payload
-}
-
-type NotFoundErrorNEW struct {
 	description error
 }
 
-func NewNotFoundErrorNEW(err error) NotFoundErrorNEW {
-	return NotFoundErrorNEW{description: err}
+func NewNotFoundError(err error) NotFoundError {
+	return NotFoundError{description: err}
 }
 
-func (err NotFoundErrorNEW) Error() string {
+func (err NotFoundError) Error() string {
 	return err.description.Error()
 }
 
-type ValidationErrorNEW struct {
+type ValidationError struct {
 	description error
 }
 
-func NewValidationErrorNEW(err error) ValidationErrorNEW {
-	return ValidationErrorNEW{description: err}
+func NewValidationError(err error) ValidationError {
+	return ValidationError{description: err}
 }
 
-func (err ValidationErrorNEW) Error() string {
+func (err ValidationError) Error() string {
 	return err.description.Error()
 }
 
@@ -111,14 +101,50 @@ func (err UnauthorizedError) Error() string {
 	return err.description.Error()
 }
 
-type ForbiddenErrorNEW struct {
+type ForbiddenError struct {
 	description error
 }
 
-func NewForbiddenErrorNEW(err error) ForbiddenErrorNEW {
-	return ForbiddenErrorNEW{description: err}
+func NewForbiddenError(err error) ForbiddenError {
+	return ForbiddenError{description: err}
 }
 
-func (err ForbiddenErrorNEW) Error() string {
+func (err ForbiddenError) Error() string {
+	return err.description.Error()
+}
+
+type InvalidHostError struct {
+	description error
+}
+
+func NewInvalidHostError(err error) InvalidHostError {
+	return InvalidHostError{description: err}
+}
+
+func (err InvalidHostError) Error() string {
+	return "You either have not selected any target or it is invalid: " + err.description.Error()
+}
+
+type RequestError struct {
+	description error
+}
+
+func NewRequestError(err error) RequestError {
+	return RequestError{description: err}
+}
+
+func (err RequestError) Error() string {
+	return "Failed to connect to Backstage server: " + err.description.Error()
+}
+
+type ResponseError struct {
+	description error
+}
+
+func NewResponseError(err error) ResponseError {
+	return ResponseError{description: err}
+}
+
+func (err ResponseError) Error() string {
 	return err.description.Error()
 }

@@ -3,9 +3,9 @@ package account_test
 import (
 	"testing"
 
-	"github.com/backstage/apimanager/account"
-	"github.com/backstage/apimanager/account/mem"
-	"github.com/backstage/apimanager/account/mongore"
+	"github.com/backstage/maestro/account"
+	"github.com/backstage/maestro/account/mem"
+	"github.com/backstage/maestro/account/mongore"
 	. "gopkg.in/check.v1"
 )
 
@@ -27,6 +27,7 @@ var owner account.User
 var pluginConfig account.PluginConfig
 var service account.Service
 var team account.Team
+var webhook account.Webhook
 
 func (s *S) SetUpTest(c *C) {
 	// setUpMemoryTest(s)
@@ -38,6 +39,7 @@ func (s *S) SetUpTest(c *C) {
 	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage", Transformers: []string{}}
 	app = account.App{ClientId: "ios", ClientSecret: "secret", Name: "Ios App", Team: team.Alias, Owner: owner.Email, RedirectUris: []string{"http://www.example.org/auth"}}
 	pluginConfig = account.PluginConfig{Name: "Plugin Config", Service: service.Subdomain, Config: make(map[string]interface{})}
+	webhook = account.Webhook{Name: "service.update", Events: []string{"service.update"}, Config: map[string]interface{}{"version": 1}}
 }
 
 // Run the tests in memory

@@ -3,7 +3,7 @@ package account
 import (
 	"strings"
 
-	"github.com/backstage/apimanager/errors"
+	"github.com/backstage/maestro/errors"
 )
 
 type Service struct {
@@ -24,11 +24,11 @@ func (service *Service) Create(owner User, team Team) error {
 	service.Team = team.Alias
 
 	if !service.valid() {
-		return errors.NewValidationErrorNEW(errors.ErrServiceMissingRequiredFields)
+		return errors.NewValidationError(errors.ErrServiceMissingRequiredFields)
 	}
 
 	if service.Exists() {
-		return errors.NewValidationErrorNEW(errors.ErrServiceDuplicateEntry)
+		return errors.NewValidationError(errors.ErrServiceDuplicateEntry)
 	}
 
 	return store.UpsertService(*service)
@@ -36,11 +36,11 @@ func (service *Service) Create(owner User, team Team) error {
 
 func (service *Service) Update() error {
 	if !service.valid() {
-		return errors.NewValidationErrorNEW(errors.ErrServiceMissingRequiredFields)
+		return errors.NewValidationError(errors.ErrServiceMissingRequiredFields)
 	}
 
 	if !service.Exists() {
-		return errors.NewNotFoundErrorNEW(errors.ErrServiceNotFound)
+		return errors.NewNotFoundError(errors.ErrServiceNotFound)
 	}
 
 	return store.UpsertService(*service)
@@ -48,7 +48,7 @@ func (service *Service) Update() error {
 
 func (service Service) Delete(owner User) error {
 	if service.Owner != owner.Email {
-		return errors.NewForbiddenErrorNEW(errors.ErrOnlyOwnerHasPermission)
+		return errors.NewForbiddenError(errors.ErrOnlyOwnerHasPermission)
 	}
 
 	err := store.DeleteService(service)

@@ -3,15 +3,16 @@ package api_test
 import (
 	"net/http"
 
-	"github.com/backstage/apimanager/account"
-	"github.com/backstage/apimanager/api"
+	"github.com/backstage/maestro/account"
+	"github.com/backstage/maestro/api"
+	"github.com/backstage/maestro/errors"
 	. "gopkg.in/check.v1"
 )
 
 func (s *S) TestToJsonWithError(c *C) {
-	erro := api.HTTPError{
-		ErrorType:        "invalid_request",
-		ErrorDescription: "The request is missing a required parameter.",
+	erro := errors.ErrorResponse{
+		Type:        "invalid_request",
+		Description: "The request is missing a required parameter.",
 	}
 
 	err := &api.HTTPResponse{

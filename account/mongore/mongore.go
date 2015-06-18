@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/backstage/apimanager/account"
-	"github.com/backstage/apimanager/db"
-	"github.com/backstage/apimanager/errors"
-	. "github.com/backstage/apimanager/log"
+	"github.com/backstage/maestro/account"
+	"github.com/backstage/maestro/db"
+	"github.com/backstage/maestro/errors"
+	. "github.com/backstage/maestro/log"
 	"github.com/fatih/structs"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -43,7 +43,7 @@ func (m *Mongore) DeleteUser(u account.User) error {
 	err := strg.Users().Remove(u)
 
 	if err == mgo.ErrNotFound {
-		return errors.NewNotFoundErrorNEW(errors.ErrUserNotFound)
+		return errors.NewNotFoundError(errors.ErrUserNotFound)
 	}
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -61,7 +61,7 @@ func (m *Mongore) FindUserByEmail(email string) (account.User, error) {
 	err := strg.Users().Find(bson.M{"email": email}).One(&user)
 
 	if err == mgo.ErrNotFound {
-		return account.User{}, errors.NewNotFoundErrorNEW(errors.ErrUserNotFound)
+		return account.User{}, errors.NewNotFoundError(errors.ErrUserNotFound)
 	}
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -102,7 +102,7 @@ func (m *Mongore) DeleteTeam(t account.Team) error {
 	err := strg.Teams().Remove(t)
 
 	if err == mgo.ErrNotFound {
-		return errors.NewNotFoundErrorNEW(errors.ErrTeamNotFound)
+		return errors.NewNotFoundError(errors.ErrTeamNotFound)
 	}
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -120,7 +120,7 @@ func (m *Mongore) FindTeamByAlias(alias string) (account.Team, error) {
 	err := strg.Teams().Find(bson.M{"alias": alias}).One(&team)
 
 	if err == mgo.ErrNotFound {
-		return account.Team{}, errors.NewNotFoundErrorNEW(errors.ErrTeamNotFound)
+		return account.Team{}, errors.NewNotFoundError(errors.ErrTeamNotFound)
 	}
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -137,7 +137,7 @@ func (m *Mongore) DeleteTeamByAlias(alias string) error {
 	err := strg.Teams().Remove(bson.M{"alias": alias})
 
 	if err == mgo.ErrNotFound {
-		return errors.NewNotFoundErrorNEW(errors.ErrTeamNotFound)
+		return errors.NewNotFoundError(errors.ErrTeamNotFound)
 	}
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -214,7 +214,7 @@ func (m *Mongore) DeleteService(s account.Service) error {
 	err := strg.Services().Remove(s)
 
 	if err == mgo.ErrNotFound {
-		return errors.NewNotFoundErrorNEW(errors.ErrServiceNotFound)
+		return errors.NewNotFoundError(errors.ErrServiceNotFound)
 	}
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -232,7 +232,7 @@ func (m *Mongore) FindServiceBySubdomain(subdomain string) (account.Service, err
 	err := strg.Services().Find(bson.M{"subdomain": subdomain}).One(&service)
 
 	if err == mgo.ErrNotFound {
-		return account.Service{}, errors.NewNotFoundErrorNEW(errors.ErrServiceNotFound)
+		return account.Service{}, errors.NewNotFoundError(errors.ErrServiceNotFound)
 	}
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -284,7 +284,7 @@ func (m *Mongore) FindAppByClientId(clientid string) (account.App, error) {
 	err := strg.Apps().Find(bson.M{"clientid": clientid}).One(&app)
 
 	if err == mgo.ErrNotFound {
-		return account.App{}, errors.NewNotFoundErrorNEW(errors.ErrAppNotFound)
+		return account.App{}, errors.NewNotFoundError(errors.ErrAppNotFound)
 	}
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -301,7 +301,7 @@ func (m *Mongore) DeleteApp(app account.App) error {
 	err := strg.Apps().Remove(bson.M{"clientid": app.ClientId})
 
 	if err == mgo.ErrNotFound {
-		return errors.NewNotFoundErrorNEW(errors.ErrAppNotFound)
+		return errors.NewNotFoundError(errors.ErrAppNotFound)
 	}
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -332,7 +332,7 @@ func (m *Mongore) DeletePluginConfig(pc account.PluginConfig) error {
 	err := strg.PluginsConfig().Remove(pc)
 
 	if err == mgo.ErrNotFound {
-		return errors.NewNotFoundErrorNEW(errors.ErrPluginConfigNotFound)
+		return errors.NewNotFoundError(errors.ErrPluginConfigNotFound)
 	}
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -350,11 +350,60 @@ func (m *Mongore) FindPluginConfigByNameAndService(pluginName string, service ac
 	err := strg.PluginsConfig().Find(bson.M{"name": pluginName, "service": service.Subdomain}).One(&plugin)
 
 	if err == mgo.ErrNotFound {
-		return account.PluginConfig{}, errors.NewNotFoundErrorNEW(errors.ErrPluginConfigNotFound)
+		return account.PluginConfig{}, errors.NewNotFoundError(errors.ErrPluginConfigNotFound)
 	}
 	if err != nil {
 		Logger.Warn(err.Error())
 	}
 
 	return plugin, err
+}
+
+func (m *Mongore) UpsertWebhook(w account.Webhook) error {
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
+	_, err := strg.Webhooks().Upsert(bson.M{"name": w.Name}, w)
+
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
+
+	return err
+}
+
+func (m *Mongore) DeleteWebhook(w account.Webhook) error {
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
+	err := strg.Webhooks().Remove(w)
+
+	if err == mgo.ErrNotFound {
+		return errors.NewNotFoundError(errors.ErrWebhookNotFound)
+	}
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
+
+	return err
+}
+
+func (m *Mongore) FindWebhookByName(name string) (account.Webhook, error) {
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
+	webhook := account.Webhook{}
+	err := strg.Webhooks().Find(bson.M{"name": name}).One(&webhook)
+
+	if err == mgo.ErrNotFound {
+		return account.Webhook{}, errors.NewNotFoundError(errors.ErrWebhookNotFound)
+	}
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
+
+	return webhook, err
 }

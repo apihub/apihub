@@ -1,8 +1,8 @@
 package account_test
 
 import (
-	"github.com/backstage/apimanager/account"
-	"github.com/backstage/apimanager/errors"
+	"github.com/backstage/maestro/account"
+	"github.com/backstage/maestro/errors"
 	. "gopkg.in/check.v1"
 )
 
@@ -17,7 +17,7 @@ func (s *S) TestCreateAppWithDuplicateCliendId(c *C) {
 	c.Check(err, IsNil)
 
 	err = app.Create(owner, team)
-	_, ok := err.(errors.ValidationErrorNEW)
+	_, ok := err.(errors.ValidationError)
 	c.Assert(ok, Equals, true)
 	defer app.Delete(owner)
 }
@@ -25,7 +25,7 @@ func (s *S) TestCreateAppWithDuplicateCliendId(c *C) {
 func (s *S) TestCreateAppWithoutRequiredFields(c *C) {
 	app = account.App{}
 	err := app.Create(owner, team)
-	_, ok := err.(errors.ValidationErrorNEW)
+	_, ok := err.(errors.ValidationError)
 	c.Assert(ok, Equals, true)
 }
 
@@ -51,7 +51,7 @@ func (s *S) TestUpdateAppWithoutRequiredFields(c *C) {
 
 	app.Name = ""
 	err = app.Update()
-	_, ok := err.(errors.ValidationErrorNEW)
+	_, ok := err.(errors.ValidationError)
 	c.Assert(ok, Equals, true)
 }
 
@@ -79,7 +79,7 @@ func (s *S) TestDeleteAppNotOwner(c *C) {
 	defer app.Delete(alice)
 
 	err := app.Delete(owner)
-	_, ok := err.(errors.ForbiddenErrorNEW)
+	_, ok := err.(errors.ForbiddenError)
 	c.Assert(ok, Equals, true)
 }
 
@@ -95,6 +95,6 @@ func (s *S) TestFindAppByClientId(c *C) {
 func (s *S) TestFindAppByClientIdNotFound(c *C) {
 	a, err := account.FindAppByClientId("not-found")
 	c.Check(a, IsNil)
-	_, ok := err.(errors.NotFoundErrorNEW)
+	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 }

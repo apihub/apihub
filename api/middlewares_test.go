@@ -4,14 +4,16 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/backstage/maestro/account"
 	. "gopkg.in/check.v1"
 )
 
 func (s *S) TestAuthorizationMiddleware(c *C) {
-	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
-		Method:  "DELETE",
-		Path:    "/api/users",
-		Headers: http.Header{"Authorization": {s.authHeader}},
+	headers, code, body, err := httpClient.MakeRequest(account.RequestArgs{
+		AcceptableCode: http.StatusOK,
+		Method:         "DELETE",
+		Path:           "/api/users",
+		Headers:        http.Header{"Authorization": {s.authHeader}},
 	})
 
 	c.Check(err, IsNil)
@@ -21,17 +23,18 @@ func (s *S) TestAuthorizationMiddleware(c *C) {
 }
 
 func (s *S) TestAuthorizationMiddlewareWithInvalidToken(c *C) {
-	testWithoutSignIn(RequestArgs{Method: "DELETE", Path: "/api/users", Headers: http.Header{"Authorization": {"expired-token"}}}, c)
+	testWithoutSignIn(account.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/users", Headers: http.Header{"Authorization": {"expired-token"}}}, c)
 }
 
 func (s *S) TestAuthorizationMiddlewareWithMissingToken(c *C) {
-	testWithoutSignIn(RequestArgs{Method: "DELETE", Path: "/api/users"}, c)
+	testWithoutSignIn(account.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/users"}, c)
 }
 
 func (s *S) TestNotFoundHandler(c *C) {
-	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
-		Method: "GET",
-		Path:   "/not-found-path",
+	headers, code, body, err := httpClient.MakeRequest(account.RequestArgs{
+		AcceptableCode: http.StatusNotFound,
+		Method:         "GET",
+		Path:           "/not-found-path",
 	})
 
 	c.Check(err, IsNil)
@@ -41,9 +44,10 @@ func (s *S) TestNotFoundHandler(c *C) {
 }
 
 func (s *S) TestRequestId(c *C) {
-	headers, _, _, _ := httpClient.MakeRequest(RequestArgs{
-		Method: "DELETE",
-		Path:   "/api/users",
+	headers, _, _, _ := httpClient.MakeRequest(account.RequestArgs{
+		AcceptableCode: http.StatusOK,
+		Method:         "DELETE",
+		Path:           "/api/users",
 	})
 
 	c.Assert(headers.Get("X-Request-Id"), Not(Equals), "")

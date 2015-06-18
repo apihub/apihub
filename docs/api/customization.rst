@@ -61,7 +61,7 @@ Follow bellow an example using `Go-Logging <https://github.com/ccding/go-logging
   package main
 
   import (
-    "github.com/backstage/apimanager/log"
+    "github.com/backstage/maestro/log"
     "github.com/ccding/go-logging/logging"
   )
 

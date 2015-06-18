@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/backstage/maestro/account"
 	. "gopkg.in/check.v1"
 )
 
@@ -21,11 +22,12 @@ func (s *S) TestSubscribePlugin(c *C) {
 		s.store.DeletePluginConfig(plugin)
 	}()
 
-	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
-		Method:  "PUT",
-		Path:    fmt.Sprintf(`/api/services/%s/plugins`, service.Subdomain),
-		Body:    fmt.Sprintf(`{"name": "%s", "config": {"version": 1}}`, pluginName),
-		Headers: http.Header{"Authorization": {s.authHeader}},
+	headers, code, body, err := httpClient.MakeRequest(account.RequestArgs{
+		AcceptableCode: http.StatusOK,
+		Method:         "PUT",
+		Path:           fmt.Sprintf(`/api/services/%s/plugins`, service.Subdomain),
+		Body:           fmt.Sprintf(`{"name": "%s", "config": {"version": 1}}`, pluginName),
+		Headers:        http.Header{"Authorization": {s.authHeader}},
 	})
 
 	c.Check(err, IsNil)
@@ -37,11 +39,12 @@ func (s *S) TestSubscribePlugin(c *C) {
 func (s *S) TestSubscribePluginNotFound(c *C) {
 	pluginName := "cors"
 
-	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
-		Method:  "PUT",
-		Path:    `/api/services/not-found/plugins`,
-		Body:    fmt.Sprintf(`{"name": "%s", "config": {"version": 1}}`, pluginName),
-		Headers: http.Header{"Authorization": {s.authHeader}},
+	headers, code, body, err := httpClient.MakeRequest(account.RequestArgs{
+		AcceptableCode: http.StatusNotFound,
+		Method:         "PUT",
+		Path:           `/api/services/not-found/plugins`,
+		Body:           fmt.Sprintf(`{"name": "%s", "config": {"version": 1}}`, pluginName),
+		Headers:        http.Header{"Authorization": {s.authHeader}},
 	})
 
 	c.Check(err, IsNil)
@@ -61,10 +64,11 @@ func (s *S) TestUnsubscribePlugin(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
-		Method:  "DELETE",
-		Path:    fmt.Sprintf(`/api/services/%s/plugins/%s`, service.Subdomain, pluginConfig.Name),
-		Headers: http.Header{"Authorization": {s.authHeader}},
+	headers, code, body, err := httpClient.MakeRequest(account.RequestArgs{
+		AcceptableCode: http.StatusOK,
+		Method:         "DELETE",
+		Path:           fmt.Sprintf(`/api/services/%s/plugins/%s`, service.Subdomain, pluginConfig.Name),
+		Headers:        http.Header{"Authorization": {s.authHeader}},
 	})
 
 	c.Check(err, IsNil)
@@ -83,10 +87,11 @@ func (s *S) TestUnsubscribePluginNotFound(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, err := httpClient.MakeRequest(RequestArgs{
-		Method:  "DELETE",
-		Path:    fmt.Sprintf(`/api/services/%s/plugins/not-found`, service.Subdomain),
-		Headers: http.Header{"Authorization": {s.authHeader}},
+	headers, code, body, err := httpClient.MakeRequest(account.RequestArgs{
+		AcceptableCode: http.StatusNotFound,
+		Method:         "DELETE",
+		Path:           fmt.Sprintf(`/api/services/%s/plugins/not-found`, service.Subdomain),
+		Headers:        http.Header{"Authorization": {s.authHeader}},
 	})
 
 	c.Check(err, IsNil)

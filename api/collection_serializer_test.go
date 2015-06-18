@@ -1,8 +1,8 @@
 package api_test
 
 import (
-	"github.com/backstage/apimanager/account"
-	"github.com/backstage/apimanager/api"
+	"github.com/backstage/maestro/account"
+	"github.com/backstage/maestro/api"
 	. "gopkg.in/check.v1"
 )
 

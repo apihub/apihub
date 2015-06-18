@@ -3,11 +3,11 @@ package auth_test
 import (
 	"testing"
 
-	"github.com/backstage/apimanager/account"
-	"github.com/backstage/apimanager/account/mem"
-	"github.com/backstage/apimanager/account/mongore"
-	"github.com/backstage/apimanager/auth"
-	"github.com/backstage/apimanager/auth/test"
+	"github.com/backstage/maestro/account"
+	"github.com/backstage/maestro/account/mem"
+	"github.com/backstage/maestro/account/mongore"
+	"github.com/backstage/maestro/auth"
+	"github.com/backstage/maestro/auth/test"
 	. "gopkg.in/check.v1"
 )
 

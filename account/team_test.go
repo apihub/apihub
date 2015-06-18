@@ -1,8 +1,8 @@
 package account_test
 
 import (
-	"github.com/backstage/apimanager/account"
-	"github.com/backstage/apimanager/errors"
+	"github.com/backstage/maestro/account"
+	"github.com/backstage/maestro/errors"
 	. "gopkg.in/check.v1"
 )
 
@@ -17,7 +17,7 @@ func (s *S) TestCreateTeamWithDuplicateAlias(c *C) {
 	c.Check(err, IsNil)
 
 	err = team.Create(owner)
-	_, ok := err.(errors.ValidationErrorNEW)
+	_, ok := err.(errors.ValidationError)
 	c.Assert(ok, Equals, true)
 	defer team.Delete(owner)
 }
@@ -25,7 +25,7 @@ func (s *S) TestCreateTeamWithDuplicateAlias(c *C) {
 func (s *S) TestCreateTeamWithoutRequiredFields(c *C) {
 	team = account.Team{}
 	err := team.Create(owner)
-	_, ok := err.(errors.ValidationErrorNEW)
+	_, ok := err.(errors.ValidationError)
 	c.Assert(ok, Equals, true)
 }
 
@@ -48,7 +48,7 @@ func (s *S) TestUpdateTeamWithoutRequiredFields(c *C) {
 
 	team.Name = ""
 	err = team.Update()
-	_, ok := err.(errors.ValidationErrorNEW)
+	_, ok := err.(errors.ValidationError)
 	c.Assert(ok, Equals, true)
 	defer team.Delete(owner)
 }
@@ -77,7 +77,7 @@ func (s *S) TestDeleteTeamNotOwner(c *C) {
 	defer team.Delete(alice)
 
 	err := team.Delete(owner)
-	_, ok := err.(errors.ForbiddenErrorNEW)
+	_, ok := err.(errors.ForbiddenError)
 	c.Assert(ok, Equals, true)
 }
 
@@ -93,7 +93,7 @@ func (s *S) TestFindTeamByAlias(c *C) {
 func (s *S) TestFindTeamByAliasNotFound(c *C) {
 	t, err := account.FindTeamByAlias("not-found")
 	c.Check(t, IsNil)
-	_, ok := err.(errors.NotFoundErrorNEW)
+	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 }
 
@@ -106,7 +106,7 @@ func (s *S) TestContainsUser(c *C) {
 
 func (s *S) TestContainsUserNotFound(c *C) {
 	pos, err := team.ContainsUser(&alice)
-	_, ok := err.(errors.ForbiddenErrorNEW)
+	_, ok := err.(errors.ForbiddenError)
 	c.Assert(ok, Equals, true)
 	c.Assert(pos, Equals, -1)
 }
@@ -176,7 +176,7 @@ func (s *S) TestRemoveUsersWhenTheUserIsOwner(c *C) {
 	owner.Create()
 
 	err := team.RemoveUsers([]string{owner.Email})
-	_, ok := err.(errors.ValidationErrorNEW)
+	_, ok := err.(errors.ValidationError)
 	c.Assert(ok, Equals, true)
 
 	t, err := account.FindTeamByAlias(team.Alias)
