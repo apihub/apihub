@@ -8,51 +8,51 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type router struct {
+type Router struct {
 	r        *mux.Router
 	notFound http.Handler
 	sub      map[string]*mux.Router
 }
 
-type routerArguments struct {
+type RouterArguments struct {
 	Handler    http.HandlerFunc
 	Path       string
 	PathPrefix string
 	Methods    []string
 }
 
-func NewRouter() *router {
-	return &router{
+func NewRouter() *Router {
+	return &Router{
 		r:   mux.NewRouter(),
 		sub: make(map[string]*mux.Router),
 	}
 }
 
-func (router *router) Handler() http.Handler {
+func (router *Router) Handler() http.Handler {
 	return router.r
 }
 
-func (router *router) NotFoundHandler(h http.Handler) {
+func (router *Router) NotFoundHandler(h http.Handler) {
 	router.notFound = h
 	router.r.NotFoundHandler = h
 }
 
-func (router *router) AddSubrouter(pathPrefix string) *mux.Router {
+func (router *Router) AddSubrouter(pathPrefix string) *mux.Router {
 	s := mux.NewRouter()
 	s.NotFoundHandler = router.notFound
 	router.sub[pathPrefix] = s
 	return s
 }
 
-func (router *router) Subrouter(pathPrefix string) *mux.Router {
+func (router *Router) Subrouter(pathPrefix string) *mux.Router {
 	return router.sub[pathPrefix]
 }
 
-func (router *router) AddMiddleware(pathPrefix string, h http.Handler) {
+func (router *Router) AddMiddleware(pathPrefix string, h http.Handler) {
 	router.r.PathPrefix(pathPrefix).Handler(h)
 }
 
-func (router *router) AddHandler(args routerArguments) {
+func (router *Router) AddHandler(args RouterArguments) {
 	var r *mux.Router
 
 	if sub, ok := router.sub[args.PathPrefix]; ok {
