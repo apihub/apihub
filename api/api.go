@@ -38,6 +38,7 @@ func NewApi(store account.Storable) *Api {
 	private := api.router.AddSubrouter("/api")
 	api.router.AddMiddleware("/api", negroni.New(
 		negroni.NewRecovery(),
+		negroni.NewLogger(),
 		negroni.HandlerFunc(api.errorMiddleware),
 		negroni.HandlerFunc(api.requestIdMiddleware),
 		negroni.HandlerFunc(api.authorizationMiddleware),
