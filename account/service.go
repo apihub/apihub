@@ -9,13 +9,13 @@ import (
 type Service struct {
 	Subdomain     string   `json:"subdomain"`
 	Description   string   `json:"description,omitempty"`
-	Disabled      bool     `json:"disabled",omitempty"`
-	Documentation string   `json:"documentation",omitempty"`
-	Endpoint      string   `json:"endpoint",omitempty"`
-	Transformers  []string `json:"transformers,omitempty",omitempty"`
-	Owner         string   `json:"owner",omitempty"`
+	Disabled      bool     `json:"disabled,omitempty"`
+	Documentation string   `json:"documentation,omitempty"`
+	Endpoint      string   `json:"endpoint,omitempty"`
+	Transformers  []string `json:"transformers,omitempty"`
+	Owner         string   `json:"owner,omitempty"`
 	Team          string   `json:"team"`
-	Timeout       int      `json:"timeout",omitempty"`
+	Timeout       int      `json:"timeout,omitempty"`
 }
 
 func (service *Service) Create(owner User, team Team) error {
@@ -30,6 +30,8 @@ func (service *Service) Create(owner User, team Team) error {
 	if service.Exists() {
 		return errors.NewValidationError(errors.ErrServiceDuplicateEntry)
 	}
+
+	sendHook(newServiceEvent("service.create", &owner, service))
 
 	return store.UpsertService(*service)
 }

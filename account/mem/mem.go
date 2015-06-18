@@ -228,3 +228,17 @@ func (m *Mem) FindWebhookByName(name string) (account.Webhook, error) {
 		return webhook, nil
 	}
 }
+
+func (m *Mem) FindWebhooksByEventAndTeam(event string, team string) ([]account.Webhook, error) {
+	whs := []account.Webhook{}
+
+	for _, wh := range m.Webhooks {
+		for _, ev := range wh.Events {
+			if ev == event && (team == "*" || wh.Team == team) {
+				whs = append(whs, wh)
+			}
+		}
+	}
+
+	return whs, nil
+}

@@ -28,7 +28,7 @@ func (s *S) TestCreateService(c *C) {
 
 	c.Assert(code, Equals, http.StatusCreated)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"subdomain":"backstage","disabled":false,"documentation":"","endpoint":"http://example.org","owner":"bob@bar.example.org","team":"backstage","timeout":0}`)
+	c.Assert(string(body), Equals, `{"subdomain":"backstage","endpoint":"http://example.org","owner":"bob@bar.example.org","team":"backstage"}`)
 }
 
 func (s *S) TestCreateServiceWhenAlreadyExists(c *C) {
@@ -107,7 +107,7 @@ func (s *S) TestUpdateService(c *C) {
 
 	c.Assert(code, Equals, http.StatusOK)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"subdomain":"backstage","disabled":true,"documentation":"http://docs.org","endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"backstage","timeout":0}`)
+	c.Assert(string(body), Equals, `{"subdomain":"backstage","disabled":true,"documentation":"http://docs.org","endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"backstage"}`)
 }
 
 func (s *S) TestUpdateServiceNotFound(c *C) {
@@ -166,7 +166,7 @@ func (s *S) TestDeleteService(c *C) {
 
 	c.Assert(code, Equals, http.StatusOK)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"subdomain":"backstage","disabled":false,"documentation":"","endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"backstage","timeout":0}`)
+	c.Assert(string(body), Equals, `{"subdomain":"backstage","endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"backstage"}`)
 }
 
 func (s *S) TestDeleteServiceWithoutPermission(c *C) {
@@ -227,7 +227,7 @@ func (s *S) TestServiceInfo(c *C) {
 
 	c.Assert(code, Equals, http.StatusOK)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"subdomain":"backstage","disabled":false,"documentation":"","endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"backstage","timeout":0}`)
+	c.Assert(string(body), Equals, `{"subdomain":"backstage","endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"backstage"}`)
 }
 
 func (s *S) TestServiceInfoNotMember(c *C) {
@@ -286,7 +286,7 @@ func (s *S) TestServiceList(c *C) {
 
 	c.Assert(code, Equals, http.StatusOK)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"items":[{"subdomain":"backstage","disabled":false,"documentation":"","endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"backstage","timeout":0}],"item_count":1}`)
+	c.Assert(string(body), Equals, `{"items":[{"subdomain":"backstage","endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"backstage"}],"item_count":1}`)
 }
 
 func (s *S) TestServiceListWithoutSignIn(c *C) {

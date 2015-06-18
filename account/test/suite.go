@@ -30,7 +30,7 @@ func (s *StorableSuite) SetUpTest(c *C) {
 	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage", Team: team.Alias, Owner: user.Email, Transformers: []string{}}
 	app = account.App{ClientId: "ios", ClientSecret: "secret", Name: "Ios App", Team: team.Alias, Owner: user.Email, RedirectUris: []string{"http://www.example.org/auth"}}
 	plugin = account.PluginConfig{Name: "cors", Service: service.Subdomain, Config: map[string]interface{}{"version": 1}}
-	webhook = account.Webhook{Name: "service.update", Events: []string{"service.update"}, Config: map[string]interface{}{"version": 1}}
+	webhook = account.Webhook{Name: "service.update", Events: []string{"service.update"}, Config: account.WebhookConfig{Url: "http://www.example.org"}}
 }
 
 func (s *StorableSuite) TestUpsertUser(c *C) {
@@ -301,4 +301,49 @@ func (s *StorableSuite) TestDeleteWebhookNotFound(c *C) {
 	err := s.Storage.DeleteWebhook(webhook)
 	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
+}
+
+func (s *StorableSuite) TestFindAllWebhooksByEventAndTeam(c *C) {
+	defer s.Storage.DeleteTeam(team)
+	s.Storage.UpsertTeam(team)
+
+	defer s.Storage.DeleteWebhook(webhook)
+	webhook.Events = []string{"service.create"}
+	webhook.Team = team.Alias
+	s.Storage.UpsertWebhook(webhook)
+
+	whs, err := s.Storage.FindWebhooksByEventAndTeam("service.create", "*")
+	c.Assert(whs, DeepEquals, []account.Webhook{webhook})
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestFindWebhooksByEventAndTeam(c *C) {
+	defer s.Storage.DeleteTeam(team)
+	s.Storage.UpsertTeam(team)
+
+	defer s.Storage.DeleteWebhook(webhook)
+	webhook.Name = "service.create"
+	webhook.Events = []string{"service.create"}
+	webhook.Team = team.Alias
+	s.Storage.UpsertWebhook(webhook)
+
+	whk := account.Webhook{
+		Name:   "service.update",
+		Events: []string{"service.update"},
+		Config: account.WebhookConfig{Url: "http://www.example.org"},
+	}
+	defer s.Storage.DeleteWebhook(whk)
+	whk.Events = []string{"service.update"}
+	whk.Team = team.Alias
+	s.Storage.UpsertWebhook(whk)
+
+	whs, err := s.Storage.FindWebhooksByEventAndTeam("service.create", team.Alias)
+	c.Assert(whs, DeepEquals, []account.Webhook{webhook})
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestFindWebhooksByEventAndTeamNotFound(c *C) {
+	whs, err := s.Storage.FindWebhooksByEventAndTeam("not-found", "not-found")
+	c.Assert(whs, DeepEquals, []account.Webhook{})
+	c.Check(err, IsNil)
 }

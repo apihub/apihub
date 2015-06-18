@@ -39,7 +39,7 @@ func (s *S) SetUpTest(c *C) {
 	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage", Transformers: []string{}}
 	app = account.App{ClientId: "ios", ClientSecret: "secret", Name: "Ios App", Team: team.Alias, Owner: owner.Email, RedirectUris: []string{"http://www.example.org/auth"}}
 	pluginConfig = account.PluginConfig{Name: "Plugin Config", Service: service.Subdomain, Config: make(map[string]interface{})}
-	webhook = account.Webhook{Name: "service.update", Events: []string{"service.update"}, Config: map[string]interface{}{"version": 1}}
+	webhook = account.Webhook{Name: "service.update", Events: []string{"service.update"}, Config: account.WebhookConfig{Url: "http://www.example.org"}}
 }
 
 // Run the tests in memory

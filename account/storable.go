@@ -35,6 +35,7 @@ type Storable interface {
 	UpsertWebhook(Webhook) error
 	DeleteWebhook(Webhook) error
 	FindWebhookByName(string) (Webhook, error)
+	FindWebhooksByEventAndTeam(string, string) ([]Webhook, error)
 }
 
 var store Storable

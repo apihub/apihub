@@ -407,3 +407,25 @@ func (m *Mongore) FindWebhookByName(name string) (account.Webhook, error) {
 
 	return webhook, err
 }
+
+func (m *Mongore) FindWebhooksByEventAndTeam(event string, team string) (webhooks []account.Webhook, err error) {
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
+	webhooks = []account.Webhook{}
+	if team == "*" {
+		err = strg.Webhooks().Find(bson.M{"events": bson.M{"$in": []string{event}}}).All(&webhooks)
+	} else {
+		err = strg.Webhooks().Find(bson.M{"team": team, "events": bson.M{"$in": []string{event}}}).All(&webhooks)
+	}
+
+	if err == mgo.ErrNotFound {
+		return []account.Webhook{}, errors.NewNotFoundError(errors.ErrWebhookNotFound)
+	}
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
+
+	return webhooks, err
+}

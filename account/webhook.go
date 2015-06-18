@@ -5,11 +5,15 @@ import (
 	utils "github.com/mrvdot/golang-utils"
 )
 
+type WebhookConfig struct {
+	Url string `json:"url"`
+}
+
 type Webhook struct {
-	Name   string                 `json:"name"`
-	Team   string                 `json:"team"`
-	Events []string               `json:"events"`
-	Config map[string]interface{} `json:"config,omitempty"`
+	Name   string        `json:"name"`
+	Team   string        `json:"team"`
+	Events []string      `json:"events"`
+	Config WebhookConfig `json:"config,omitempty"`
 }
 
 func (w *Webhook) Save(team Team) error {
