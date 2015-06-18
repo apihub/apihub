@@ -22,7 +22,7 @@ func webhookSave(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	team, err := userBelongsToTeam(webhook.Team, user)
+	team, err := findTeamAndCheckUser(webhook.Team, user)
 	if err != nil {
 		handleError(rw, err)
 		return
@@ -49,7 +49,7 @@ func webhookDelete(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = userBelongsToTeam(webhook.Team, user)
+	_, err = findTeamAndCheckUser(webhook.Team, user)
 	if err != nil {
 		handleError(rw, err)
 		return
