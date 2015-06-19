@@ -463,7 +463,7 @@ func (m *Mongore) FindWebhooksByEventAndTeam(event string, team string) (webhook
 	defer strg.Close()
 
 	webhooks = []account.Webhook{}
-	if team == "*" {
+	if team == account.ALL_TEAMS {
 		err = strg.Webhooks().Find(bson.M{"events": bson.M{"$in": []string{event}}}).All(&webhooks)
 	} else {
 		err = strg.Webhooks().Find(bson.M{"team": team, "events": bson.M{"$in": []string{event}}}).All(&webhooks)

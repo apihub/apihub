@@ -267,7 +267,7 @@ func (m *Mem) FindWebhooksByEventAndTeam(event string, team string) ([]account.W
 
 	for _, wh := range m.Webhooks {
 		for _, ev := range wh.Events {
-			if ev == event && (team == "*" || wh.Team == team) {
+			if ev == event && (team == account.ALL_TEAMS || wh.Team == team) {
 				whs = append(whs, wh)
 			}
 		}

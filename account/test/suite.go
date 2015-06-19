@@ -363,7 +363,7 @@ func (s *StorableSuite) TestFindAllWebhooksByEventAndTeam(c *C) {
 	webhook.Team = team.Alias
 	s.Storage.UpsertWebhook(webhook)
 
-	whs, err := s.Storage.FindWebhooksByEventAndTeam("service.create", "*")
+	whs, err := s.Storage.FindWebhooksByEventAndTeam("service.create", account.ALL_TEAMS)
 	c.Assert(whs, DeepEquals, []account.Webhook{webhook})
 	c.Check(err, IsNil)
 }

@@ -45,9 +45,13 @@ func (wh *WebHookListener) Listen() {
 					continue
 				}
 
-				whs, err := store.FindWebhooksByEventAndTeam(event.Data().name, event.Data().team)
-				Logger.Debug(fmt.Sprintf("Hooks for: %+v.", whs))
-				if err == nil {
+				Logger.Debug(fmt.Sprintf("Webhook: %s and Team: %s.", event.Data().name, event.Data().team))
+				whsTeam, errT := store.FindWebhooksByEventAndTeam(event.Data().name, event.Data().team)
+				whsAllTeams, errA := store.FindWebhooksByEventAndTeam(event.Data().name, ALL_TEAMS)
+
+				if errT == nil && errA == nil {
+					whs := append(whsTeam, whsAllTeams...)
+					Logger.Debug(fmt.Sprintf("Hooks for: %+v.", whs))
 					Logger.Debug("Start sending...")
 					for _, hook := range whs {
 						if hook.Config.Url != "" {

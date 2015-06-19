@@ -5,6 +5,10 @@ import (
 	utils "github.com/mrvdot/golang-utils"
 )
 
+const (
+	ALL_TEAMS string = "*"
+)
+
 // The Team type is an encapsulation of a team details.
 // It is not allowed to have more than one team with the same alias.
 // The `Owner` field indicates the user who created the team.
