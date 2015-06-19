@@ -17,9 +17,11 @@ type Webhook struct {
 }
 
 func (w *Webhook) Save(team Team) error {
-	if !w.valid() {
-		return errors.NewValidationError(errors.ErrWebhookMissingRequiredFields)
+
+	if err := w.valid(); err != nil {
+		return err
 	}
+
 	w.Name = utils.GenerateSlug(w.Name)
 	w.Team = team.Alias
 
@@ -38,11 +40,11 @@ func (w Webhook) Exists() bool {
 	return true
 }
 
-func (w *Webhook) valid() bool {
+func (w *Webhook) valid() error {
 	if w.Name == "" && w.Team == "" && len(w.Events) == 0 {
-		return false
+		return errors.NewValidationError(errors.ErrWebhookMissingRequiredFields)
 	}
-	return true
+	return nil
 }
 
 func FindWebhookByName(name string) (*Webhook, error) {
