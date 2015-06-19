@@ -69,7 +69,7 @@ func (team Team) Delete(owner User) error {
 // Exists checks if there is a team with the same alias in the database.
 // Returns `true` if so, and `false` otherwise.
 func (team Team) Exists() bool {
-	_, err := store.FindTeamByAlias(team.Alias)
+	_, err := FindTeamByAlias(team.Alias)
 	if err != nil {
 		return false
 	}

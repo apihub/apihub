@@ -33,7 +33,7 @@ func (w *Webhook) Delete() error {
 }
 
 func (w Webhook) Exists() bool {
-	_, err := store.FindWebhookByName(w.Name)
+	_, err := FindWebhookByName(w.Name)
 	if err != nil {
 		return false
 	}
