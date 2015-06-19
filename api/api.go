@@ -18,6 +18,7 @@ const (
 
 type Api struct {
 	auth   auth.Authenticatable
+	store  account.Storable
 	router *Router
 }
 
@@ -86,8 +87,8 @@ func (api *Api) Handler() http.Handler {
 
 // This is intend to be used when loading the api only, just to connect the maestro with maestro-gateway.
 // Need to improve this somehow.
-func (api *Api) AddWebhook(wh *account.Webhook) {
-	store.UpsertWebhook(wh)
+func (api *Api) AddWebhook(wh account.Webhook) {
+	api.store.UpsertWebhook(wh)
 }
 
 // Allow to override the default authentication method.
@@ -99,6 +100,7 @@ func (api *Api) SetAuth(auth auth.Authenticatable) {
 // Allow to override the default storage engine.
 // To be compatible, it is needed to implement the Storable interface.
 func (api *Api) Storage(store account.Storable) {
+	api.store = store
 	account.Storage(store)
 	api.auth = auth.NewAuth(store)
 }

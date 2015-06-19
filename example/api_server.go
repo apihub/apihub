@@ -12,7 +12,7 @@ func main() {
 		Name:   "maestro-gateway-services",
 		Team:   "*",
 		Events: []string{"service.create", "service.update", "service.delete"},
-		Config: {Url: "http://localhost:8001"},
+		Config: account.WebhookConfig{Url: "http://localhost:8001"},
 	})
 
 	api.Run()
