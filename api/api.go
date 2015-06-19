@@ -53,13 +53,13 @@ func NewApi(store account.Storable) *Api {
 	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/users", Methods: []string{"DELETE"}, Handler: api.userDelete})
 
 	// Teams
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams", Methods: []string{"POST"}, Handler: teamCreate})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams", Methods: []string{"GET"}, Handler: teamList})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"PUT"}, Handler: teamUpdate})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"DELETE"}, Handler: teamDelete})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"GET"}, Handler: teamInfo})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}/users", Methods: []string{"PUT"}, Handler: teamAddUsers})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}/users", Methods: []string{"DELETE"}, Handler: teamRemoveUsers})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams", Methods: []string{"POST"}, Handler: HandlerCurrentUser(teamCreate)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams", Methods: []string{"GET"}, Handler: HandlerCurrentUser(teamList)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"PUT"}, Handler: HandlerCurrentUser(teamUpdate)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"DELETE"}, Handler: HandlerCurrentUser(teamDelete)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"GET"}, Handler: HandlerCurrentUser(teamInfo)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}/users", Methods: []string{"PUT"}, Handler: HandlerCurrentUser(teamAddUsers)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}/users", Methods: []string{"DELETE"}, Handler: HandlerCurrentUser(teamRemoveUsers)})
 
 	// Services
 	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services", Methods: []string{"POST"}, Handler: HandlerCurrentUser(serviceCreate)})
