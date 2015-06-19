@@ -48,6 +48,14 @@ func (user *User) ChangePassword() error {
 // is the only member are deleted along with the user account.
 // It returns an error if the user is not found.
 func (user User) Delete() error {
+	go func() {
+		teams, _ := user.Teams()
+		for _, team := range teams {
+			team.RemoveUsers([]string{user.Email})
+			team.Delete(user)
+		}
+	}()
+
 	return store.DeleteUser(user)
 }
 

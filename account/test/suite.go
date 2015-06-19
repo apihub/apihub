@@ -230,6 +230,21 @@ func (s *StorableSuite) TestDeleteApp(c *C) {
 	c.Check(err, IsNil)
 }
 
+func (s *StorableSuite) TestTeamApps(c *C) {
+	s.Storage.UpsertApp(app)
+	defer s.Storage.DeleteApp(app)
+
+	apps, err := s.Storage.TeamApps(team)
+	c.Assert(err, IsNil)
+	c.Assert(apps, DeepEquals, []account.App{app})
+}
+
+func (s *StorableSuite) TestTeamAppNotFound(c *C) {
+	apps, err := s.Storage.TeamApps(team)
+	c.Assert(err, IsNil)
+	c.Assert(apps, DeepEquals, []account.App{})
+}
+
 func (s *StorableSuite) TestDeleteAppNotFound(c *C) {
 	nf := account.App{}
 	err := s.Storage.DeleteApp(nf)

@@ -61,6 +61,17 @@ func (app App) Delete(owner User) error {
 	return err
 }
 
+func DeleteAppsByTeam(team Team, owner User) error {
+	apps, err := store.TeamApps(team)
+	if err != nil {
+		return err
+	}
+	for _, s := range apps {
+		s.Delete(owner)
+	}
+	return nil
+}
+
 func (app App) Exists() bool {
 	_, err := store.FindAppByClientId(app.ClientId)
 	if err != nil {

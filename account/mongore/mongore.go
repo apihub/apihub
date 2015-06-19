@@ -310,6 +310,21 @@ func (m *Mongore) DeleteApp(app account.App) error {
 	return err
 }
 
+func (m *Mongore) TeamApps(team account.Team) ([]account.App, error) {
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
+	apps := []account.App{}
+	err := strg.Apps().Find(bson.M{"team": team.Alias}).All(&apps)
+
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
+
+	return apps, err
+}
+
 func (m *Mongore) UpsertPluginConfig(pc account.PluginConfig) error {
 	var strg Storage
 	strg.Storage = m.openSession()

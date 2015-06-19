@@ -31,7 +31,7 @@ func (service *Service) Create(owner User, team Team) error {
 		return errors.NewValidationError(errors.ErrServiceDuplicateEntry)
 	}
 
-	sendHook(newServiceEvent("service.create", &owner, service))
+	sendHook(newServiceEvent("service.create", service))
 
 	return store.UpsertService(*service)
 }
@@ -45,17 +45,29 @@ func (service *Service) Update() error {
 		return errors.NewNotFoundError(errors.ErrServiceNotFound)
 	}
 
+	sendHook(newServiceEvent("service.update", service))
 	return store.UpsertService(*service)
 }
 
-func (service Service) Delete(owner User) error {
+func (service *Service) Delete(owner User) error {
 	if service.Owner != owner.Email {
 		return errors.NewForbiddenError(errors.ErrOnlyOwnerHasPermission)
 	}
 
-	err := store.DeleteService(service)
+	sendHook(newServiceEvent("service.delete", service))
 
-	return err
+	return store.DeleteService(*service)
+}
+
+func DeleteServicesByTeam(team Team, owner User) error {
+	services, err := store.TeamServices(team)
+	if err != nil {
+		return err
+	}
+	for _, s := range services {
+		s.Delete(owner)
+	}
+	return nil
 }
 
 func (service Service) Exists() bool {

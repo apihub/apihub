@@ -53,6 +53,9 @@ func (team Team) Delete(owner User) error {
 		return errors.NewForbiddenError(errors.ErrOnlyOwnerHasPermission)
 	}
 
+	go DeleteServicesByTeam(team, owner)
+	go DeleteAppsByTeam(team, owner)
+
 	return store.DeleteTeam(team)
 }
 

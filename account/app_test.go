@@ -83,6 +83,21 @@ func (s *S) TestDeleteAppNotOwner(c *C) {
 	c.Assert(ok, Equals, true)
 }
 
+func (s *S) TestDeleteAppsByTeam(c *C) {
+	app.Create(alice, team)
+	c.Assert(app.Exists(), Equals, true)
+
+	newApp := account.App{ClientId: "android", ClientSecret: "secret", Name: "Andoird App", Team: team.Alias, Owner: owner.Email, RedirectUris: []string{"http://www.example.org/auth"}}
+	newApp.Create(alice, team)
+
+	account.DeleteAppsByTeam(team, alice)
+
+	_, err := account.FindAppByClientId("ios")
+	c.Check(err, Not(IsNil))
+	_, err = account.FindAppByClientId("android")
+	c.Check(err, Not(IsNil))
+}
+
 func (s *S) TestFindAppByClientId(c *C) {
 	err := app.Create(owner, team)
 

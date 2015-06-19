@@ -103,6 +103,16 @@ func (m *Mem) TeamServices(team account.Team) ([]account.Service, error) {
 	return services, nil
 }
 
+func (m *Mem) TeamApps(team account.Team) ([]account.App, error) {
+	apps := []account.App{}
+	for _, app := range m.Apps {
+		if app.Team == team.Alias {
+			apps = append(apps, app)
+		}
+	}
+	return apps, nil
+}
+
 func (m *Mem) CreateToken(token account.Token) error {
 	key := fmt.Sprintf("%s: %s", token.Type, token.User.Email)
 	m.Tokens[key] = token
@@ -198,7 +208,6 @@ func (m *Mem) DeletePluginConfig(pc account.PluginConfig) error {
 	delete(m.PluginsConfig, pc.Name)
 	return nil
 }
-
 func (m *Mem) FindPluginConfigByNameAndService(pluginName string, service account.Service) (account.PluginConfig, error) {
 	if plugin, ok := m.PluginsConfig[service.Subdomain][pluginName]; !ok {
 		return account.PluginConfig{}, errors.NewNotFoundError(errors.ErrPluginConfigNotFound)
