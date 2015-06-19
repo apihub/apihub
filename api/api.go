@@ -67,9 +67,8 @@ func NewApi(store account.Storable) *Api {
 	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"GET"}, Handler: HandlerCurrentUser(serviceInfo)})
 	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"DELETE"}, Handler: HandlerCurrentUser(serviceDelete)})
 	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"PUT"}, Handler: HandlerCurrentUser(serviceUpdate)})
-
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}/plugins", Methods: []string{"PUT"}, Handler: pluginSubsribe})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}/plugins/{plugin_name}", Methods: []string{"DELETE"}, Handler: pluginUnsubsribe})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}/plugins", Methods: []string{"PUT"}, Handler: HandlerCurrentUser(pluginSubsribe)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}/plugins/{plugin_name}", Methods: []string{"DELETE"}, Handler: HandlerCurrentUser(pluginUnsubsribe)})
 
 	// Apps
 	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps", Methods: []string{"POST"}, Handler: appCreate})
