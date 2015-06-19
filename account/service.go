@@ -1,9 +1,11 @@
 package account
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/backstage/maestro/errors"
+	. "github.com/backstage/maestro/log"
 )
 
 type Service struct {
@@ -51,9 +53,9 @@ func (service *Service) Update() error {
 
 func (service *Service) Delete(owner User) error {
 	if service.Owner != owner.Email {
+		Logger.Warn(fmt.Sprintf("Only the owner has permission to delete the servce %s.", service.Subdomain))
 		return errors.NewForbiddenError(errors.ErrOnlyOwnerHasPermission)
 	}
-
 	sendHook(newServiceEvent("service.delete", service))
 
 	return store.DeleteService(*service)

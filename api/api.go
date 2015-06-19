@@ -84,6 +84,12 @@ func (api *Api) Handler() http.Handler {
 	return api.router.Handler()
 }
 
+// This is intend to be used when loading the api only, just to connect the maestro with maestro-gateway.
+// Need to improve this somehow.
+func (api *Api) AddWebhook(wh *account.Webhook) {
+	store.UpsertWebhook(wh)
+}
+
 // Allow to override the default authentication method.
 // To be compatible, it is needed to implement the Authenticatable interface.
 func (api *Api) SetAuth(auth auth.Authenticatable) {
