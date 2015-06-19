@@ -1,8 +1,6 @@
 package account
 
-import (
-	"github.com/backstage/maestro/errors"
-)
+import "github.com/backstage/maestro/errors"
 
 type PluginConfig struct {
 	Name    string                 `json:"name"`
@@ -12,8 +10,9 @@ type PluginConfig struct {
 
 func (pc *PluginConfig) Save(service Service) error {
 	pc.Service = service.Subdomain
-	if !pc.valid() {
-		return errors.NewValidationError(errors.ErrPluginConfigMissingRequiredFields)
+
+	if err := pc.valid(); err != nil {
+		return err
 	}
 
 	return store.UpsertPluginConfig(*pc)
@@ -32,10 +31,10 @@ func (pc PluginConfig) Delete() error {
 	return store.DeletePluginConfig(pc)
 }
 
-func (pc *PluginConfig) valid() bool {
+func (pc *PluginConfig) valid() error {
 	if pc.Name == "" || pc.Service == "" {
-		return false
+		return errors.NewValidationError(errors.ErrPluginConfigMissingRequiredFields)
 	}
 
-	return true
+	return nil
 }
