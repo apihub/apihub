@@ -16,8 +16,6 @@ const (
 	DEFAULT_TIMEOUT = 10 * time.Second
 )
 
-type HandleUser func(w http.ResponseWriter, r *http.Request, user *account.User)
-
 type Api struct {
 	auth   auth.Authenticatable
 	store  account.Storable
@@ -53,32 +51,32 @@ func NewApi(store account.Storable) *Api {
 	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/users", Methods: []string{"DELETE"}, Handler: api.userDelete})
 
 	// Teams
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams", Methods: []string{"POST"}, Handler: HandlerCurrentUser(teamCreate)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams", Methods: []string{"GET"}, Handler: HandlerCurrentUser(teamList)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"PUT"}, Handler: HandlerCurrentUser(teamUpdate)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"DELETE"}, Handler: HandlerCurrentUser(teamDelete)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"GET"}, Handler: HandlerCurrentUser(teamInfo)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}/users", Methods: []string{"PUT"}, Handler: HandlerCurrentUser(teamAddUsers)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}/users", Methods: []string{"DELETE"}, Handler: HandlerCurrentUser(teamRemoveUsers)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams", Methods: []string{"POST"}, Handler: authorizationRequiredHandler(teamCreate)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams", Methods: []string{"GET"}, Handler: authorizationRequiredHandler(teamList)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"PUT"}, Handler: authorizationRequiredHandler(teamUpdate)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"DELETE"}, Handler: authorizationRequiredHandler(teamDelete)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"GET"}, Handler: authorizationRequiredHandler(teamInfo)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}/users", Methods: []string{"PUT"}, Handler: authorizationRequiredHandler(teamAddUsers)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}/users", Methods: []string{"DELETE"}, Handler: authorizationRequiredHandler(teamRemoveUsers)})
 
 	// Services
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services", Methods: []string{"POST"}, Handler: HandlerCurrentUser(serviceCreate)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services", Methods: []string{"GET"}, Handler: HandlerCurrentUser(serviceList)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"GET"}, Handler: HandlerCurrentUser(serviceInfo)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"DELETE"}, Handler: HandlerCurrentUser(serviceDelete)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"PUT"}, Handler: HandlerCurrentUser(serviceUpdate)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}/plugins", Methods: []string{"PUT"}, Handler: HandlerCurrentUser(pluginSubsribe)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}/plugins/{plugin_name}", Methods: []string{"DELETE"}, Handler: HandlerCurrentUser(pluginUnsubsribe)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services", Methods: []string{"POST"}, Handler: authorizationRequiredHandler(serviceCreate)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services", Methods: []string{"GET"}, Handler: authorizationRequiredHandler(serviceList)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"GET"}, Handler: authorizationRequiredHandler(serviceInfo)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"DELETE"}, Handler: authorizationRequiredHandler(serviceDelete)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"PUT"}, Handler: authorizationRequiredHandler(serviceUpdate)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}/plugins", Methods: []string{"PUT"}, Handler: authorizationRequiredHandler(pluginSubsribe)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}/plugins/{plugin_name}", Methods: []string{"DELETE"}, Handler: authorizationRequiredHandler(pluginUnsubsribe)})
 
 	// Apps
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps", Methods: []string{"POST"}, Handler: HandlerCurrentUser(appCreate)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"DELETE"}, Handler: HandlerCurrentUser(appDelete)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"GET"}, Handler: HandlerCurrentUser(appInfo)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"PUT"}, Handler: HandlerCurrentUser(appUpdate)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps", Methods: []string{"POST"}, Handler: authorizationRequiredHandler(appCreate)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"DELETE"}, Handler: authorizationRequiredHandler(appDelete)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"GET"}, Handler: authorizationRequiredHandler(appInfo)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"PUT"}, Handler: authorizationRequiredHandler(appUpdate)})
 
 	// Webhooks
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/webhooks", Methods: []string{"PUT"}, Handler: HandlerCurrentUser(webhookSave)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/webhooks/{name}", Methods: []string{"DELETE"}, Handler: HandlerCurrentUser(webhookDelete)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/webhooks", Methods: []string{"PUT"}, Handler: authorizationRequiredHandler(webhookSave)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/webhooks/{name}", Methods: []string{"DELETE"}, Handler: authorizationRequiredHandler(webhookDelete)})
 
 	return api
 }
@@ -115,14 +113,16 @@ func homeHandler(rw http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(rw, "Hello Backstage!")
 }
 
-func HandlerCurrentUser(hu HandleUser) http.HandlerFunc {
+type AuthorizationHandler func(w http.ResponseWriter, r *http.Request, user *account.User)
+
+func authorizationRequiredHandler(ah AuthorizationHandler) http.HandlerFunc {
 	wrapper := func(w http.ResponseWriter, r *http.Request) {
 		user, err := GetCurrentUser(r)
 		if err != nil {
 			handleError(w, err)
 			return
 		}
-		hu(w, r, user)
+		ah(w, r, user)
 	}
 	return wrapper
 }
