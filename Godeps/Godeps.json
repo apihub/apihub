@@ -25,6 +25,10 @@
 			"Rev": "cff54a688549a095900d74a02d02b1120bee96e7"
 		},
 		{
+			"ImportPath": "github.com/franela/goreq",
+			"Rev": "afbd11f34269f3f4e22dc2c6037d5f49a3fc8c72"
+		},
+		{
 			"ImportPath": "github.com/garyburd/redigo/internal",
 			"Rev": "cca3df8fa0670249a3f746bcc062c69aeba0517c"
 		},
