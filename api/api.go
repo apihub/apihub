@@ -71,10 +71,10 @@ func NewApi(store account.Storable) *Api {
 	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}/plugins/{plugin_name}", Methods: []string{"DELETE"}, Handler: HandlerCurrentUser(pluginUnsubsribe)})
 
 	// Apps
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps", Methods: []string{"POST"}, Handler: appCreate})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"DELETE"}, Handler: appDelete})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"GET"}, Handler: appInfo})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"PUT"}, Handler: appUpdate})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps", Methods: []string{"POST"}, Handler: HandlerCurrentUser(appCreate)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"DELETE"}, Handler: HandlerCurrentUser(appDelete)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"GET"}, Handler: HandlerCurrentUser(appInfo)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"PUT"}, Handler: HandlerCurrentUser(appUpdate)})
 
 	// Webhooks
 	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/webhooks", Methods: []string{"PUT"}, Handler: webhookSave})

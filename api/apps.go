@@ -9,13 +9,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func appCreate(rw http.ResponseWriter, r *http.Request) {
-	user, err := GetCurrentUser(r)
-	if err != nil {
-		handleError(rw, err)
-		return
-	}
-
+func appCreate(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	app := account.App{}
 	if err := json.NewDecoder(r.Body).Decode(&app); err != nil {
 		handleError(rw, errors.ErrBadRequest)
@@ -36,13 +30,7 @@ func appCreate(rw http.ResponseWriter, r *http.Request) {
 	Created(rw, app)
 }
 
-func appUpdate(rw http.ResponseWriter, r *http.Request) {
-	user, err := GetCurrentUser(r)
-	if err != nil {
-		handleError(rw, err)
-		return
-	}
-
+func appUpdate(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	app, err := account.FindAppByClientId(mux.Vars(r)["client_id"])
 	if err != nil {
 		handleError(rw, err)
@@ -71,13 +59,7 @@ func appUpdate(rw http.ResponseWriter, r *http.Request) {
 	Ok(rw, app)
 }
 
-func appDelete(rw http.ResponseWriter, r *http.Request) {
-	user, err := GetCurrentUser(r)
-	if err != nil {
-		handleError(rw, err)
-		return
-	}
-
+func appDelete(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	app, err := account.FindAppByClientId(mux.Vars(r)["client_id"])
 	if err != nil {
 		handleError(rw, err)
@@ -92,13 +74,7 @@ func appDelete(rw http.ResponseWriter, r *http.Request) {
 	Ok(rw, app)
 }
 
-func appInfo(rw http.ResponseWriter, r *http.Request) {
-	user, err := GetCurrentUser(r)
-	if err != nil {
-		handleError(rw, err)
-		return
-	}
-
+func appInfo(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	app, err := account.FindAppByClientId(mux.Vars(r)["client_id"])
 	if err != nil {
 		handleError(rw, err)
