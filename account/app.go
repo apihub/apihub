@@ -19,8 +19,8 @@ func (app *App) Create(owner User, team Team) error {
 	app.Owner = owner.Email
 	app.Team = team.Alias
 
-	if !app.valid() {
-		return errors.NewValidationError(errors.ErrAppMissingRequiredFields)
+	if err := app.valid(); err != nil {
+		return err
 	}
 
 	if app.ClientId == "" {
@@ -40,8 +40,8 @@ func (app *App) Create(owner User, team Team) error {
 }
 
 func (app *App) Update() error {
-	if !app.valid() {
-		return errors.NewValidationError(errors.ErrAppMissingRequiredFields)
+	if err := app.valid(); err != nil {
+		return err
 	}
 
 	if !app.Exists() {
@@ -69,11 +69,12 @@ func (app App) Exists() bool {
 	return true
 }
 
-func (app *App) valid() bool {
+func (app *App) valid() error {
 	if app.Name == "" {
-		return false
+		return errors.NewValidationError(errors.ErrAppMissingRequiredFields)
 	}
-	return true
+
+	return nil
 }
 
 func DeleteAppsByTeam(team Team, owner User) error {
