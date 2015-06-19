@@ -16,6 +16,8 @@ const (
 	DEFAULT_TIMEOUT = 10 * time.Second
 )
 
+type HandleUser func(w http.ResponseWriter, r *http.Request, user *account.User)
+
 type Api struct {
 	auth   auth.Authenticatable
 	store  account.Storable
@@ -60,11 +62,12 @@ func NewApi(store account.Storable) *Api {
 	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}/users", Methods: []string{"DELETE"}, Handler: teamRemoveUsers})
 
 	// Services
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services", Methods: []string{"POST"}, Handler: serviceCreate})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services", Methods: []string{"GET"}, Handler: serviceList})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"GET"}, Handler: serviceInfo})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"DELETE"}, Handler: serviceDelete})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"PUT"}, Handler: serviceUpdate})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services", Methods: []string{"POST"}, Handler: HandlerCurrentUser(serviceCreate)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services", Methods: []string{"GET"}, Handler: HandlerCurrentUser(serviceList)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"GET"}, Handler: HandlerCurrentUser(serviceInfo)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"DELETE"}, Handler: HandlerCurrentUser(serviceDelete)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"PUT"}, Handler: HandlerCurrentUser(serviceUpdate)})
+
 	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}/plugins", Methods: []string{"PUT"}, Handler: pluginSubsribe})
 	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}/plugins/{plugin_name}", Methods: []string{"DELETE"}, Handler: pluginUnsubsribe})
 
@@ -111,4 +114,16 @@ func (api *Api) Run() {
 
 func homeHandler(rw http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(rw, "Hello Backstage!")
+}
+
+func HandlerCurrentUser(hu HandleUser) http.HandlerFunc {
+	wrapper := func(w http.ResponseWriter, r *http.Request) {
+		user, err := GetCurrentUser(r)
+		if err != nil {
+			handleError(w, err)
+			return
+		}
+		hu(w, r, user)
+	}
+	return wrapper
 }

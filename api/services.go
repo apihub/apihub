@@ -9,13 +9,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func serviceCreate(rw http.ResponseWriter, r *http.Request) {
-	user, err := GetCurrentUser(r)
-	if err != nil {
-		handleError(rw, err)
-		return
-	}
-
+func serviceCreate(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	service := account.Service{}
 	if err := json.NewDecoder(r.Body).Decode(&service); err != nil {
 		handleError(rw, errors.ErrBadRequest)
@@ -36,13 +30,7 @@ func serviceCreate(rw http.ResponseWriter, r *http.Request) {
 	Created(rw, service)
 }
 
-func serviceUpdate(rw http.ResponseWriter, r *http.Request) {
-	user, err := GetCurrentUser(r)
-	if err != nil {
-		handleError(rw, err)
-		return
-	}
-
+func serviceUpdate(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	service, err := account.FindServiceBySubdomain(mux.Vars(r)["subdomain"])
 	if err != nil {
 		handleError(rw, err)
@@ -71,13 +59,7 @@ func serviceUpdate(rw http.ResponseWriter, r *http.Request) {
 	Ok(rw, service)
 }
 
-func serviceDelete(rw http.ResponseWriter, r *http.Request) {
-	user, err := GetCurrentUser(r)
-	if err != nil {
-		handleError(rw, err)
-		return
-	}
-
+func serviceDelete(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	service, err := account.FindServiceBySubdomain(mux.Vars(r)["subdomain"])
 	if err != nil {
 		handleError(rw, err)
@@ -92,13 +74,7 @@ func serviceDelete(rw http.ResponseWriter, r *http.Request) {
 	Ok(rw, service)
 }
 
-func serviceInfo(rw http.ResponseWriter, r *http.Request) {
-	user, err := GetCurrentUser(r)
-	if err != nil {
-		handleError(rw, err)
-		return
-	}
-
+func serviceInfo(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	service, err := account.FindServiceBySubdomain(mux.Vars(r)["subdomain"])
 	if err != nil {
 		handleError(rw, err)
@@ -114,13 +90,7 @@ func serviceInfo(rw http.ResponseWriter, r *http.Request) {
 	Ok(rw, service)
 }
 
-func serviceList(rw http.ResponseWriter, r *http.Request) {
-	user, err := GetCurrentUser(r)
-	if err != nil {
-		handleError(rw, err)
-		return
-	}
-
+func serviceList(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	services, _ := user.Services()
 	Ok(rw, CollectionSerializer{Items: services, Count: len(services)})
 }
