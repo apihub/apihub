@@ -83,22 +83,6 @@ func (s *S) TestIncludesHeader(c *C) {
 	httpClient.MakeRequest(args)
 }
 
-func (s *S) TestReturnsErrorForBadRequest(c *C) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"error_description": "Something went wrong."}`))
-	}))
-	defer server.Close()
-
-	httpClient := account.NewHTTPClient(server.URL)
-
-	args := account.RequestArgs{Method: "GET", Path: "/path", Body: nil}
-	_, _, _, err := httpClient.MakeRequest(args)
-	e, ok := err.(errors.ResponseError)
-	c.Assert(e.Error(), Equals, "Something went wrong.")
-	c.Assert(ok, Equals, true)
-}
-
 func (s *S) TestReturnsDefaultError(c *C) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)

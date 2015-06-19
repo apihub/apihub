@@ -1,24 +1,22 @@
 package account
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strings"
+	"time"
 
 	"github.com/backstage/maestro/errors"
+	"github.com/franela/goreq"
 )
 
 type HTTPClient struct {
-	Host   string
-	client *http.Client
+	Host string
 }
 
 func NewHTTPClient(host string) HTTPClient {
 	return HTTPClient{
-		Host:   host,
-		client: &http.Client{},
+		Host: host,
 	}
 }
 
@@ -28,6 +26,8 @@ type RequestArgs struct {
 	Path           string
 	Method         string
 	Headers        http.Header
+	Timeout        time.Duration
+	ShowDebug      bool
 }
 
 func (c *HTTPClient) MakeRequest(requestArgs RequestArgs) (http.Header, int, []byte, error) {
@@ -37,21 +37,23 @@ func (c *HTTPClient) MakeRequest(requestArgs RequestArgs) (http.Header, int, []b
 	if err != nil {
 		return header, 0, []byte{}, errors.NewInvalidHostError(err)
 	}
-
 	url.Path = requestArgs.Path
 
-	body, ok := requestArgs.Body.(string)
-	if !ok {
-		body = ""
-	}
-	req, err := http.NewRequest(requestArgs.Method, url.String(), strings.NewReader(body))
-	if err != nil {
-		return header, 0, []byte{}, errors.NewRequestError(err)
+	req := goreq.Request{
+		Uri:       url.String(),
+		Method:    requestArgs.Method,
+		Body:      requestArgs.Body,
+		Timeout:   requestArgs.Timeout,
+		ShowDebug: requestArgs.ShowDebug,
 	}
 
-	req.Header = requestArgs.Headers
+	for name, value := range requestArgs.Headers {
+		for _, v := range value {
+			req.AddHeader(name, v)
+		}
+	}
 
-	resp, err := c.client.Do(req)
+	resp, err := req.Do()
 	if err != nil {
 		return header, 0, []byte{}, errors.NewRequestError(err)
 	}
@@ -65,13 +67,5 @@ func (c *HTTPClient) MakeRequest(requestArgs RequestArgs) (http.Header, int, []b
 		return resp.Header, resp.StatusCode, respBody, nil
 	}
 
-	var errorResponse errors.ErrorResponse
-	err = json.Unmarshal(respBody, &errorResponse)
-	e := errors.ErrBadResponse
-	if err == nil {
-		if errorResponse.Description != "" {
-			e = errors.NewErrorResponse(errorResponse.Type, errorResponse.Description)
-		}
-	}
-	return resp.Header, resp.StatusCode, respBody, errors.NewResponseError(e)
+	return resp.Header, resp.StatusCode, respBody, errors.NewResponseError(errors.ErrBadResponse)
 }
