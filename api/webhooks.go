@@ -9,13 +9,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func webhookSave(rw http.ResponseWriter, r *http.Request) {
-	user, err := GetCurrentUser(r)
-	if err != nil {
-		handleError(rw, err)
-		return
-	}
-
+func webhookSave(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	webhook := account.Webhook{}
 	if err := json.NewDecoder(r.Body).Decode(&webhook); err != nil {
 		handleError(rw, errors.ErrBadRequest)
@@ -36,13 +30,7 @@ func webhookSave(rw http.ResponseWriter, r *http.Request) {
 	Ok(rw, webhook)
 }
 
-func webhookDelete(rw http.ResponseWriter, r *http.Request) {
-	user, err := GetCurrentUser(r)
-	if err != nil {
-		handleError(rw, err)
-		return
-	}
-
+func webhookDelete(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	webhook, err := account.FindWebhookByName(mux.Vars(r)["name"])
 	if err != nil {
 		handleError(rw, err)

@@ -77,8 +77,8 @@ func NewApi(store account.Storable) *Api {
 	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"PUT"}, Handler: HandlerCurrentUser(appUpdate)})
 
 	// Webhooks
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/webhooks", Methods: []string{"PUT"}, Handler: webhookSave})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/webhooks/{name}", Methods: []string{"DELETE"}, Handler: webhookDelete})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/webhooks", Methods: []string{"PUT"}, Handler: HandlerCurrentUser(webhookSave)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/webhooks/{name}", Methods: []string{"DELETE"}, Handler: HandlerCurrentUser(webhookDelete)})
 
 	return api
 }
