@@ -13,7 +13,7 @@ func (s *S) TestSavePlugin(c *C) {
 }
 
 func (s *S) TestSavePluginWithoutRequiredFields(c *C) {
-	pluginConfig := account.PluginConfig{}
+	pluginConfig := account.Plugin{}
 	err := pluginConfig.Save(service)
 	_, ok := err.(errors.ValidationError)
 	c.Assert(ok, Equals, true)

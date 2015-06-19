@@ -29,12 +29,14 @@ type Storable interface {
 	DeleteApp(App) error
 	TeamApps(Team) ([]App, error)
 
-	UpsertPluginConfig(PluginConfig) error
-	DeletePluginConfig(PluginConfig) error
-	FindPluginConfigByNameAndService(string, Service) (PluginConfig, error)
+	UpsertPlugin(Plugin) error
+	DeletePlugin(Plugin) error
+	DeletePluginsByService(Service) error
+	FindPluginByNameAndService(string, Service) (Plugin, error)
 
 	UpsertWebhook(Webhook) error
 	DeleteWebhook(Webhook) error
+	DeleteWebhooksByTeam(Team) error
 	FindWebhookByName(string) (Webhook, error)
 	FindWebhooksByEventAndTeam(string, string) ([]Webhook, error)
 }

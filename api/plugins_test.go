@@ -18,8 +18,8 @@ func (s *S) TestSubscribePlugin(c *C) {
 		s.store.DeleteService(serv)
 		s.store.DeleteTeamByAlias(team.Alias)
 
-		plugin, _ := s.store.FindPluginConfigByNameAndService(pluginName, service)
-		s.store.DeletePluginConfig(plugin)
+		plugin, _ := s.store.FindPluginByNameAndService(pluginName, service)
+		s.store.DeletePlugin(plugin)
 	}()
 
 	headers, code, body, err := httpClient.MakeRequest(account.RequestArgs{

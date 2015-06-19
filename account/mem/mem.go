@@ -13,7 +13,7 @@ type Mem struct {
 	Services      map[string]account.Service
 	Users         map[string]account.User
 	Teams         map[string]account.Team
-	PluginsConfig map[string]map[string]account.PluginConfig
+	PluginsConfig map[string]map[string]account.Plugin
 	Tokens        map[string]account.Token
 	UserTokens    map[string]account.User
 	Webhooks      map[string]account.Webhook
@@ -25,7 +25,7 @@ func New() account.Storable {
 		Services:      make(map[string]account.Service),
 		Users:         make(map[string]account.User),
 		Teams:         make(map[string]account.Team),
-		PluginsConfig: make(map[string]map[string]account.PluginConfig),
+		PluginsConfig: make(map[string]map[string]account.Plugin),
 		Tokens:        make(map[string]account.Token),
 		UserTokens:    make(map[string]account.User),
 		Webhooks:      make(map[string]account.Webhook),
@@ -195,22 +195,32 @@ func (m *Mem) DeleteApp(a account.App) error {
 	return nil
 }
 
-func (m *Mem) UpsertPluginConfig(pc account.PluginConfig) error {
-	m.PluginsConfig[pc.Service] = map[string]account.PluginConfig{pc.Name: pc}
+func (m *Mem) UpsertPlugin(pc account.Plugin) error {
+	m.PluginsConfig[pc.Service] = map[string]account.Plugin{pc.Name: pc}
 	return nil
 }
 
-func (m *Mem) DeletePluginConfig(pc account.PluginConfig) error {
+func (m *Mem) DeletePlugin(pc account.Plugin) error {
 	if _, ok := m.PluginsConfig[pc.Service][pc.Name]; !ok {
-		return errors.NewNotFoundError(errors.ErrPluginConfigNotFound)
+		return errors.NewNotFoundError(errors.ErrPluginNotFound)
 	}
 
 	delete(m.PluginsConfig, pc.Name)
 	return nil
 }
-func (m *Mem) FindPluginConfigByNameAndService(pluginName string, service account.Service) (account.PluginConfig, error) {
+
+func (m *Mem) DeletePluginsByService(service account.Service) error {
+	if _, ok := m.PluginsConfig[service.Subdomain]; !ok {
+		return errors.NewNotFoundError(errors.ErrPluginNotFound)
+	}
+
+	delete(m.PluginsConfig, service.Subdomain)
+	return nil
+}
+
+func (m *Mem) FindPluginByNameAndService(pluginName string, service account.Service) (account.Plugin, error) {
 	if plugin, ok := m.PluginsConfig[service.Subdomain][pluginName]; !ok {
-		return account.PluginConfig{}, errors.NewNotFoundError(errors.ErrPluginConfigNotFound)
+		return account.Plugin{}, errors.NewNotFoundError(errors.ErrPluginNotFound)
 	} else {
 		return plugin, nil
 	}
@@ -227,6 +237,20 @@ func (m *Mem) DeleteWebhook(w account.Webhook) error {
 	}
 
 	delete(m.Webhooks, w.Name)
+	return nil
+}
+
+func (m *Mem) DeleteWebhooksByTeam(team account.Team) error {
+	found := false
+	for _, wh := range m.Webhooks {
+		if wh.Team == team.Alias {
+			delete(m.Webhooks, wh.Name)
+			found = true
+		}
+	}
+	if !found {
+		return errors.NewNotFoundError(errors.ErrTeamNotFound)
+	}
 	return nil
 }
 

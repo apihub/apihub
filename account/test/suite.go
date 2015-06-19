@@ -10,7 +10,7 @@ import (
 
 var app account.App
 var user account.User
-var plugin account.PluginConfig
+var plugin account.Plugin
 var team account.Team
 var service account.Service
 var token account.Token
@@ -26,10 +26,10 @@ type StorableSuite struct {
 func (s *StorableSuite) SetUpTest(c *C) {
 	user = account.User{Name: "Alice", Email: "alice@example.org", Password: "123456"}
 	token = account.Token{AccessToken: "secret-token", Expires: 10, Type: "Token", User: &user}
-	team = account.Team{Name: "Backstage Team", Alias: "backstage", Users: []string{user.Email}, Owner: user.Email}
+	team = account.Team{Name: "Backstage Team", Alias: "backstage", Users: []string{user.Email}, Owner: user.Email, Apps: []account.App{}, Services: []account.Service{}}
 	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage", Team: team.Alias, Owner: user.Email, Transformers: []string{}}
 	app = account.App{ClientId: "ios", ClientSecret: "secret", Name: "Ios App", Team: team.Alias, Owner: user.Email, RedirectUris: []string{"http://www.example.org/auth"}}
-	plugin = account.PluginConfig{Name: "cors", Service: service.Subdomain, Config: map[string]interface{}{"version": 1}}
+	plugin = account.Plugin{Name: "cors", Service: service.Subdomain, Config: map[string]interface{}{"version": 1}}
 	webhook = account.Webhook{Name: "service.update", Events: []string{"service.update"}, Config: account.WebhookConfig{Url: "http://www.example.org"}}
 }
 
@@ -266,36 +266,54 @@ func (s *StorableSuite) TestFindAppByClientIdNotFound(c *C) {
 	c.Assert(ok, Equals, true)
 }
 
-func (s *StorableSuite) TestUpsertPluginConfig(c *C) {
-	defer s.Storage.DeletePluginConfig(plugin)
-	err := s.Storage.UpsertPluginConfig(plugin)
+func (s *StorableSuite) TestUpsertPlugin(c *C) {
+	defer s.Storage.DeletePlugin(plugin)
+	err := s.Storage.UpsertPlugin(plugin)
 	c.Check(err, IsNil)
 }
 
-func (s *StorableSuite) TestDeletePluginConfig(c *C) {
-	s.Storage.UpsertPluginConfig(plugin)
-	err := s.Storage.DeletePluginConfig(plugin)
+func (s *StorableSuite) TestDeletePlugin(c *C) {
+	s.Storage.UpsertPlugin(plugin)
+	err := s.Storage.DeletePlugin(plugin)
 	c.Check(err, IsNil)
 }
 
-func (s *StorableSuite) TestDeletePluginConfigNotFound(c *C) {
-	nf := account.PluginConfig{}
-	err := s.Storage.DeletePluginConfig(nf)
+func (s *StorableSuite) TestDeletePluginNotFound(c *C) {
+	nf := account.Plugin{}
+	err := s.Storage.DeletePlugin(nf)
 	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 }
 
-func (s *StorableSuite) TestFindPluginConfigByNameAndService(c *C) {
-	defer s.Storage.DeletePluginConfig(plugin)
+func (s *StorableSuite) TestDeletePluginsByServiceNotFound(c *C) {
+	nf := account.Service{}
+	err := s.Storage.DeletePluginsByService(nf)
+	_, ok := err.(errors.NotFoundError)
+	c.Assert(ok, Equals, true)
+}
+
+func (s *StorableSuite) TestDeletePluginsByService(c *C) {
+	err := s.Storage.UpsertService(service)
+	c.Check(err, IsNil)
 	plugin.Service = service.Subdomain
-	err := s.Storage.UpsertPluginConfig(plugin)
-	pl, err := s.Storage.FindPluginConfigByNameAndService(plugin.Name, service)
+	err = s.Storage.UpsertPlugin(plugin)
+	c.Check(err, IsNil)
+
+	err = s.Storage.DeletePluginsByService(service)
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestFindPluginByNameAndService(c *C) {
+	defer s.Storage.DeletePlugin(plugin)
+	plugin.Service = service.Subdomain
+	err := s.Storage.UpsertPlugin(plugin)
+	pl, err := s.Storage.FindPluginByNameAndService(plugin.Name, service)
 	c.Assert(pl, DeepEquals, plugin)
 	c.Check(err, IsNil)
 }
 
-func (s *StorableSuite) TestFindPluginConfigByNameAndServiceNotFound(c *C) {
-	_, err := s.Storage.FindPluginConfigByNameAndService("not-found", service)
+func (s *StorableSuite) TestFindPluginByNameAndServiceNotFound(c *C) {
+	_, err := s.Storage.FindPluginByNameAndService("not-found", service)
 	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 }
@@ -316,6 +334,24 @@ func (s *StorableSuite) TestDeleteWebhookNotFound(c *C) {
 	err := s.Storage.DeleteWebhook(webhook)
 	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
+}
+
+func (s *StorableSuite) TestDeleteWebhooksByTeamNotFound(c *C) {
+	nf := account.Team{}
+	err := s.Storage.DeleteWebhooksByTeam(nf)
+	_, ok := err.(errors.NotFoundError)
+	c.Assert(ok, Equals, true)
+}
+
+func (s *StorableSuite) TestDeleteWebhooksByTeam(c *C) {
+	err := s.Storage.UpsertTeam(team)
+	c.Check(err, IsNil)
+	webhook.Team = team.Alias
+	err = s.Storage.UpsertWebhook(webhook)
+	c.Check(err, IsNil)
+
+	err = s.Storage.DeleteWebhooksByTeam(team)
+	c.Check(err, IsNil)
 }
 
 func (s *StorableSuite) TestFindAllWebhooksByEventAndTeam(c *C) {

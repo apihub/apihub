@@ -9,10 +9,12 @@ import (
 // It is not allowed to have more than one team with the same alias.
 // The `Owner` field indicates the user who created the team.
 type Team struct {
-	Name  string   `json:"name"`
-	Alias string   `json:"alias"`
-	Users []string `json:"users"`
-	Owner string   `json:"owner"`
+	Name     string    `json:"name"`
+	Alias    string    `json:"alias"`
+	Users    []string  `json:"users"`
+	Owner    string    `json:"owner"`
+	Services []Service `json:"services,omitempty"`
+	Apps     []App     `json:"apps,omitempty"`
 }
 
 // Create a team.
@@ -55,6 +57,7 @@ func (team Team) Delete(owner User) error {
 
 	go DeleteServicesByTeam(team, owner)
 	go DeleteAppsByTeam(team, owner)
+	go store.DeleteWebhooksByTeam(team)
 
 	return store.DeleteTeam(team)
 }
@@ -74,6 +77,16 @@ func FindTeamByAlias(alias string) (*Team, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	team.Services, err = store.TeamServices(team)
+	if err != nil {
+		return nil, err
+	}
+	team.Apps, err = store.TeamApps(team)
+	if err != nil {
+		return nil, err
+	}
+
 	return &team, nil
 }
 

@@ -4,23 +4,23 @@ import (
 	"github.com/backstage/maestro/errors"
 )
 
-type PluginConfig struct {
+type Plugin struct {
 	Name    string                 `json:"name"`
 	Service string                 `json:"service"`
 	Config  map[string]interface{} `json:"config,omitempty"`
 }
 
-func (pc *PluginConfig) Save(service Service) error {
+func (pc *Plugin) Save(service Service) error {
 	pc.Service = service.Subdomain
 	if !pc.valid() {
-		return errors.NewValidationError(errors.ErrPluginConfigMissingRequiredFields)
+		return errors.NewValidationError(errors.ErrPluginMissingRequiredFields)
 	}
 
-	return store.UpsertPluginConfig(*pc)
+	return store.UpsertPlugin(*pc)
 }
 
-func FindPluginByNameAndService(pluginName string, service Service) (*PluginConfig, error) {
-	plugin, err := store.FindPluginConfigByNameAndService(pluginName, service)
+func FindPluginByNameAndService(pluginName string, service Service) (*Plugin, error) {
+	plugin, err := store.FindPluginByNameAndService(pluginName, service)
 	if err != nil {
 		return nil, err
 	}
@@ -28,11 +28,11 @@ func FindPluginByNameAndService(pluginName string, service Service) (*PluginConf
 	return &plugin, nil
 }
 
-func (pc PluginConfig) Delete() error {
-	return store.DeletePluginConfig(pc)
+func (pc Plugin) Delete() error {
+	return store.DeletePlugin(pc)
 }
 
-func (pc *PluginConfig) valid() bool {
+func (pc *Plugin) valid() bool {
 	if pc.Name == "" || pc.Service == "" {
 		return false
 	}

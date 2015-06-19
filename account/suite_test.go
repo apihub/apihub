@@ -24,7 +24,7 @@ func (s *S) TearDownSuite(c *C) {
 var app account.App
 var alice account.User
 var owner account.User
-var pluginConfig account.PluginConfig
+var pluginConfig account.Plugin
 var service account.Service
 var team account.Team
 var webhook account.Webhook
@@ -33,12 +33,12 @@ func (s *S) SetUpTest(c *C) {
 	// setUpMemoryTest(s)
 	setUpMongoreTest(s)
 
-	team = account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team = account.Team{Name: "Backstage Team", Alias: "backstage", Services: []account.Service{}, Apps: []account.App{}}
 	alice = account.User{Name: "Alice", Email: "alice@example.org", Password: "123456"}
 	owner = account.User{Name: "Owner", Email: "owner@example.org", Password: "123456"}
 	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage", Transformers: []string{}}
 	app = account.App{ClientId: "ios", ClientSecret: "secret", Name: "Ios App", Team: team.Alias, Owner: owner.Email, RedirectUris: []string{"http://www.example.org/auth"}}
-	pluginConfig = account.PluginConfig{Name: "Plugin Config", Service: service.Subdomain, Config: make(map[string]interface{})}
+	pluginConfig = account.Plugin{Name: "Plugin Config", Service: service.Subdomain, Config: make(map[string]interface{})}
 	webhook = account.Webhook{Name: "service.update", Events: []string{"service.update"}, Config: account.WebhookConfig{Url: "http://www.example.org"}}
 }
 

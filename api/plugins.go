@@ -28,7 +28,7 @@ func pluginSubsribe(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	plugin := account.PluginConfig{}
+	plugin := account.Plugin{}
 	if err := json.NewDecoder(r.Body).Decode(&plugin); err != nil {
 		handleError(rw, errors.ErrBadRequest)
 		return

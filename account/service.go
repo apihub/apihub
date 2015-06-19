@@ -33,7 +33,7 @@ func (service *Service) Create(owner User, team Team) error {
 		return errors.NewValidationError(errors.ErrServiceDuplicateEntry)
 	}
 
-	sendHook(newServiceEvent("service.create", service))
+	sendHook(newServiceEvent("service.create", *service))
 
 	return store.UpsertService(*service)
 }
@@ -47,18 +47,20 @@ func (service *Service) Update() error {
 		return errors.NewNotFoundError(errors.ErrServiceNotFound)
 	}
 
-	sendHook(newServiceEvent("service.update", service))
+	sendHook(newServiceEvent("service.update", *service))
 	return store.UpsertService(*service)
 }
 
-func (service *Service) Delete(owner User) error {
+func (service Service) Delete(owner User) error {
 	if service.Owner != owner.Email {
 		Logger.Warn(fmt.Sprintf("Only the owner has permission to delete the servce %s.", service.Subdomain))
 		return errors.NewForbiddenError(errors.ErrOnlyOwnerHasPermission)
 	}
+
+	go store.DeletePluginsByService(service)
 	sendHook(newServiceEvent("service.delete", service))
 
-	return store.DeleteService(*service)
+	return store.DeleteService(service)
 }
 
 func DeleteServicesByTeam(team Team, owner User) error {
@@ -67,6 +69,7 @@ func DeleteServicesByTeam(team Team, owner User) error {
 		return err
 	}
 	for _, s := range services {
+
 		s.Delete(owner)
 	}
 	return nil

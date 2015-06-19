@@ -45,8 +45,8 @@ var (
 	ErrAppMissingRequiredFields = errors.New("Name cannot be empty.")
 	ErrAppDuplicateEntry        = errors.New("There is another app with this client id.")
 
-	ErrPluginConfigNotFound              = errors.New("Plugin Config not found.")
-	ErrPluginConfigMissingRequiredFields = errors.New("Name and Service cannot be empty.")
+	ErrPluginNotFound              = errors.New("Plugin Config not found.")
+	ErrPluginMissingRequiredFields = errors.New("Name and Service cannot be empty.")
 
 	ErrWebhookNotFound              = errors.New("Webhook not found.")
 	ErrWebhookMissingRequiredFields = errors.New("Name, Team and Events cannot be empty.")

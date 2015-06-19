@@ -113,7 +113,7 @@ To use a Middleware, it's needed to create a config for each service and it's ne
 ::
 
   services := []*account.Service{&account.Service{Endpoint: "http://www.example.org", Subdomain: "example"}}
-  confCors := &account.PluginConfig{
+  confCors := &account.Plugin{
     Name:    "cors",
     Service: services[0].Subdomain,
     Config:  map[string]interface{}{"allowed_origins": []string{"http://helloworld.backstage.dev"}, "debug": true, "allowed_methods": []string{"DELETE", "PUT"}, "allow_credentials": true, "max_age": 10},

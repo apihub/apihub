@@ -325,7 +325,7 @@ func (m *Mongore) TeamApps(team account.Team) ([]account.App, error) {
 	return apps, err
 }
 
-func (m *Mongore) UpsertPluginConfig(pc account.PluginConfig) error {
+func (m *Mongore) UpsertPlugin(pc account.Plugin) error {
 	var strg Storage
 	strg.Storage = m.openSession()
 	defer strg.Close()
@@ -339,7 +339,7 @@ func (m *Mongore) UpsertPluginConfig(pc account.PluginConfig) error {
 	return err
 }
 
-func (m *Mongore) DeletePluginConfig(pc account.PluginConfig) error {
+func (m *Mongore) DeletePlugin(pc account.Plugin) error {
 	var strg Storage
 	strg.Storage = m.openSession()
 	defer strg.Close()
@@ -347,7 +347,7 @@ func (m *Mongore) DeletePluginConfig(pc account.PluginConfig) error {
 	err := strg.PluginsConfig().Remove(pc)
 
 	if err == mgo.ErrNotFound {
-		return errors.NewNotFoundError(errors.ErrPluginConfigNotFound)
+		return errors.NewNotFoundError(errors.ErrPluginNotFound)
 	}
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -356,16 +356,33 @@ func (m *Mongore) DeletePluginConfig(pc account.PluginConfig) error {
 	return err
 }
 
-func (m *Mongore) FindPluginConfigByNameAndService(pluginName string, service account.Service) (account.PluginConfig, error) {
+func (m *Mongore) DeletePluginsByService(service account.Service) error {
 	var strg Storage
 	strg.Storage = m.openSession()
 	defer strg.Close()
 
-	var plugin account.PluginConfig
+	err := strg.PluginsConfig().Remove(bson.M{"service": service.Subdomain})
+
+	if err == mgo.ErrNotFound {
+		return errors.NewNotFoundError(errors.ErrPluginNotFound)
+	}
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
+
+	return err
+}
+
+func (m *Mongore) FindPluginByNameAndService(pluginName string, service account.Service) (account.Plugin, error) {
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
+	var plugin account.Plugin
 	err := strg.PluginsConfig().Find(bson.M{"name": pluginName, "service": service.Subdomain}).One(&plugin)
 
 	if err == mgo.ErrNotFound {
-		return account.PluginConfig{}, errors.NewNotFoundError(errors.ErrPluginConfigNotFound)
+		return account.Plugin{}, errors.NewNotFoundError(errors.ErrPluginNotFound)
 	}
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -394,6 +411,23 @@ func (m *Mongore) DeleteWebhook(w account.Webhook) error {
 	defer strg.Close()
 
 	err := strg.Webhooks().Remove(w)
+
+	if err == mgo.ErrNotFound {
+		return errors.NewNotFoundError(errors.ErrWebhookNotFound)
+	}
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
+
+	return err
+}
+
+func (m *Mongore) DeleteWebhooksByTeam(team account.Team) error {
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
+	err := strg.Webhooks().Remove(bson.M{"team": team.Alias})
 
 	if err == mgo.ErrNotFound {
 		return errors.NewNotFoundError(errors.ErrWebhookNotFound)
