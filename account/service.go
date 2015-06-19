@@ -25,8 +25,8 @@ func (service *Service) Create(owner User, team Team) error {
 	service.Subdomain = strings.ToLower(service.Subdomain)
 	service.Team = team.Alias
 
-	if !service.valid() {
-		return errors.NewValidationError(errors.ErrServiceMissingRequiredFields)
+	if err := service.valid(); err != nil {
+		return err
 	}
 
 	if service.Exists() {
@@ -39,8 +39,8 @@ func (service *Service) Create(owner User, team Team) error {
 }
 
 func (service *Service) Update() error {
-	if !service.valid() {
-		return errors.NewValidationError(errors.ErrServiceMissingRequiredFields)
+	if err := service.valid(); err != nil {
+		return err
 	}
 
 	if !service.Exists() {
@@ -88,9 +88,9 @@ func FindServiceBySubdomain(subdomain string) (*Service, error) {
 	return &service, nil
 }
 
-func (service *Service) valid() bool {
+func (service *Service) valid() error {
 	if service.Subdomain == "" || service.Endpoint == "" || service.Team == "" {
-		return false
+		return errors.NewValidationError(errors.ErrServiceMissingRequiredFields)
 	}
-	return true
+	return nil
 }
