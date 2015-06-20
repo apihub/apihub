@@ -2,6 +2,7 @@
 
 ![Backstage Maestro](http://i.imgur.com/bFHfI4w.png?1 "Backstage Maestro")
 
+Logo Design by Eduardo Insaurriaga.
 
 ##What is Backstage Maestro?
 
