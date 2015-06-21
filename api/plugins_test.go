@@ -22,7 +22,7 @@ func (s *S) TestSubscribePlugin(c *C) {
 		s.store.DeletePlugin(plugin)
 	}()
 
-	headers, code, body, err := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, err := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "PUT",
 		Path:           fmt.Sprintf(`/api/services/%s/plugins`, service.Subdomain),
@@ -39,7 +39,7 @@ func (s *S) TestSubscribePlugin(c *C) {
 func (s *S) TestSubscribePluginNotFound(c *C) {
 	pluginName := "cors"
 
-	headers, code, body, err := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, err := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusNotFound,
 		Method:         "PUT",
 		Path:           `/api/services/not-found/plugins`,
@@ -64,7 +64,7 @@ func (s *S) TestUnsubscribePlugin(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, err := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, err := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "DELETE",
 		Path:           fmt.Sprintf(`/api/services/%s/plugins/%s`, service.Subdomain, pluginConfig.Name),
@@ -87,7 +87,7 @@ func (s *S) TestUnsubscribePluginNotFound(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, err := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, err := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusNotFound,
 		Method:         "DELETE",
 		Path:           fmt.Sprintf(`/api/services/%s/plugins/not-found`, service.Subdomain),

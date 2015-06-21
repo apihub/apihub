@@ -39,7 +39,7 @@ func (api *Api) ListenEvents() {
 func sendWebHook(URL string, body interface{}) {
 	if URL != "" {
 		httpClient := requests.NewHTTPClient(URL)
-		_, _, _, err := httpClient.MakeRequest(requests.RequestArgs{
+		_, _, _, err := httpClient.MakeRequest(requests.Args{
 			AcceptableCode: http.StatusOK,
 			Method:         "POST",
 			Path:           "",

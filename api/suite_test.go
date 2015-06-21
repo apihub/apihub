@@ -77,7 +77,7 @@ func setUpMongoreTest(s *S) {
 	})
 }
 
-func testWithoutSignIn(reqArgs requests.RequestArgs, c *C) {
+func testWithoutSignIn(reqArgs requests.Args, c *C) {
 	headers, code, body, err := httpClient.MakeRequest(reqArgs)
 
 	c.Check(err, IsNil)

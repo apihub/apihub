@@ -9,7 +9,7 @@ import (
 )
 
 func (s *S) TestAuthorizationMiddleware(c *C) {
-	headers, code, body, err := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, err := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "DELETE",
 		Path:           "/api/users",
@@ -23,15 +23,15 @@ func (s *S) TestAuthorizationMiddleware(c *C) {
 }
 
 func (s *S) TestAuthorizationMiddlewareWithInvalidToken(c *C) {
-	testWithoutSignIn(requests.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/users", Headers: http.Header{"Authorization": {"expired-token"}}}, c)
+	testWithoutSignIn(requests.Args{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/users", Headers: http.Header{"Authorization": {"expired-token"}}}, c)
 }
 
 func (s *S) TestAuthorizationMiddlewareWithMissingToken(c *C) {
-	testWithoutSignIn(requests.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/users"}, c)
+	testWithoutSignIn(requests.Args{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/users"}, c)
 }
 
 func (s *S) TestNotFoundHandler(c *C) {
-	headers, code, body, err := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, err := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusNotFound,
 		Method:         "GET",
 		Path:           "/not-found-path",
@@ -44,7 +44,7 @@ func (s *S) TestNotFoundHandler(c *C) {
 }
 
 func (s *S) TestRequestId(c *C) {
-	headers, _, _, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, _, _, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "DELETE",
 		Path:           "/api/users",

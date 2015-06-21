@@ -19,7 +19,7 @@ func (s *S) TestCreateApp(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusCreated,
 		Method:         "POST",
 		Path:           "/api/apps",
@@ -43,7 +43,7 @@ func (s *S) TestCreateAppWhenAlreadyExists(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusBadRequest,
 		Method:         "POST",
 		Path:           "/api/apps",
@@ -57,11 +57,11 @@ func (s *S) TestCreateAppWhenAlreadyExists(c *C) {
 }
 
 func (s *S) TestCreateAppWithoutSignIn(c *C) {
-	testWithoutSignIn(requests.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "POST", Path: "/api/apps", Body: `{}`}, c)
+	testWithoutSignIn(requests.Args{AcceptableCode: http.StatusUnauthorized, Method: "POST", Path: "/api/apps", Body: `{}`}, c)
 }
 
 func (s *S) TestCreateAppTeamNotFound(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusNotFound,
 		Method:         "POST",
 		Path:           "/api/apps",
@@ -75,7 +75,7 @@ func (s *S) TestCreateAppTeamNotFound(c *C) {
 }
 
 func (s *S) TestCreateAppInvalidBody(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusBadRequest,
 		Method:         "POST",
 		Path:           "/api/apps",
@@ -98,7 +98,7 @@ func (s *S) TestUpdateApp(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "PUT",
 		Path:           fmt.Sprintf("/api/apps/%s", app.ClientId),
@@ -112,7 +112,7 @@ func (s *S) TestUpdateApp(c *C) {
 }
 
 func (s *S) TestUpdateAppNotFound(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusNotFound,
 		Method:         "PUT",
 		Path:           "/api/apps/not_found",
@@ -138,7 +138,7 @@ func (s *S) TestUpdateAppNotMember(c *C) {
 		alice.Delete()
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusForbidden,
 		Method:         "PUT",
 		Path:           fmt.Sprintf("/api/apps/%s", app.ClientId),
@@ -152,13 +152,13 @@ func (s *S) TestUpdateAppNotMember(c *C) {
 }
 
 func (s *S) TestUpdateAppWithoutSignIn(c *C) {
-	testWithoutSignIn(requests.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "PUT", Path: "/api/apps/client_id", Body: `{}`}, c)
+	testWithoutSignIn(requests.Args{AcceptableCode: http.StatusUnauthorized, Method: "PUT", Path: "/api/apps/client_id", Body: `{}`}, c)
 }
 
 func (s *S) TestDeleteApp(c *C) {
 	app.Create(user, team)
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "DELETE",
 		Path:           fmt.Sprintf("/api/apps/%s", app.ClientId),
@@ -181,7 +181,7 @@ func (s *S) TestDeleteAppWithoutPermission(c *C) {
 		s.store.DeleteApp(ap)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusForbidden,
 		Method:         "DELETE",
 		Path:           fmt.Sprintf("/api/apps/%s", app.ClientId),
@@ -194,7 +194,7 @@ func (s *S) TestDeleteAppWithoutPermission(c *C) {
 }
 
 func (s *S) TestDeleteAppIsNotFound(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusNotFound,
 		Method:         "DELETE",
 		Path:           "/api/apps/not-found",
@@ -207,7 +207,7 @@ func (s *S) TestDeleteAppIsNotFound(c *C) {
 }
 
 func (s *S) TestDeleteAppWithoutSignIn(c *C) {
-	testWithoutSignIn(requests.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/apps/client_id", Body: `{}`}, c)
+	testWithoutSignIn(requests.Args{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/apps/client_id", Body: `{}`}, c)
 }
 
 func (s *S) TestAppInfo(c *C) {
@@ -220,7 +220,7 @@ func (s *S) TestAppInfo(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "GET",
 		Path:           fmt.Sprintf("/api/apps/%s", app.ClientId),
@@ -246,7 +246,7 @@ func (s *S) TestAppInfoNotMember(c *C) {
 		alice.Delete()
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusForbidden,
 		Method:         "GET",
 		Path:           fmt.Sprintf("/api/apps/%s", app.ClientId),
@@ -259,7 +259,7 @@ func (s *S) TestAppInfoNotMember(c *C) {
 }
 
 func (s *S) TestAppInfoNotFound(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusNotFound,
 		Method:         "GET",
 		Path:           "/api/apps/not-found",

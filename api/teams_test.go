@@ -16,7 +16,7 @@ func (s *S) TestCreateTeam(c *C) {
 		s.store.DeleteTeamByAlias(alias)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusCreated,
 		Method:         "POST",
 		Path:           "/api/teams",
@@ -36,7 +36,7 @@ func (s *S) TestCreateTeamWithCustomAlias(c *C) {
 		s.store.DeleteTeamByAlias(alias)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusCreated,
 		Method:         "POST",
 		Path:           "/api/teams",
@@ -57,7 +57,7 @@ func (s *S) TestCreateTeamWhenAlreadyExists(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusBadRequest,
 		Method:         "POST",
 		Path:           "/api/teams",
@@ -72,11 +72,11 @@ func (s *S) TestCreateTeamWhenAlreadyExists(c *C) {
 }
 
 func (s *S) TestCreateTeamWithoutSignIn(c *C) {
-	testWithoutSignIn(requests.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "POST", Path: "/api/teams", Body: `{"name": "Backstage Team"}`}, c)
+	testWithoutSignIn(requests.Args{AcceptableCode: http.StatusUnauthorized, Method: "POST", Path: "/api/teams", Body: `{"name": "Backstage Team"}`}, c)
 }
 
 func (s *S) TestCreateTeamWithInvalidRequest(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusBadRequest,
 		Method:         "POST",
 		Path:           "/api/teams",
@@ -90,7 +90,7 @@ func (s *S) TestCreateTeamWithInvalidRequest(c *C) {
 }
 
 func (s *S) TestTeamList(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "GET",
 		Path:           "/api/teams",
@@ -103,14 +103,14 @@ func (s *S) TestTeamList(c *C) {
 }
 
 func (s *S) TestTeamListWithoutSignIn(c *C) {
-	testWithoutSignIn(requests.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "GET", Path: "/api/teams"}, c)
+	testWithoutSignIn(requests.Args{AcceptableCode: http.StatusUnauthorized, Method: "GET", Path: "/api/teams"}, c)
 }
 
 func (s *S) TestDeleteTeam(c *C) {
 	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
 	team.Create(user)
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "DELETE",
 		Path:           fmt.Sprintf("/api/teams/%s", team.Alias),
@@ -123,7 +123,7 @@ func (s *S) TestDeleteTeam(c *C) {
 }
 
 func (s *S) TestDeleteTeamWithoutSignIn(c *C) {
-	testWithoutSignIn(requests.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/teams/backstage"}, c)
+	testWithoutSignIn(requests.Args{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/teams/backstage"}, c)
 }
 
 func (s *S) TestDeleteTeamWithoutPermission(c *C) {
@@ -137,7 +137,7 @@ func (s *S) TestDeleteTeamWithoutPermission(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "DELETE",
 		Path:           fmt.Sprintf("/api/teams/%s", team.Alias),
@@ -150,7 +150,7 @@ func (s *S) TestDeleteTeamWithoutPermission(c *C) {
 }
 
 func (s *S) TestDeleteTeamNotFound(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusNotFound,
 		Method:         "DELETE",
 		Path:           "/api/teams/not-found",
@@ -167,7 +167,7 @@ func (s *S) TestTeamInfo(c *C) {
 	team.Create(user)
 	defer team.Delete(user)
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "GET",
 		Path:           fmt.Sprintf("/api/teams/%s", team.Alias),
@@ -180,7 +180,7 @@ func (s *S) TestTeamInfo(c *C) {
 }
 
 func (s *S) TestTeamInfoNotFound(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusNotFound,
 		Method:         "GET",
 		Path:           "/api/teams/not-found",
@@ -202,7 +202,7 @@ func (s *S) TestTeamInfoWithoutPermission(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusForbidden,
 		Method:         "GET",
 		Path:           fmt.Sprintf("/api/teams/%s", team.Alias),
@@ -225,7 +225,7 @@ func (s *S) TestAddUser(c *C) {
 	alice.Create()
 	defer alice.Delete()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "PUT",
 		Path:           fmt.Sprintf("/api/teams/%s/users", team.Alias),
@@ -249,7 +249,7 @@ func (s *S) TestAddUserNotMember(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "PUT",
 		Path:           fmt.Sprintf("/api/teams/%s/users", team.Alias),
@@ -269,7 +269,7 @@ func (s *S) TestAddUserWithoutSignIn(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	testWithoutSignIn(requests.RequestArgs{
+	testWithoutSignIn(requests.Args{
 		AcceptableCode: http.StatusUnauthorized,
 		Method:         "PUT",
 		Path:           fmt.Sprintf("/api/teams/%s/users", team.Alias),
@@ -278,7 +278,7 @@ func (s *S) TestAddUserWithoutSignIn(c *C) {
 }
 
 func (s *S) TestAddUserNotFound(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "PUT",
 		Path:           "/api/teams/not-found/users",
@@ -302,7 +302,7 @@ func (s *S) TestRemoveUser(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "DELETE",
 		Path:           fmt.Sprintf("/api/teams/%s/users", team.Alias),
@@ -322,7 +322,7 @@ func (s *S) TestRemoveUserWithoutSignIn(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	testWithoutSignIn(requests.RequestArgs{
+	testWithoutSignIn(requests.Args{
 		AcceptableCode: http.StatusUnauthorized,
 		Method:         "DELETE",
 		Path:           fmt.Sprintf("/api/teams/%s/users", team.Alias),
@@ -341,7 +341,7 @@ func (s *S) TestRemoveUserNotMember(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "DELETE",
 		Path:           fmt.Sprintf("/api/teams/%s/users", team.Alias),
@@ -355,7 +355,7 @@ func (s *S) TestRemoveUserNotMember(c *C) {
 }
 
 func (s *S) TestRemoveUserNotFound(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "DELETE",
 		Path:           "/api/teams/not-found/users",
@@ -376,7 +376,7 @@ func (s *S) TestUpdateTeam(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "PUT",
 		Path:           fmt.Sprintf("/api/teams/%s", team.Alias),
@@ -401,7 +401,7 @@ func (s *S) TestUpdateTeamNotMember(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "PUT",
 		Path:           fmt.Sprintf("/api/teams/%s", team.Alias),
@@ -415,7 +415,7 @@ func (s *S) TestUpdateTeamNotMember(c *C) {
 }
 
 func (s *S) TestUpdateTeamNotFound(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "PUT",
 		Path:           "/api/teams/not-found",

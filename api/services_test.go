@@ -19,7 +19,7 @@ func (s *S) TestCreateService(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusCreated,
 		Method:         "POST",
 		Path:           "/api/services",
@@ -43,7 +43,7 @@ func (s *S) TestCreateServiceWhenAlreadyExists(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusBadRequest,
 		Method:         "POST",
 		Path:           "/api/services",
@@ -57,11 +57,11 @@ func (s *S) TestCreateServiceWhenAlreadyExists(c *C) {
 }
 
 func (s *S) TestCreateServiceWithoutSignIn(c *C) {
-	testWithoutSignIn(requests.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "POST", Path: "/api/services", Body: `{}`}, c)
+	testWithoutSignIn(requests.Args{AcceptableCode: http.StatusUnauthorized, Method: "POST", Path: "/api/services", Body: `{}`}, c)
 }
 
 func (s *S) TestCreateServiceTeamNotFound(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusNotFound,
 		Method:         "POST",
 		Path:           "/api/services",
@@ -75,7 +75,7 @@ func (s *S) TestCreateServiceTeamNotFound(c *C) {
 }
 
 func (s *S) TestCreateServiceInvalidBody(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusBadRequest,
 		Method:         "POST",
 		Path:           "/api/services",
@@ -98,7 +98,7 @@ func (s *S) TestUpdateService(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "PUT",
 		Path:           fmt.Sprintf("/api/services/%s", service.Subdomain),
@@ -112,7 +112,7 @@ func (s *S) TestUpdateService(c *C) {
 }
 
 func (s *S) TestUpdateServiceNotFound(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusNotFound,
 		Method:         "PUT",
 		Path:           "/api/services/not_found",
@@ -138,7 +138,7 @@ func (s *S) TestUpdateServiceNotMember(c *C) {
 		alice.Delete()
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "PUT",
 		Path:           fmt.Sprintf("/api/services/%s", service.Subdomain),
@@ -152,13 +152,13 @@ func (s *S) TestUpdateServiceNotMember(c *C) {
 }
 
 func (s *S) TestUpdateServiceWithoutSignIn(c *C) {
-	testWithoutSignIn(requests.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "PUT", Path: "/api/services/subdomain", Body: `{}`}, c)
+	testWithoutSignIn(requests.Args{AcceptableCode: http.StatusUnauthorized, Method: "PUT", Path: "/api/services/subdomain", Body: `{}`}, c)
 }
 
 func (s *S) TestDeleteService(c *C) {
 	service.Create(user, team)
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "DELETE",
 		Path:           fmt.Sprintf("/api/services/%s", service.Subdomain),
@@ -181,7 +181,7 @@ func (s *S) TestDeleteServiceWithoutPermission(c *C) {
 		s.store.DeleteService(serv)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusForbidden,
 		Method:         "DELETE",
 		Path:           fmt.Sprintf("/api/services/%s", service.Subdomain),
@@ -194,7 +194,7 @@ func (s *S) TestDeleteServiceWithoutPermission(c *C) {
 }
 
 func (s *S) TestDeleteServiceIsNotFound(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusNotFound,
 		Method:         "DELETE",
 		Path:           "/api/services/not-found",
@@ -207,7 +207,7 @@ func (s *S) TestDeleteServiceIsNotFound(c *C) {
 }
 
 func (s *S) TestDeleteServiceWithoutSignIn(c *C) {
-	testWithoutSignIn(requests.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/services/subdomain", Body: `{}`}, c)
+	testWithoutSignIn(requests.Args{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/services/subdomain", Body: `{}`}, c)
 }
 
 func (s *S) TestServiceInfo(c *C) {
@@ -219,7 +219,7 @@ func (s *S) TestServiceInfo(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "GET",
 		Path:           fmt.Sprintf("/api/services/%s", service.Subdomain),
@@ -244,7 +244,7 @@ func (s *S) TestServiceInfoNotMember(c *C) {
 		alice.Delete()
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusForbidden,
 		Method:         "GET",
 		Path:           fmt.Sprintf("/api/services/%s", service.Subdomain),
@@ -257,7 +257,7 @@ func (s *S) TestServiceInfoNotMember(c *C) {
 }
 
 func (s *S) TestServiceInfoNotFound(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusNotFound,
 		Method:         "GET",
 		Path:           "/api/services/not-found",
@@ -278,7 +278,7 @@ func (s *S) TestServiceList(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
 		AcceptableCode: http.StatusOK,
 		Method:         "GET",
 		Path:           "/api/services",
@@ -291,5 +291,5 @@ func (s *S) TestServiceList(c *C) {
 }
 
 func (s *S) TestServiceListWithoutSignIn(c *C) {
-	testWithoutSignIn(requests.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "GET", Path: "/api/services", Body: `{}`}, c)
+	testWithoutSignIn(requests.Args{AcceptableCode: http.StatusUnauthorized, Method: "GET", Path: "/api/services", Body: `{}`}, c)
 }

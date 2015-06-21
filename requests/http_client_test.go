@@ -17,7 +17,7 @@ func (s *S) TestMakeRequest(c *C) {
 	defer server.Close()
 	httpClient := requests.NewHTTPClient(server.URL)
 
-	args := requests.RequestArgs{Method: "GET", Path: "/path", Body: nil, AcceptableCode: http.StatusOK}
+	args := requests.Args{Method: "GET", Path: "/path", Body: nil, AcceptableCode: http.StatusOK}
 	_, _, body, err := httpClient.MakeRequest(args)
 	c.Assert(string(body), Equals, `{"name": "Alice"}`)
 	c.Check(err, IsNil)
@@ -31,7 +31,7 @@ func (s *S) TestMakeRequestWithNonAcceptableCode(c *C) {
 	defer server.Close()
 	httpClient := requests.NewHTTPClient(server.URL)
 
-	args := requests.RequestArgs{Method: "GET", Path: "/path", Body: nil, AcceptableCode: http.StatusBadRequest}
+	args := requests.Args{Method: "GET", Path: "/path", Body: nil, AcceptableCode: http.StatusBadRequest}
 	_, _, body, err := httpClient.MakeRequest(args)
 	c.Assert(string(body), Equals, `{"name": "Alice"}`)
 	e, ok := err.(errors.ResponseError)
@@ -41,7 +41,7 @@ func (s *S) TestMakeRequestWithNonAcceptableCode(c *C) {
 
 func (s *S) TestReturnsErrorWhenHostIsInvalid(c *C) {
 	httpClient := requests.NewHTTPClient("://invalid-host")
-	args := requests.RequestArgs{Method: "GET", Path: "/path", Body: nil}
+	args := requests.Args{Method: "GET", Path: "/path", Body: nil}
 	_, _, _, err := httpClient.MakeRequest(args)
 	_, ok := err.(errors.InvalidHostError)
 	c.Assert(ok, Equals, true)
@@ -49,7 +49,7 @@ func (s *S) TestReturnsErrorWhenHostIsInvalid(c *C) {
 
 func (s *S) TestReturnsErrorWhenRequestIsInvalid(c *C) {
 	httpClient := requests.NewHTTPClient("invalid-host")
-	args := requests.RequestArgs{Method: "GET", Path: "/path", Body: nil}
+	args := requests.Args{Method: "GET", Path: "/path", Body: nil}
 	_, _, _, err := httpClient.MakeRequest(args)
 	_, ok := err.(errors.RequestError)
 	c.Assert(ok, Equals, true)
@@ -64,7 +64,7 @@ func (s *S) TestReturnsErrorWhenResponseIsInvalid(c *C) {
 
 	httpClient := requests.NewHTTPClient(server.URL)
 
-	args := requests.RequestArgs{Method: "GET", Path: "/path", Body: nil}
+	args := requests.Args{Method: "GET", Path: "/path", Body: nil}
 	_, _, _, err := httpClient.MakeRequest(args)
 	_, ok := err.(errors.ResponseError)
 	c.Assert(ok, Equals, true)
@@ -79,7 +79,7 @@ func (s *S) TestIncludesHeader(c *C) {
 
 	httpClient := requests.NewHTTPClient(server.URL)
 
-	args := requests.RequestArgs{Method: "GET", Path: "/path", Body: nil, Headers: http.Header{"Authorization": {"Token abcde"}}}
+	args := requests.Args{Method: "GET", Path: "/path", Body: nil, Headers: http.Header{"Authorization": {"Token abcde"}}}
 	httpClient.MakeRequest(args)
 }
 
@@ -92,7 +92,7 @@ func (s *S) TestReturnsDefaultError(c *C) {
 
 	httpClient := requests.NewHTTPClient(server.URL)
 
-	args := requests.RequestArgs{Method: "GET", Path: "/path", Body: nil}
+	args := requests.Args{Method: "GET", Path: "/path", Body: nil}
 	_, _, _, err := httpClient.MakeRequest(args)
 	e, ok := err.(errors.ResponseError)
 	c.Assert(e.Error(), Equals, "The response was invalid or cannot be served.")
