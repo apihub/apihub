@@ -1,4 +1,4 @@
-package account
+package requests
 
 import (
 	"io/ioutil"

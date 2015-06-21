@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/backstage/maestro/account"
 	"github.com/backstage/maestro/auth"
+	"github.com/backstage/maestro/requests"
 	. "gopkg.in/check.v1"
 )
 
@@ -15,7 +15,7 @@ func (s *S) TestCreateUser(c *C) {
 		u.Delete()
 	}()
 
-	headers, code, body, _ := httpClient.MakeRequest(account.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
 		AcceptableCode: http.StatusCreated,
 		Method:         "POST",
 		Path:           "/auth/signup",
@@ -28,7 +28,7 @@ func (s *S) TestCreateUser(c *C) {
 }
 
 func (s *S) TestCreateUserWithInvalidPayloadFormat(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(account.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
 		AcceptableCode: http.StatusBadRequest,
 		Method:         "POST",
 		Path:           "/auth/signup",
@@ -41,7 +41,7 @@ func (s *S) TestCreateUserWithInvalidPayloadFormat(c *C) {
 }
 
 func (s *S) TestCreateUserWithMissingRequiredFields(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(account.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
 		AcceptableCode: http.StatusBadRequest,
 		Method:         "POST",
 		Path:           "/auth/signup",
@@ -54,7 +54,7 @@ func (s *S) TestCreateUserWithMissingRequiredFields(c *C) {
 }
 
 func (s *S) TestDeleteUser(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(account.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
 		AcceptableCode: http.StatusOK,
 		Method:         "DELETE",
 		Path:           "/api/users",
@@ -67,15 +67,15 @@ func (s *S) TestDeleteUser(c *C) {
 }
 
 func (s *S) TestDeleteUserWithExpiredToken(c *C) {
-	testWithoutSignIn(account.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/users", Headers: http.Header{"Authorization": {"expired-token"}}}, c)
+	testWithoutSignIn(requests.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/users", Headers: http.Header{"Authorization": {"expired-token"}}}, c)
 }
 
 func (s *S) TestDeleteUserWithoutToken(c *C) {
-	testWithoutSignIn(account.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/users"}, c)
+	testWithoutSignIn(requests.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/users"}, c)
 }
 
 func (s *S) TestLoginUser(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(account.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
 		AcceptableCode: http.StatusOK,
 		Method:         "POST",
 		Path:           "/auth/login",
@@ -88,7 +88,7 @@ func (s *S) TestLoginUser(c *C) {
 }
 
 func (s *S) TestLoginUserWithInvalidUser(c *C) {
-	headers, code, body, _ := httpClient.MakeRequest(account.RequestArgs{
+	headers, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
 		AcceptableCode: http.StatusBadRequest,
 		Method:         "POST",
 		Path:           "/auth/login",
@@ -101,7 +101,7 @@ func (s *S) TestLoginUserWithInvalidUser(c *C) {
 }
 
 func (s *S) TestLogoutUser(c *C) {
-	_, code, body, _ := httpClient.MakeRequest(account.RequestArgs{
+	_, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
 		AcceptableCode: http.StatusNoContent,
 		Method:         "DELETE",
 		Path:           "/auth/logout",
@@ -113,7 +113,7 @@ func (s *S) TestLogoutUser(c *C) {
 }
 
 func (s *S) TestLogoutUserWithInvalidToken(c *C) {
-	_, code, body, _ := httpClient.MakeRequest(account.RequestArgs{
+	_, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
 		AcceptableCode: http.StatusNoContent,
 		Method:         "DELETE",
 		Path:           "/auth/logout",
@@ -130,7 +130,7 @@ func (s *S) TestChangePassword(c *C) {
 		u.Delete()
 	}()
 
-	_, code, body, _ := httpClient.MakeRequest(account.RequestArgs{
+	_, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
 		AcceptableCode: http.StatusNoContent,
 		Method:         "PUT",
 		Path:           "/auth/password",
@@ -142,7 +142,7 @@ func (s *S) TestChangePassword(c *C) {
 }
 
 func (s *S) TestChangePasswordWithInvalidCredentials(c *C) {
-	_, code, body, _ := httpClient.MakeRequest(account.RequestArgs{
+	_, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
 		AcceptableCode: http.StatusBadRequest,
 		Method:         "PUT",
 		Path:           "/auth/password",
@@ -154,7 +154,7 @@ func (s *S) TestChangePasswordWithInvalidCredentials(c *C) {
 }
 
 func (s *S) TestChangePasswordWithInvalidNewPassword(c *C) {
-	_, code, body, _ := httpClient.MakeRequest(account.RequestArgs{
+	_, code, body, _ := httpClient.MakeRequest(requests.RequestArgs{
 		AcceptableCode: http.StatusBadRequest,
 		Method:         "PUT",
 		Path:           "/auth/password",

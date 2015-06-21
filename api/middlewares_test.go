@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/backstage/maestro/account"
+	"github.com/backstage/maestro/requests"
 	. "gopkg.in/check.v1"
 )
 
 func (s *S) TestAuthorizationMiddleware(c *C) {
-	headers, code, body, err := httpClient.MakeRequest(account.RequestArgs{
+	headers, code, body, err := httpClient.MakeRequest(requests.RequestArgs{
 		AcceptableCode: http.StatusOK,
 		Method:         "DELETE",
 		Path:           "/api/users",
@@ -23,15 +23,15 @@ func (s *S) TestAuthorizationMiddleware(c *C) {
 }
 
 func (s *S) TestAuthorizationMiddlewareWithInvalidToken(c *C) {
-	testWithoutSignIn(account.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/users", Headers: http.Header{"Authorization": {"expired-token"}}}, c)
+	testWithoutSignIn(requests.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/users", Headers: http.Header{"Authorization": {"expired-token"}}}, c)
 }
 
 func (s *S) TestAuthorizationMiddlewareWithMissingToken(c *C) {
-	testWithoutSignIn(account.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/users"}, c)
+	testWithoutSignIn(requests.RequestArgs{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/users"}, c)
 }
 
 func (s *S) TestNotFoundHandler(c *C) {
-	headers, code, body, err := httpClient.MakeRequest(account.RequestArgs{
+	headers, code, body, err := httpClient.MakeRequest(requests.RequestArgs{
 		AcceptableCode: http.StatusNotFound,
 		Method:         "GET",
 		Path:           "/not-found-path",
@@ -44,7 +44,7 @@ func (s *S) TestNotFoundHandler(c *C) {
 }
 
 func (s *S) TestRequestId(c *C) {
-	headers, _, _, _ := httpClient.MakeRequest(account.RequestArgs{
+	headers, _, _, _ := httpClient.MakeRequest(requests.RequestArgs{
 		AcceptableCode: http.StatusOK,
 		Method:         "DELETE",
 		Path:           "/api/users",

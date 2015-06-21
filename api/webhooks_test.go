@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/backstage/maestro/account"
+	"github.com/backstage/maestro/requests"
 	. "gopkg.in/check.v1"
 )
 
@@ -18,7 +18,7 @@ func (s *S) TestSaveHook(c *C) {
 		s.store.DeleteTeamByAlias(team.Alias)
 	}()
 
-	headers, code, body, err := httpClient.MakeRequest(account.RequestArgs{
+	headers, code, body, err := httpClient.MakeRequest(requests.RequestArgs{
 		AcceptableCode: http.StatusOK,
 		Method:         "PUT",
 		Path:           "/api/hooks",
@@ -33,7 +33,7 @@ func (s *S) TestSaveHook(c *C) {
 }
 
 func (s *S) TestDeleteHookNotFound(c *C) {
-	headers, code, body, err := httpClient.MakeRequest(account.RequestArgs{
+	headers, code, body, err := httpClient.MakeRequest(requests.RequestArgs{
 		AcceptableCode: http.StatusNotFound,
 		Method:         "DELETE",
 		Path:           `/api/hooks/not-found`,

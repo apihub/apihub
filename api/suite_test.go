@@ -10,10 +10,11 @@ import (
 	"github.com/backstage/maestro/account/mem"
 	"github.com/backstage/maestro/account/mongore"
 	"github.com/backstage/maestro/api"
+	"github.com/backstage/maestro/requests"
 	. "gopkg.in/check.v1"
 )
 
-var httpClient account.HTTPClient
+var httpClient requests.HTTPClient
 
 func Test(t *testing.T) { TestingT(t) }
 
@@ -37,7 +38,7 @@ func (s *S) SetUpTest(c *C) {
 
 	s.api = api.NewApi(s.store)
 	s.server = httptest.NewServer(s.api.Handler())
-	httpClient = account.NewHTTPClient(s.server.URL)
+	httpClient = requests.NewHTTPClient(s.server.URL)
 
 	team = account.Team{Name: "Backstage Team", Alias: "backstage"}
 	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage"}
@@ -76,7 +77,7 @@ func setUpMongoreTest(s *S) {
 	})
 }
 
-func testWithoutSignIn(reqArgs account.RequestArgs, c *C) {
+func testWithoutSignIn(reqArgs requests.RequestArgs, c *C) {
 	headers, code, body, err := httpClient.MakeRequest(reqArgs)
 
 	c.Check(err, IsNil)

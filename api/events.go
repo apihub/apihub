@@ -6,6 +6,7 @@ import (
 
 	"github.com/backstage/maestro/account"
 	. "github.com/backstage/maestro/log"
+	"github.com/backstage/maestro/requests"
 )
 
 type Event interface {
@@ -37,8 +38,8 @@ func (api *Api) ListenEvents() {
 
 func sendWebHook(URL string, body interface{}) {
 	if URL != "" {
-		httpClient := account.NewHTTPClient(URL)
-		_, _, _, err := httpClient.MakeRequest(account.RequestArgs{
+		httpClient := requests.NewHTTPClient(URL)
+		_, _, _, err := httpClient.MakeRequest(requests.RequestArgs{
 			AcceptableCode: http.StatusOK,
 			Method:         "POST",
 			Path:           "",

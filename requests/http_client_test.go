@@ -1,11 +1,11 @@
-package account_test
+package requests_test
 
 import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/backstage/maestro/account"
 	"github.com/backstage/maestro/errors"
+	"github.com/backstage/maestro/requests"
 	. "gopkg.in/check.v1"
 )
 
@@ -15,9 +15,9 @@ func (s *S) TestMakeRequest(c *C) {
 		w.Write([]byte(`{"name": "Alice"}`))
 	}))
 	defer server.Close()
-	httpClient := account.NewHTTPClient(server.URL)
+	httpClient := requests.NewHTTPClient(server.URL)
 
-	args := account.RequestArgs{Method: "GET", Path: "/path", Body: nil, AcceptableCode: http.StatusOK}
+	args := requests.RequestArgs{Method: "GET", Path: "/path", Body: nil, AcceptableCode: http.StatusOK}
 	_, _, body, err := httpClient.MakeRequest(args)
 	c.Assert(string(body), Equals, `{"name": "Alice"}`)
 	c.Check(err, IsNil)
@@ -29,9 +29,9 @@ func (s *S) TestMakeRequestWithNonAcceptableCode(c *C) {
 		w.Write([]byte(`{"name": "Alice"}`))
 	}))
 	defer server.Close()
-	httpClient := account.NewHTTPClient(server.URL)
+	httpClient := requests.NewHTTPClient(server.URL)
 
-	args := account.RequestArgs{Method: "GET", Path: "/path", Body: nil, AcceptableCode: http.StatusBadRequest}
+	args := requests.RequestArgs{Method: "GET", Path: "/path", Body: nil, AcceptableCode: http.StatusBadRequest}
 	_, _, body, err := httpClient.MakeRequest(args)
 	c.Assert(string(body), Equals, `{"name": "Alice"}`)
 	e, ok := err.(errors.ResponseError)
@@ -40,16 +40,16 @@ func (s *S) TestMakeRequestWithNonAcceptableCode(c *C) {
 }
 
 func (s *S) TestReturnsErrorWhenHostIsInvalid(c *C) {
-	httpClient := account.NewHTTPClient("://invalid-host")
-	args := account.RequestArgs{Method: "GET", Path: "/path", Body: nil}
+	httpClient := requests.NewHTTPClient("://invalid-host")
+	args := requests.RequestArgs{Method: "GET", Path: "/path", Body: nil}
 	_, _, _, err := httpClient.MakeRequest(args)
 	_, ok := err.(errors.InvalidHostError)
 	c.Assert(ok, Equals, true)
 }
 
 func (s *S) TestReturnsErrorWhenRequestIsInvalid(c *C) {
-	httpClient := account.NewHTTPClient("invalid-host")
-	args := account.RequestArgs{Method: "GET", Path: "/path", Body: nil}
+	httpClient := requests.NewHTTPClient("invalid-host")
+	args := requests.RequestArgs{Method: "GET", Path: "/path", Body: nil}
 	_, _, _, err := httpClient.MakeRequest(args)
 	_, ok := err.(errors.RequestError)
 	c.Assert(ok, Equals, true)
@@ -62,9 +62,9 @@ func (s *S) TestReturnsErrorWhenResponseIsInvalid(c *C) {
 	}))
 	defer server.Close()
 
-	httpClient := account.NewHTTPClient(server.URL)
+	httpClient := requests.NewHTTPClient(server.URL)
 
-	args := account.RequestArgs{Method: "GET", Path: "/path", Body: nil}
+	args := requests.RequestArgs{Method: "GET", Path: "/path", Body: nil}
 	_, _, _, err := httpClient.MakeRequest(args)
 	_, ok := err.(errors.ResponseError)
 	c.Assert(ok, Equals, true)
@@ -77,9 +77,9 @@ func (s *S) TestIncludesHeader(c *C) {
 	}))
 	defer server.Close()
 
-	httpClient := account.NewHTTPClient(server.URL)
+	httpClient := requests.NewHTTPClient(server.URL)
 
-	args := account.RequestArgs{Method: "GET", Path: "/path", Body: nil, Headers: http.Header{"Authorization": {"Token abcde"}}}
+	args := requests.RequestArgs{Method: "GET", Path: "/path", Body: nil, Headers: http.Header{"Authorization": {"Token abcde"}}}
 	httpClient.MakeRequest(args)
 }
 
@@ -90,9 +90,9 @@ func (s *S) TestReturnsDefaultError(c *C) {
 	}))
 	defer server.Close()
 
-	httpClient := account.NewHTTPClient(server.URL)
+	httpClient := requests.NewHTTPClient(server.URL)
 
-	args := account.RequestArgs{Method: "GET", Path: "/path", Body: nil}
+	args := requests.RequestArgs{Method: "GET", Path: "/path", Body: nil}
 	_, _, _, err := httpClient.MakeRequest(args)
 	e, ok := err.(errors.ResponseError)
 	c.Assert(e.Error(), Equals, "The response was invalid or cannot be served.")
