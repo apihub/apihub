@@ -61,7 +61,7 @@ func (team Team) Delete(owner User) error {
 
 	go DeleteServicesByTeam(team, owner)
 	go DeleteAppsByTeam(team, owner)
-	go store.DeleteWebhooksByTeam(team)
+	go store.DeleteHooksByTeam(team)
 
 	return store.DeleteTeam(team)
 }

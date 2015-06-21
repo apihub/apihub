@@ -14,7 +14,7 @@ var plugin account.Plugin
 var team account.Team
 var service account.Service
 var token account.Token
-var webhook account.Webhook
+var hook account.Hook
 
 //Hook up gocheck into the "go test" runner.
 func Test(t *testing.T) { TestingT(t) }
@@ -30,7 +30,7 @@ func (s *StorableSuite) SetUpTest(c *C) {
 	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage", Team: team.Alias, Owner: user.Email, Transformers: []string{}}
 	app = account.App{ClientId: "ios", ClientSecret: "secret", Name: "Ios App", Team: team.Alias, Owner: user.Email, RedirectUris: []string{"http://www.example.org/auth"}}
 	plugin = account.Plugin{Name: "cors", Service: service.Subdomain, Config: map[string]interface{}{"version": 1}}
-	webhook = account.Webhook{Name: "service.update", Events: []string{"service.update"}, Config: account.WebhookConfig{Url: "http://www.example.org"}}
+	hook = account.Hook{Name: "service.update", Events: []string{"service.update"}, Config: account.HookConfig{URL: "http://www.example.org"}}
 }
 
 func (s *StorableSuite) TestUpsertUser(c *C) {
@@ -318,83 +318,114 @@ func (s *StorableSuite) TestFindPluginByNameAndServiceNotFound(c *C) {
 	c.Assert(ok, Equals, true)
 }
 
-func (s *StorableSuite) TestUpsertWebhook(c *C) {
-	defer s.Storage.DeleteWebhook(webhook)
-	err := s.Storage.UpsertWebhook(webhook)
+func (s *StorableSuite) TestUpsertHook(c *C) {
+	defer s.Storage.DeleteHook(hook)
+	err := s.Storage.UpsertHook(hook)
 	c.Check(err, IsNil)
 }
 
-func (s *StorableSuite) TestDeleteWebhook(c *C) {
-	s.Storage.UpsertWebhook(webhook)
-	err := s.Storage.DeleteWebhook(webhook)
+func (s *StorableSuite) TestDeleteHook(c *C) {
+	s.Storage.UpsertHook(hook)
+	err := s.Storage.DeleteHook(hook)
 	c.Check(err, IsNil)
 }
 
-func (s *StorableSuite) TestDeleteWebhookNotFound(c *C) {
-	err := s.Storage.DeleteWebhook(webhook)
+func (s *StorableSuite) TestDeleteHookNotFound(c *C) {
+	err := s.Storage.DeleteHook(hook)
 	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 }
 
-func (s *StorableSuite) TestDeleteWebhooksByTeamNotFound(c *C) {
+func (s *StorableSuite) TestDeleteHooksByTeamNotFound(c *C) {
 	nf := account.Team{}
-	err := s.Storage.DeleteWebhooksByTeam(nf)
+	err := s.Storage.DeleteHooksByTeam(nf)
 	_, ok := err.(errors.NotFoundError)
 	c.Assert(ok, Equals, true)
 }
 
-func (s *StorableSuite) TestDeleteWebhooksByTeam(c *C) {
+func (s *StorableSuite) TestDeleteHooksByTeam(c *C) {
 	err := s.Storage.UpsertTeam(team)
 	c.Check(err, IsNil)
-	webhook.Team = team.Alias
-	err = s.Storage.UpsertWebhook(webhook)
+	hook.Team = team.Alias
+	err = s.Storage.UpsertHook(hook)
 	c.Check(err, IsNil)
 
-	err = s.Storage.DeleteWebhooksByTeam(team)
-	c.Check(err, IsNil)
-}
-
-func (s *StorableSuite) TestFindAllWebhooksByEventAndTeam(c *C) {
-	defer s.Storage.DeleteTeam(team)
-	s.Storage.UpsertTeam(team)
-
-	defer s.Storage.DeleteWebhook(webhook)
-	webhook.Events = []string{"service.create"}
-	webhook.Team = team.Alias
-	s.Storage.UpsertWebhook(webhook)
-
-	whs, err := s.Storage.FindWebhooksByEventAndTeam("service.create", account.ALL_TEAMS)
-	c.Assert(whs, DeepEquals, []account.Webhook{webhook})
+	err = s.Storage.DeleteHooksByTeam(team)
 	c.Check(err, IsNil)
 }
 
-func (s *StorableSuite) TestFindWebhooksByEventAndTeam(c *C) {
+func (s *StorableSuite) TestFindAllHooksByEventAndTeam(c *C) {
 	defer s.Storage.DeleteTeam(team)
 	s.Storage.UpsertTeam(team)
 
-	defer s.Storage.DeleteWebhook(webhook)
-	webhook.Name = "service.create"
-	webhook.Events = []string{"service.create"}
-	webhook.Team = team.Alias
-	s.Storage.UpsertWebhook(webhook)
+	defer s.Storage.DeleteHook(hook)
+	hook.Events = []string{"service.create"}
+	hook.Team = team.Alias
+	s.Storage.UpsertHook(hook)
 
-	whk := account.Webhook{
+	whs, err := s.Storage.FindHooksByEventAndTeam("service.create", account.ALL_TEAMS)
+	c.Assert(whs, DeepEquals, []account.Hook{hook})
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestFindHooksByEventAndTeam(c *C) {
+	defer s.Storage.DeleteTeam(team)
+	s.Storage.UpsertTeam(team)
+
+	defer s.Storage.DeleteHook(hook)
+	hook.Name = "service.create"
+	hook.Events = []string{"service.create"}
+	hook.Team = team.Alias
+	s.Storage.UpsertHook(hook)
+
+	whk := account.Hook{
 		Name:   "service.update",
 		Events: []string{"service.update"},
-		Config: account.WebhookConfig{Url: "http://www.example.org"},
+		Config: account.HookConfig{URL: "http://www.example.org"},
 	}
-	defer s.Storage.DeleteWebhook(whk)
+	defer s.Storage.DeleteHook(whk)
 	whk.Events = []string{"service.update"}
 	whk.Team = team.Alias
-	s.Storage.UpsertWebhook(whk)
+	s.Storage.UpsertHook(whk)
 
-	whs, err := s.Storage.FindWebhooksByEventAndTeam("service.create", team.Alias)
-	c.Assert(whs, DeepEquals, []account.Webhook{webhook})
+	whs, err := s.Storage.FindHooksByEventAndTeam("service.create", team.Alias)
+	c.Assert(whs, DeepEquals, []account.Hook{hook})
 	c.Check(err, IsNil)
 }
 
-func (s *StorableSuite) TestFindWebhooksByEventAndTeamNotFound(c *C) {
-	whs, err := s.Storage.FindWebhooksByEventAndTeam("not-found", "not-found")
-	c.Assert(whs, DeepEquals, []account.Webhook{})
+func (s *StorableSuite) TestFindHooksByEventAndTeamNotFound(c *C) {
+	whs, err := s.Storage.FindHooksByEventAndTeam("not-found", "not-found")
+	c.Assert(whs, DeepEquals, []account.Hook{})
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestFindHooksByEvent(c *C) {
+	defer s.Storage.DeleteTeam(team)
+	s.Storage.UpsertTeam(team)
+
+	defer s.Storage.DeleteHook(hook)
+	hook.Name = "service.create"
+	hook.Events = []string{"service.create"}
+	hook.Team = team.Alias
+	s.Storage.UpsertHook(hook)
+
+	whk := account.Hook{
+		Name:   "service.update",
+		Events: []string{"service.update"},
+		Config: account.HookConfig{URL: "http://www.example.org"},
+	}
+	defer s.Storage.DeleteHook(whk)
+	whk.Events = []string{"service.update"}
+	whk.Team = team.Alias
+	s.Storage.UpsertHook(whk)
+
+	whs, err := s.Storage.FindHooksByEvent("service.create")
+	c.Assert(whs, DeepEquals, []account.Hook{hook})
+	c.Check(err, IsNil)
+}
+
+func (s *StorableSuite) TestFindHooksByEventNotFound(c *C) {
+	whs, err := s.Storage.FindHooksByEvent("not-found")
+	c.Assert(whs, DeepEquals, []account.Hook{})
 	c.Check(err, IsNil)
 }

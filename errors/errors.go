@@ -46,8 +46,8 @@ var (
 	ErrPluginNotFound              = errors.New("Plugin Config not found.")
 	ErrPluginMissingRequiredFields = errors.New("Name and Service cannot be empty.")
 
-	ErrWebhookNotFound              = errors.New("Webhook not found.")
-	ErrWebhookMissingRequiredFields = errors.New("Name, Team and Events cannot be empty.")
+	ErrHookNotFound              = errors.New("Hook not found.")
+	ErrHookMissingRequiredFields = errors.New("Name, Team and Events cannot be empty.")
 )
 
 type ErrorResponse struct {

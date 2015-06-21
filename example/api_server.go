@@ -7,13 +7,16 @@ import (
 )
 
 func main() {
+
 	api := api.NewApi(mem.New())
-	api.AddWebhook(account.Webhook{
+
+	api.AddHook(account.Hook{
 		Name:   "maestro-gateway-services",
 		Team:   account.ALL_TEAMS,
 		Events: []string{"service.create", "service.update", "service.delete"},
-		Config: account.WebhookConfig{Url: "http://localhost:8001"},
+		Config: account.HookConfig{URL: "http://localhost:8001"},
 	})
 
+	api.ListenEvents()
 	api.Run()
 }

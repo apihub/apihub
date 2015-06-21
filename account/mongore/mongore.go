@@ -391,12 +391,12 @@ func (m *Mongore) FindPluginByNameAndService(pluginName string, service account.
 	return plugin, err
 }
 
-func (m *Mongore) UpsertWebhook(w account.Webhook) error {
+func (m *Mongore) UpsertHook(w account.Hook) error {
 	var strg Storage
 	strg.Storage = m.openSession()
 	defer strg.Close()
 
-	_, err := strg.Webhooks().Upsert(bson.M{"name": w.Name}, w)
+	_, err := strg.Hooks().Upsert(bson.M{"name": w.Name}, w)
 
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -405,15 +405,15 @@ func (m *Mongore) UpsertWebhook(w account.Webhook) error {
 	return err
 }
 
-func (m *Mongore) DeleteWebhook(w account.Webhook) error {
+func (m *Mongore) DeleteHook(w account.Hook) error {
 	var strg Storage
 	strg.Storage = m.openSession()
 	defer strg.Close()
 
-	err := strg.Webhooks().Remove(w)
+	err := strg.Hooks().Remove(w)
 
 	if err == mgo.ErrNotFound {
-		return errors.NewNotFoundError(errors.ErrWebhookNotFound)
+		return errors.NewNotFoundError(errors.ErrHookNotFound)
 	}
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -422,15 +422,15 @@ func (m *Mongore) DeleteWebhook(w account.Webhook) error {
 	return err
 }
 
-func (m *Mongore) DeleteWebhooksByTeam(team account.Team) error {
+func (m *Mongore) DeleteHooksByTeam(team account.Team) error {
 	var strg Storage
 	strg.Storage = m.openSession()
 	defer strg.Close()
 
-	err := strg.Webhooks().Remove(bson.M{"team": team.Alias})
+	err := strg.Hooks().Remove(bson.M{"team": team.Alias})
 
 	if err == mgo.ErrNotFound {
-		return errors.NewNotFoundError(errors.ErrWebhookNotFound)
+		return errors.NewNotFoundError(errors.ErrHookNotFound)
 	}
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -439,42 +439,60 @@ func (m *Mongore) DeleteWebhooksByTeam(team account.Team) error {
 	return err
 }
 
-func (m *Mongore) FindWebhookByName(name string) (account.Webhook, error) {
+func (m *Mongore) FindHookByName(name string) (account.Hook, error) {
 	var strg Storage
 	strg.Storage = m.openSession()
 	defer strg.Close()
 
-	webhook := account.Webhook{}
-	err := strg.Webhooks().Find(bson.M{"name": name}).One(&webhook)
+	hooks := account.Hook{}
+	err := strg.Hooks().Find(bson.M{"name": name}).One(&hooks)
 
 	if err == mgo.ErrNotFound {
-		return account.Webhook{}, errors.NewNotFoundError(errors.ErrWebhookNotFound)
+		return account.Hook{}, errors.NewNotFoundError(errors.ErrHookNotFound)
 	}
 	if err != nil {
 		Logger.Warn(err.Error())
 	}
 
-	return webhook, err
+	return hooks, err
 }
 
-func (m *Mongore) FindWebhooksByEventAndTeam(event string, team string) (webhooks []account.Webhook, err error) {
+func (m *Mongore) FindHooksByEvent(event string) ([]account.Hook, error) {
 	var strg Storage
 	strg.Storage = m.openSession()
 	defer strg.Close()
 
-	webhooks = []account.Webhook{}
+	hooks := []account.Hook{}
+	err := strg.Hooks().Find(bson.M{"events": bson.M{"$in": []string{event}}}).All(&hooks)
+
+	if err == mgo.ErrNotFound {
+		return []account.Hook{}, errors.NewNotFoundError(errors.ErrHookNotFound)
+	}
+	if err != nil {
+		Logger.Warn(err.Error())
+	}
+
+	return hooks, err
+}
+
+func (m *Mongore) FindHooksByEventAndTeam(event string, team string) (hooks []account.Hook, err error) {
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
+
+	hooks = []account.Hook{}
 	if team == account.ALL_TEAMS {
-		err = strg.Webhooks().Find(bson.M{"events": bson.M{"$in": []string{event}}}).All(&webhooks)
+		err = strg.Hooks().Find(bson.M{"events": bson.M{"$in": []string{event}}}).All(&hooks)
 	} else {
-		err = strg.Webhooks().Find(bson.M{"team": team, "events": bson.M{"$in": []string{event}}}).All(&webhooks)
+		err = strg.Hooks().Find(bson.M{"team": team, "events": bson.M{"$in": []string{event}}}).All(&hooks)
 	}
 
 	if err == mgo.ErrNotFound {
-		return []account.Webhook{}, errors.NewNotFoundError(errors.ErrWebhookNotFound)
+		return []account.Hook{}, errors.NewNotFoundError(errors.ErrHookNotFound)
 	}
 	if err != nil {
 		Logger.Warn(err.Error())
 	}
 
-	return webhooks, err
+	return hooks, err
 }

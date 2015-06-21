@@ -2,14 +2,17 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/backstage/maestro/account"
 	"github.com/backstage/maestro/errors"
+	. "github.com/backstage/maestro/log"
 	"github.com/gorilla/mux"
 )
 
-func serviceCreate(rw http.ResponseWriter, r *http.Request, user *account.User) {
+func (api *Api) serviceCreate(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	service := account.Service{}
 	if err := json.NewDecoder(r.Body).Decode(&service); err != nil {
 		handleError(rw, errors.ErrBadRequest)
@@ -27,10 +30,11 @@ func serviceCreate(rw http.ResponseWriter, r *http.Request, user *account.User) 
 		return
 	}
 
+	go api.EventNotifier(newServiceEvent("service.create", service))
 	Created(rw, service)
 }
 
-func serviceUpdate(rw http.ResponseWriter, r *http.Request, user *account.User) {
+func (api *Api) serviceUpdate(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	service, err := account.FindServiceBySubdomain(mux.Vars(r)["subdomain"])
 	if err != nil {
 		handleError(rw, err)
@@ -56,10 +60,11 @@ func serviceUpdate(rw http.ResponseWriter, r *http.Request, user *account.User) 
 		return
 	}
 
+	go api.EventNotifier(newServiceEvent("service.update", *service))
 	Ok(rw, service)
 }
 
-func serviceDelete(rw http.ResponseWriter, r *http.Request, user *account.User) {
+func (api *Api) serviceDelete(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	service, err := account.FindServiceBySubdomain(mux.Vars(r)["subdomain"])
 	if err != nil {
 		handleError(rw, err)
@@ -71,10 +76,11 @@ func serviceDelete(rw http.ResponseWriter, r *http.Request, user *account.User) 
 		return
 	}
 
+	go api.EventNotifier(newServiceEvent("service.delete", *service))
 	Ok(rw, service)
 }
 
-func serviceInfo(rw http.ResponseWriter, r *http.Request, user *account.User) {
+func (api *Api) serviceInfo(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	service, err := account.FindServiceBySubdomain(mux.Vars(r)["subdomain"])
 	if err != nil {
 		handleError(rw, err)
@@ -90,7 +96,33 @@ func serviceInfo(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	Ok(rw, service)
 }
 
-func serviceList(rw http.ResponseWriter, r *http.Request, user *account.User) {
+func (api *Api) serviceList(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	services, _ := user.Services()
 	Ok(rw, CollectionSerializer{Items: services, Count: len(services)})
+}
+
+type serviceEvent struct {
+	CreatedAt time.Time       `json:"created_at"`
+	Title     string          `json:"name"`
+	Service   account.Service `json:"service"`
+}
+
+func (e *serviceEvent) Name() string {
+	return e.Title
+}
+
+func (e *serviceEvent) Data() []byte {
+	j, err := json.Marshal(e)
+	if err != nil {
+		Logger.Error(fmt.Sprintf("Failed to create a service event: %+v.", err))
+	}
+	return j
+}
+
+func newServiceEvent(name string, service account.Service) *serviceEvent {
+	return &serviceEvent{
+		CreatedAt: time.Now().UTC(),
+		Title:     name,
+		Service:   service,
+	}
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func pluginSubsribe(rw http.ResponseWriter, r *http.Request, user *account.User) {
+func (api *Api) pluginSubsribe(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	service, err := account.FindServiceBySubdomain(mux.Vars(r)["subdomain"])
 	if err != nil {
 		handleError(rw, err)
@@ -37,7 +37,7 @@ func pluginSubsribe(rw http.ResponseWriter, r *http.Request, user *account.User)
 	Ok(rw, plugin)
 }
 
-func pluginUnsubsribe(rw http.ResponseWriter, r *http.Request, user *account.User) {
+func (api *Api) pluginUnsubsribe(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	service, err := account.FindServiceBySubdomain(mux.Vars(r)["subdomain"])
 	if err != nil {
 		handleError(rw, err)

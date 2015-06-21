@@ -33,8 +33,6 @@ func (service *Service) Create(owner User, team Team) error {
 		return errors.NewValidationError(errors.ErrServiceDuplicateEntry)
 	}
 
-	sendHook(newServiceEvent("service.create", *service))
-
 	return store.UpsertService(*service)
 }
 
@@ -47,7 +45,6 @@ func (service *Service) Update() error {
 		return errors.NewNotFoundError(errors.ErrServiceNotFound)
 	}
 
-	sendHook(newServiceEvent("service.update", *service))
 	return store.UpsertService(*service)
 }
 
@@ -58,7 +55,6 @@ func (service Service) Delete(owner User) error {
 	}
 
 	go store.DeletePluginsByService(service)
-	sendHook(newServiceEvent("service.delete", service))
 
 	return store.DeleteService(service)
 }

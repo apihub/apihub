@@ -34,11 +34,12 @@ type Storable interface {
 	DeletePluginsByService(Service) error
 	FindPluginByNameAndService(string, Service) (Plugin, error)
 
-	UpsertWebhook(Webhook) error
-	DeleteWebhook(Webhook) error
-	DeleteWebhooksByTeam(Team) error
-	FindWebhookByName(string) (Webhook, error)
-	FindWebhooksByEventAndTeam(string, string) ([]Webhook, error)
+	UpsertHook(Hook) error
+	DeleteHook(Hook) error
+	DeleteHooksByTeam(Team) error
+	FindHookByName(string) (Hook, error)
+	FindHooksByEventAndTeam(string, string) ([]Hook, error)
+	FindHooksByEvent(string) ([]Hook, error)
 }
 
 var store Storable

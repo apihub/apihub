@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func teamCreate(rw http.ResponseWriter, r *http.Request, user *account.User) {
+func (api *Api) teamCreate(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	team := account.Team{}
 	if err := json.NewDecoder(r.Body).Decode(&team); err != nil {
 		handleError(rw, errors.ErrBadRequest)
@@ -24,7 +24,7 @@ func teamCreate(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	Created(rw, team)
 }
 
-func teamUpdate(rw http.ResponseWriter, r *http.Request, user *account.User) {
+func (api *Api) teamUpdate(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	team, err := findTeamAndCheckUser(mux.Vars(r)["alias"], user)
 	if err != nil {
 		handleError(rw, err)
@@ -43,12 +43,12 @@ func teamUpdate(rw http.ResponseWriter, r *http.Request, user *account.User) {
 
 	Ok(rw, team)
 }
-func teamList(rw http.ResponseWriter, r *http.Request, user *account.User) {
+func (api *Api) teamList(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	teams, _ := user.Teams()
 	Ok(rw, CollectionSerializer{Items: teams, Count: len(teams)})
 }
 
-func teamDelete(rw http.ResponseWriter, r *http.Request, user *account.User) {
+func (api *Api) teamDelete(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	team, err := account.FindTeamByAlias(mux.Vars(r)["alias"])
 	if err != nil {
 		handleError(rw, err)
@@ -63,7 +63,7 @@ func teamDelete(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	Ok(rw, team)
 }
 
-func teamInfo(rw http.ResponseWriter, r *http.Request, user *account.User) {
+func (api *Api) teamInfo(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	team, err := findTeamAndCheckUser(mux.Vars(r)["alias"], user)
 	if err != nil {
 		handleError(rw, err)
@@ -73,7 +73,7 @@ func teamInfo(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	Ok(rw, team)
 }
 
-func teamAddUsers(rw http.ResponseWriter, r *http.Request, user *account.User) {
+func (api *Api) teamAddUsers(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	team, err := findTeamAndCheckUser(mux.Vars(r)["alias"], user)
 	if err != nil {
 		handleError(rw, err)
@@ -95,7 +95,7 @@ func teamAddUsers(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	Ok(rw, team)
 }
 
-func teamRemoveUsers(rw http.ResponseWriter, r *http.Request, user *account.User) {
+func (api *Api) teamRemoveUsers(rw http.ResponseWriter, r *http.Request, user *account.User) {
 	team, err := findTeamAndCheckUser(mux.Vars(r)["alias"], user)
 	if err != nil {
 		handleError(rw, err)

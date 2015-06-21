@@ -9,44 +9,44 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func webhookSave(rw http.ResponseWriter, r *http.Request, user *account.User) {
-	webhook := account.Webhook{}
-	if err := json.NewDecoder(r.Body).Decode(&webhook); err != nil {
+func (api *Api) hookSave(rw http.ResponseWriter, r *http.Request, user *account.User) {
+	hook := account.Hook{}
+	if err := json.NewDecoder(r.Body).Decode(&hook); err != nil {
 		handleError(rw, errors.ErrBadRequest)
 		return
 	}
 
-	team, err := findTeamAndCheckUser(webhook.Team, user)
+	team, err := findTeamAndCheckUser(hook.Team, user)
 	if err != nil {
 		handleError(rw, err)
 		return
 	}
 
-	if err := webhook.Save(*team); err != nil {
+	if err := hook.Save(*team); err != nil {
 		handleError(rw, err)
 		return
 	}
 
-	Ok(rw, webhook)
+	Ok(rw, hook)
 }
 
-func webhookDelete(rw http.ResponseWriter, r *http.Request, user *account.User) {
-	webhook, err := account.FindWebhookByName(mux.Vars(r)["name"])
+func (api *Api) hookDelete(rw http.ResponseWriter, r *http.Request, user *account.User) {
+	hook, err := account.FindHookByName(mux.Vars(r)["name"])
 	if err != nil {
 		handleError(rw, err)
 		return
 	}
 
-	_, err = findTeamAndCheckUser(webhook.Team, user)
+	_, err = findTeamAndCheckUser(hook.Team, user)
 	if err != nil {
 		handleError(rw, err)
 		return
 	}
 
-	if err = webhook.Delete(); err != nil {
+	if err = hook.Delete(); err != nil {
 		handleError(rw, err)
 		return
 	}
 
-	Ok(rw, webhook)
+	Ok(rw, hook)
 }

@@ -7,23 +7,26 @@ import (
 
 	"github.com/backstage/maestro/account"
 	"github.com/backstage/maestro/auth"
+	. "github.com/backstage/maestro/log"
 	"github.com/codegangsta/negroni"
 	"github.com/tylerb/graceful"
 )
 
 const (
-	DEFAULT_PORT    = ":8000"
-	DEFAULT_TIMEOUT = 10 * time.Second
+	DEFAULT_EVENTS_CHANNEL_LEN = 100
+	DEFAULT_PORT               = ":8000"
+	DEFAULT_TIMEOUT            = 10 * time.Second
 )
 
 type Api struct {
 	auth   auth.Authenticatable
 	store  account.Storable
 	router *Router
+	Events chan Event
 }
 
 func NewApi(store account.Storable) *Api {
-	api := &Api{router: NewRouter(), auth: auth.NewAuth(store)}
+	api := &Api{router: NewRouter(), auth: auth.NewAuth(store), Events: make(chan Event, DEFAULT_EVENTS_CHANNEL_LEN)}
 	api.Storage(store)
 
 	api.router.NotFoundHandler(http.HandlerFunc(api.notFoundHandler))
@@ -51,32 +54,32 @@ func NewApi(store account.Storable) *Api {
 	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/users", Methods: []string{"DELETE"}, Handler: api.userDelete})
 
 	// Teams
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams", Methods: []string{"POST"}, Handler: authorizationRequiredHandler(teamCreate)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams", Methods: []string{"GET"}, Handler: authorizationRequiredHandler(teamList)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"PUT"}, Handler: authorizationRequiredHandler(teamUpdate)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"DELETE"}, Handler: authorizationRequiredHandler(teamDelete)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"GET"}, Handler: authorizationRequiredHandler(teamInfo)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}/users", Methods: []string{"PUT"}, Handler: authorizationRequiredHandler(teamAddUsers)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}/users", Methods: []string{"DELETE"}, Handler: authorizationRequiredHandler(teamRemoveUsers)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams", Methods: []string{"POST"}, Handler: authorizationRequiredHandler(api.teamCreate)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams", Methods: []string{"GET"}, Handler: authorizationRequiredHandler(api.teamList)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"PUT"}, Handler: authorizationRequiredHandler(api.teamUpdate)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"DELETE"}, Handler: authorizationRequiredHandler(api.teamDelete)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}", Methods: []string{"GET"}, Handler: authorizationRequiredHandler(api.teamInfo)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}/users", Methods: []string{"PUT"}, Handler: authorizationRequiredHandler(api.teamAddUsers)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/teams/{alias}/users", Methods: []string{"DELETE"}, Handler: authorizationRequiredHandler(api.teamRemoveUsers)})
 
 	// Services
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services", Methods: []string{"POST"}, Handler: authorizationRequiredHandler(serviceCreate)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services", Methods: []string{"GET"}, Handler: authorizationRequiredHandler(serviceList)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"GET"}, Handler: authorizationRequiredHandler(serviceInfo)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"DELETE"}, Handler: authorizationRequiredHandler(serviceDelete)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"PUT"}, Handler: authorizationRequiredHandler(serviceUpdate)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}/plugins", Methods: []string{"PUT"}, Handler: authorizationRequiredHandler(pluginSubsribe)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}/plugins/{plugin_name}", Methods: []string{"DELETE"}, Handler: authorizationRequiredHandler(pluginUnsubsribe)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services", Methods: []string{"POST"}, Handler: authorizationRequiredHandler(api.serviceCreate)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services", Methods: []string{"GET"}, Handler: authorizationRequiredHandler(api.serviceList)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"GET"}, Handler: authorizationRequiredHandler(api.serviceInfo)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"DELETE"}, Handler: authorizationRequiredHandler(api.serviceDelete)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}", Methods: []string{"PUT"}, Handler: authorizationRequiredHandler(api.serviceUpdate)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}/plugins", Methods: []string{"PUT"}, Handler: authorizationRequiredHandler(api.pluginSubsribe)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/services/{subdomain}/plugins/{plugin_name}", Methods: []string{"DELETE"}, Handler: authorizationRequiredHandler(api.pluginUnsubsribe)})
 
 	// Apps
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps", Methods: []string{"POST"}, Handler: authorizationRequiredHandler(appCreate)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"DELETE"}, Handler: authorizationRequiredHandler(appDelete)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"GET"}, Handler: authorizationRequiredHandler(appInfo)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"PUT"}, Handler: authorizationRequiredHandler(appUpdate)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps", Methods: []string{"POST"}, Handler: authorizationRequiredHandler(api.appCreate)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"DELETE"}, Handler: authorizationRequiredHandler(api.appDelete)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"GET"}, Handler: authorizationRequiredHandler(api.appInfo)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/apps/{client_id}", Methods: []string{"PUT"}, Handler: authorizationRequiredHandler(api.appUpdate)})
 
-	// Webhooks
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/webhooks", Methods: []string{"PUT"}, Handler: authorizationRequiredHandler(webhookSave)})
-	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/webhooks/{name}", Methods: []string{"DELETE"}, Handler: authorizationRequiredHandler(webhookDelete)})
+	// Hooks
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/hooks", Methods: []string{"PUT"}, Handler: authorizationRequiredHandler(api.hookSave)})
+	api.router.AddHandler(RouterArguments{PathPrefix: "/api", Path: "/hooks/{name}", Methods: []string{"DELETE"}, Handler: authorizationRequiredHandler(api.hookDelete)})
 
 	return api
 }
@@ -86,9 +89,9 @@ func (api *Api) Handler() http.Handler {
 }
 
 // This is intend to be used when loading the api only, just to connect the maestro with maestro-gateway.
-// Need to improve this somehow.
-func (api *Api) AddWebhook(wh account.Webhook) {
-	api.store.UpsertWebhook(wh)
+// TODO: Need to improve this.
+func (api *Api) AddHook(wh account.Hook) {
+	api.store.UpsertHook(wh)
 }
 
 // Allow to override the default authentication method.
@@ -106,6 +109,7 @@ func (api *Api) Storage(store account.Storable) {
 }
 
 func (api *Api) Run() {
+	Logger.Info(fmt.Sprintf("Backstage Maestro is now ready to accept connections on port %s.", DEFAULT_PORT))
 	graceful.Run(DEFAULT_PORT, DEFAULT_TIMEOUT, api.Handler())
 }
 

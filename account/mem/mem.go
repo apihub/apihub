@@ -16,7 +16,7 @@ type Mem struct {
 	PluginsConfig map[string]map[string]account.Plugin
 	Tokens        map[string]account.Token
 	UserTokens    map[string]account.User
-	Webhooks      map[string]account.Webhook
+	Hooks         map[string]account.Hook
 }
 
 func New() account.Storable {
@@ -28,7 +28,7 @@ func New() account.Storable {
 		PluginsConfig: make(map[string]map[string]account.Plugin),
 		Tokens:        make(map[string]account.Token),
 		UserTokens:    make(map[string]account.User),
-		Webhooks:      make(map[string]account.Webhook),
+		Hooks:         make(map[string]account.Hook),
 	}
 }
 
@@ -226,25 +226,25 @@ func (m *Mem) FindPluginByNameAndService(pluginName string, service account.Serv
 	}
 }
 
-func (m *Mem) UpsertWebhook(w account.Webhook) error {
-	m.Webhooks[w.Name] = w
+func (m *Mem) UpsertHook(w account.Hook) error {
+	m.Hooks[w.Name] = w
 	return nil
 }
 
-func (m *Mem) DeleteWebhook(w account.Webhook) error {
-	if _, ok := m.Webhooks[w.Name]; !ok {
-		return errors.NewNotFoundError(errors.ErrWebhookNotFound)
+func (m *Mem) DeleteHook(w account.Hook) error {
+	if _, ok := m.Hooks[w.Name]; !ok {
+		return errors.NewNotFoundError(errors.ErrHookNotFound)
 	}
 
-	delete(m.Webhooks, w.Name)
+	delete(m.Hooks, w.Name)
 	return nil
 }
 
-func (m *Mem) DeleteWebhooksByTeam(team account.Team) error {
+func (m *Mem) DeleteHooksByTeam(team account.Team) error {
 	found := false
-	for _, wh := range m.Webhooks {
+	for _, wh := range m.Hooks {
 		if wh.Team == team.Alias {
-			delete(m.Webhooks, wh.Name)
+			delete(m.Hooks, wh.Name)
 			found = true
 		}
 	}
@@ -254,18 +254,32 @@ func (m *Mem) DeleteWebhooksByTeam(team account.Team) error {
 	return nil
 }
 
-func (m *Mem) FindWebhookByName(name string) (account.Webhook, error) {
-	if webhook, ok := m.Webhooks[name]; !ok {
-		return account.Webhook{}, errors.NewNotFoundError(errors.ErrWebhookNotFound)
+func (m *Mem) FindHookByName(name string) (account.Hook, error) {
+	if hook, ok := m.Hooks[name]; !ok {
+		return account.Hook{}, errors.NewNotFoundError(errors.ErrHookNotFound)
 	} else {
-		return webhook, nil
+		return hook, nil
 	}
 }
 
-func (m *Mem) FindWebhooksByEventAndTeam(event string, team string) ([]account.Webhook, error) {
-	whs := []account.Webhook{}
+func (m *Mem) FindHooksByEvent(event string) ([]account.Hook, error) {
+	whs := []account.Hook{}
 
-	for _, wh := range m.Webhooks {
+	for _, wh := range m.Hooks {
+		for _, ev := range wh.Events {
+			if ev == event {
+				whs = append(whs, wh)
+			}
+		}
+	}
+
+	return whs, nil
+}
+
+func (m *Mem) FindHooksByEventAndTeam(event string, team string) ([]account.Hook, error) {
+	whs := []account.Hook{}
+
+	for _, wh := range m.Hooks {
 		for _, ev := range wh.Events {
 			if ev == event && (team == account.ALL_TEAMS || wh.Team == team) {
 				whs = append(whs, wh)

@@ -44,9 +44,9 @@ func (strg *Storage) PluginsConfig() *storage.Collection {
 	return collection
 }
 
-func (strg *Storage) Webhooks() *storage.Collection {
+func (strg *Storage) Hooks() *storage.Collection {
 	index := mgo.Index{Key: []string{"name", "team"}, Unique: true, Background: false}
-	collection := strg.Collection("webhooks")
+	collection := strg.Collection("hooks")
 	collection.EnsureIndex(index)
 	return collection
 }
