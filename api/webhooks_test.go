@@ -22,14 +22,14 @@ func (s *S) TestSaveHook(c *C) {
 		AcceptableCode: http.StatusOK,
 		Method:         "PUT",
 		Path:           "/api/hooks",
-		Body:           fmt.Sprintf(`{"name": "%s", "events": ["service.update"], "team": "%s", "config": {"url": "http://example.org"}}`, webookName, team.Alias),
+		Body:           fmt.Sprintf(`{"name": "%s", "events": ["service.update"], "team": "%s", "config": {"address": "http://example.org"}}`, webookName, team.Alias),
 		Headers:        http.Header{"Authorization": {s.authHeader}},
 	})
 
 	c.Check(err, IsNil)
 	c.Assert(code, Equals, http.StatusOK)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"name":"notify-slack","team":"backstage","events":["service.update"],"config":{"url":"http://example.org"}}`)
+	c.Assert(string(body), Equals, `{"name":"notify-slack","team":"backstage","events":["service.update"],"config":{"address":"http://example.org"}}`)
 }
 
 func (s *S) TestDeleteHookNotFound(c *C) {

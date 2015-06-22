@@ -30,7 +30,7 @@ func (s *StorableSuite) SetUpTest(c *C) {
 	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage", Team: team.Alias, Owner: user.Email, Transformers: []string{}}
 	app = account.App{ClientId: "ios", ClientSecret: "secret", Name: "Ios App", Team: team.Alias, Owner: user.Email, RedirectUris: []string{"http://www.example.org/auth"}}
 	plugin = account.Plugin{Name: "cors", Service: service.Subdomain, Config: map[string]interface{}{"version": 1}}
-	hook = account.Hook{Name: "service.update", Events: []string{"service.update"}, Config: account.HookConfig{URL: "http://www.example.org"}}
+	hook = account.Hook{Name: "service.update", Events: []string{"service.update"}, Config: account.HookConfig{Address: "http://www.example.org"}}
 }
 
 func (s *StorableSuite) TestUpsertUser(c *C) {
@@ -381,7 +381,7 @@ func (s *StorableSuite) TestFindHooksByEventAndTeam(c *C) {
 	whk := account.Hook{
 		Name:   "service.update",
 		Events: []string{"service.update"},
-		Config: account.HookConfig{URL: "http://www.example.org"},
+		Config: account.HookConfig{Address: "http://www.example.org"},
 	}
 	defer s.Storage.DeleteHook(whk)
 	whk.Events = []string{"service.update"}
@@ -412,7 +412,7 @@ func (s *StorableSuite) TestFindHooksByEvent(c *C) {
 	whk := account.Hook{
 		Name:   "service.update",
 		Events: []string{"service.update"},
-		Config: account.HookConfig{URL: "http://www.example.org"},
+		Config: account.HookConfig{Address: "http://www.example.org"},
 	}
 	defer s.Storage.DeleteHook(whk)
 	whk.Events = []string{"service.update"}

@@ -2,6 +2,7 @@ package account
 
 import (
 	"github.com/backstage/maestro/errors"
+	. "github.com/backstage/maestro/log"
 	"github.com/backstage/maestro/util"
 	goutils "github.com/mrvdot/golang-utils"
 )
@@ -20,6 +21,7 @@ func (app *App) Create(owner User, team Team) error {
 	app.Team = team.Alias
 
 	if err := app.valid(); err != nil {
+		Logger.Info("Failed to create an app with invalid data: %+v.", app)
 		return err
 	}
 
@@ -33,31 +35,39 @@ func (app *App) Create(owner User, team Team) error {
 	}
 
 	if app.Exists() {
+		Logger.Info("Failed to create an app with duplicate data: %+v.", app)
 		return errors.NewValidationError(errors.ErrAppDuplicateEntry)
 	}
 
-	return store.UpsertApp(*app)
+	err := store.UpsertApp(*app)
+	Logger.Info("app.Create: %+v. Err: %s.", app, err)
+	return err
 }
 
 func (app *App) Update() error {
 	if err := app.valid(); err != nil {
+		Logger.Info("Failed to create an app with invalid data: %+v.", app)
 		return err
 	}
 
 	if !app.Exists() {
+		Logger.Info("Failed to update a not-found app: %+v.", app)
 		return errors.NewNotFoundError(errors.ErrAppNotFound)
 	}
 
-	return store.UpsertApp(*app)
+	err := store.UpsertApp(*app)
+	Logger.Info("app.Update: %+v. Err: %s.", app, err)
+	return err
 }
 
 func (app App) Delete(owner User) error {
 	if app.Owner != owner.Email {
+		Logger.Info("Failed to delete an app. Only the owner has permission to do that: %+v.", app)
 		return errors.NewForbiddenError(errors.ErrOnlyOwnerHasPermission)
 	}
 
 	err := store.DeleteApp(app)
-
+	Logger.Info("app.Delete: %+v. Err: %s.", app, err)
 	return err
 }
 
@@ -79,12 +89,14 @@ func (app *App) valid() error {
 
 func DeleteAppsByTeam(team Team, owner User) error {
 	apps, err := store.TeamApps(team)
+	Logger.Debug("Apps to be deleted: %+v.", apps)
 	if err != nil {
 		return err
 	}
 	for _, s := range apps {
 		s.Delete(owner)
 	}
+	Logger.Info("All apps were excluded from the team `%s`.", team.Alias)
 	return nil
 }
 

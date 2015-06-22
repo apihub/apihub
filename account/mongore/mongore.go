@@ -330,7 +330,7 @@ func (m *Mongore) UpsertPlugin(pc account.Plugin) error {
 	strg.Storage = m.openSession()
 	defer strg.Close()
 
-	_, err := strg.PluginsConfig().Upsert(bson.M{"service": pc.Service, "name": pc.Name}, pc)
+	_, err := strg.Plugins().Upsert(bson.M{"service": pc.Service, "name": pc.Name}, pc)
 
 	if err != nil {
 		Logger.Warn(err.Error())
@@ -344,7 +344,7 @@ func (m *Mongore) DeletePlugin(pc account.Plugin) error {
 	strg.Storage = m.openSession()
 	defer strg.Close()
 
-	err := strg.PluginsConfig().Remove(pc)
+	err := strg.Plugins().Remove(pc)
 
 	if err == mgo.ErrNotFound {
 		return errors.NewNotFoundError(errors.ErrPluginNotFound)
@@ -361,7 +361,7 @@ func (m *Mongore) DeletePluginsByService(service account.Service) error {
 	strg.Storage = m.openSession()
 	defer strg.Close()
 
-	err := strg.PluginsConfig().Remove(bson.M{"service": service.Subdomain})
+	err := strg.Plugins().Remove(bson.M{"service": service.Subdomain})
 
 	if err == mgo.ErrNotFound {
 		return errors.NewNotFoundError(errors.ErrPluginNotFound)
@@ -379,7 +379,7 @@ func (m *Mongore) FindPluginByNameAndService(pluginName string, service account.
 	defer strg.Close()
 
 	var plugin account.Plugin
-	err := strg.PluginsConfig().Find(bson.M{"name": pluginName, "service": service.Subdomain}).One(&plugin)
+	err := strg.Plugins().Find(bson.M{"name": pluginName, "service": service.Subdomain}).One(&plugin)
 
 	if err == mgo.ErrNotFound {
 		return account.Plugin{}, errors.NewNotFoundError(errors.ErrPluginNotFound)
@@ -396,7 +396,7 @@ func (m *Mongore) UpsertHook(w account.Hook) error {
 	strg.Storage = m.openSession()
 	defer strg.Close()
 
-	_, err := strg.Hooks().Upsert(bson.M{"name": w.Name}, w)
+	_, err := strg.Hooks().Upsert(bson.M{"name": w.Name, "team": w.Team}, w)
 
 	if err != nil {
 		Logger.Warn(err.Error())

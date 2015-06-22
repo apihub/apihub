@@ -1,6 +1,9 @@
 package account
 
-import "github.com/backstage/maestro/errors"
+import (
+	"github.com/backstage/maestro/errors"
+	. "github.com/backstage/maestro/log"
+)
 
 type Plugin struct {
 	Name    string                 `json:"name"`
@@ -12,14 +15,19 @@ func (pc *Plugin) Save(service Service) error {
 	pc.Service = service.Subdomain
 
 	if err := pc.valid(); err != nil {
+		Logger.Info("Failed to save a plugin with invalid data: %+v.", pc)
 		return err
 	}
 
-	return store.UpsertPlugin(*pc)
+	err := store.UpsertPlugin(*pc)
+	Logger.Info("plugin.Save: %+v. Err: %s.", pc, err)
+	return err
 }
 
 func (pc Plugin) Delete() error {
-	return store.DeletePlugin(pc)
+	err := store.DeletePlugin(pc)
+	Logger.Info("plugin.Delete: %+v. Err: %s.", pc, err)
+	return err
 }
 
 func (pc *Plugin) valid() error {

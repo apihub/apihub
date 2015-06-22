@@ -1,7 +1,6 @@
 package account
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/backstage/maestro/errors"
@@ -26,37 +25,47 @@ func (service *Service) Create(owner User, team Team) error {
 	service.Team = team.Alias
 
 	if err := service.valid(); err != nil {
+		Logger.Info("Failed to create a service with invalid data: %+v.", service)
 		return err
 	}
 
 	if service.Exists() {
+		Logger.Info("Failed to create a service with duplicate data: %+v.", service)
 		return errors.NewValidationError(errors.ErrServiceDuplicateEntry)
 	}
 
-	return store.UpsertService(*service)
+	err := store.UpsertService(*service)
+	Logger.Info("service.Create: %+v. Err: %s.", service, err)
+	return err
 }
 
 func (service *Service) Update() error {
 	if err := service.valid(); err != nil {
+		Logger.Info("Failed to update a service with invalid data: %+v.", service)
 		return err
 	}
 
 	if !service.Exists() {
+		Logger.Info("Failed to update a not-found service: %+v.", service)
 		return errors.NewNotFoundError(errors.ErrServiceNotFound)
 	}
 
-	return store.UpsertService(*service)
+	err := store.UpsertService(*service)
+	Logger.Info("service.Update: %+v. Err: %s.", service, err)
+	return err
 }
 
 func (service Service) Delete(owner User) error {
 	if service.Owner != owner.Email {
-		Logger.Warn(fmt.Sprintf("Only the owner has permission to delete the servce %s.", service.Subdomain))
+		Logger.Warn("Only the owner has permission to delete the following service: %s.", service.Subdomain)
 		return errors.NewForbiddenError(errors.ErrOnlyOwnerHasPermission)
 	}
 
 	go store.DeletePluginsByService(service)
 
-	return store.DeleteService(service)
+	err := store.DeleteService(service)
+	Logger.Info("service.Delete: %+v. Err: %s.", service, err)
+	return err
 }
 
 func (service Service) Exists() bool {
@@ -83,6 +92,8 @@ func DeleteServicesByTeam(team Team, owner User) error {
 
 		s.Delete(owner)
 	}
+
+	Logger.Info("All services were excluded from the team `%s`.", team.Alias)
 	return nil
 }
 

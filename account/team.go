@@ -2,6 +2,7 @@ package account
 
 import (
 	"github.com/backstage/maestro/errors"
+	. "github.com/backstage/maestro/log"
 	utils "github.com/mrvdot/golang-utils"
 )
 
@@ -27,6 +28,7 @@ type Team struct {
 // If the `alias` is not informed, it will be generate based on the team name.
 func (team *Team) Create(owner User) error {
 	if err := team.valid(); err != nil {
+		Logger.Info("Failed to create a team with invalid data: %+v.", team)
 		return err
 	}
 
@@ -39,18 +41,24 @@ func (team *Team) Create(owner User) error {
 	}
 
 	if team.Exists() {
+		Logger.Info("Failed to create a team with duplicate data: %+v.", team)
 		return errors.NewValidationError(errors.ErrTeamDuplicateEntry)
 	}
 
-	return store.UpsertTeam(*team)
+	err := store.UpsertTeam(*team)
+	Logger.Info("team.Create: %+v. Err: %s.", team, err)
+	return err
 }
 
 func (team *Team) Update() error {
 	if err := team.valid(); err != nil {
+		Logger.Info("Failed to udpate a team with invalid data: %+v.", team)
 		return err
 	}
 
-	return store.UpsertTeam(*team)
+	err := store.UpsertTeam(*team)
+	Logger.Info("team.Update: %+v. Err: %s.", team, err)
+	return err
 }
 
 // Delete removes an existing team from the server.
@@ -63,7 +71,9 @@ func (team Team) Delete(owner User) error {
 	go DeleteAppsByTeam(team, owner)
 	go store.DeleteHooksByTeam(team)
 
-	return store.DeleteTeam(team)
+	err := store.DeleteTeam(team)
+	Logger.Info("team.Delete: %+v. Err: %s.", team, err)
+	return err
 }
 
 // Exists checks if there is a team with the same alias in the database.
@@ -116,6 +126,7 @@ func (team *Team) AddUsers(emails []string) error {
 	for _, email := range emails {
 		user = &User{Email: email}
 		if !user.Exists() {
+			Logger.Info("Failed to add the user '%s' in the team '%s' (User not found).", user.Email, team.Alias)
 			continue
 		}
 		if _, err := team.ContainsUser(user); err != nil {
@@ -125,7 +136,9 @@ func (team *Team) AddUsers(emails []string) error {
 	}
 
 	if newUser {
-		return store.UpsertTeam(*team)
+		err := store.UpsertTeam(*team)
+		Logger.Info("team.AddUsers: %+v. Err: %s.", team, err)
+		return err
 	}
 	return nil
 }
@@ -146,11 +159,13 @@ func (team *Team) RemoveUsers(emails []string) error {
 		if team.Owner == email {
 			errOwner = errors.NewValidationError(errors.ErrRemoveOwnerFromTeam)
 			err = &errOwner
+			Logger.Warn("Could not remove the from %s from the team: %s.", team.Owner, team.Alias)
 			continue
 		}
 
 		user = &User{Email: email}
 		if !user.Exists() {
+			Logger.Info("Failed to remove the user '%s' from team '%s' (User not found).", user.Email, team.Alias)
 			continue
 		}
 		if i, err := team.ContainsUser(user); err == nil {
@@ -164,7 +179,9 @@ func (team *Team) RemoveUsers(emails []string) error {
 	}
 
 	if removedUsers {
-		return store.UpsertTeam(*team)
+		err := store.UpsertTeam(*team)
+		Logger.Info("team.RemoveUsers: %+v. Err: %s.", team, err)
+		return err
 	}
 	if err != nil {
 		return errOwner

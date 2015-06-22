@@ -9,26 +9,26 @@ import (
 )
 
 type Mem struct {
-	Apps          map[string]account.App
-	Services      map[string]account.Service
-	Users         map[string]account.User
-	Teams         map[string]account.Team
-	PluginsConfig map[string]map[string]account.Plugin
-	Tokens        map[string]account.Token
-	UserTokens    map[string]account.User
-	Hooks         map[string]account.Hook
+	Apps       map[string]account.App
+	Services   map[string]account.Service
+	Users      map[string]account.User
+	Teams      map[string]account.Team
+	Plugins    map[string]map[string]account.Plugin
+	Tokens     map[string]account.Token
+	UserTokens map[string]account.User
+	Hooks      map[string]account.Hook
 }
 
 func New() account.Storable {
 	return &Mem{
-		Apps:          make(map[string]account.App),
-		Services:      make(map[string]account.Service),
-		Users:         make(map[string]account.User),
-		Teams:         make(map[string]account.Team),
-		PluginsConfig: make(map[string]map[string]account.Plugin),
-		Tokens:        make(map[string]account.Token),
-		UserTokens:    make(map[string]account.User),
-		Hooks:         make(map[string]account.Hook),
+		Apps:       make(map[string]account.App),
+		Services:   make(map[string]account.Service),
+		Users:      make(map[string]account.User),
+		Teams:      make(map[string]account.Team),
+		Plugins:    make(map[string]map[string]account.Plugin),
+		Tokens:     make(map[string]account.Token),
+		UserTokens: make(map[string]account.User),
+		Hooks:      make(map[string]account.Hook),
 	}
 }
 
@@ -196,30 +196,30 @@ func (m *Mem) DeleteApp(a account.App) error {
 }
 
 func (m *Mem) UpsertPlugin(pc account.Plugin) error {
-	m.PluginsConfig[pc.Service] = map[string]account.Plugin{pc.Name: pc}
+	m.Plugins[pc.Service] = map[string]account.Plugin{pc.Name: pc}
 	return nil
 }
 
 func (m *Mem) DeletePlugin(pc account.Plugin) error {
-	if _, ok := m.PluginsConfig[pc.Service][pc.Name]; !ok {
+	if _, ok := m.Plugins[pc.Service][pc.Name]; !ok {
 		return errors.NewNotFoundError(errors.ErrPluginNotFound)
 	}
 
-	delete(m.PluginsConfig, pc.Name)
+	delete(m.Plugins, pc.Name)
 	return nil
 }
 
 func (m *Mem) DeletePluginsByService(service account.Service) error {
-	if _, ok := m.PluginsConfig[service.Subdomain]; !ok {
+	if _, ok := m.Plugins[service.Subdomain]; !ok {
 		return errors.NewNotFoundError(errors.ErrPluginNotFound)
 	}
 
-	delete(m.PluginsConfig, service.Subdomain)
+	delete(m.Plugins, service.Subdomain)
 	return nil
 }
 
 func (m *Mem) FindPluginByNameAndService(pluginName string, service account.Service) (account.Plugin, error) {
-	if plugin, ok := m.PluginsConfig[service.Subdomain][pluginName]; !ok {
+	if plugin, ok := m.Plugins[service.Subdomain][pluginName]; !ok {
 		return account.Plugin{}, errors.NewNotFoundError(errors.ErrPluginNotFound)
 	} else {
 		return plugin, nil

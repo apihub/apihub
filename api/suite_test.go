@@ -10,6 +10,7 @@ import (
 	"github.com/backstage/maestro/account/mem"
 	"github.com/backstage/maestro/account/mongore"
 	"github.com/backstage/maestro/api"
+	. "github.com/backstage/maestro/log"
 	"github.com/backstage/maestro/requests"
 	. "gopkg.in/check.v1"
 )
@@ -31,7 +32,10 @@ type S struct {
 	server     *httptest.Server
 }
 
-// func (s *S) SetUpSuite(c *C) {
+func (s *S) SetUpSuite(c *C) {
+	Logger.Disable()
+}
+
 func (s *S) SetUpTest(c *C) {
 	// setUpMongoreTest(s)
 	setUpMemoryTest(s)

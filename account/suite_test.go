@@ -6,6 +6,7 @@ import (
 	"github.com/backstage/maestro/account"
 	"github.com/backstage/maestro/account/mem"
 	"github.com/backstage/maestro/account/mongore"
+	. "github.com/backstage/maestro/log"
 	. "gopkg.in/check.v1"
 )
 
@@ -18,7 +19,8 @@ var _ = Suite(&S{})
 //Hook up gocheck into the "go test" runner.
 func Test(t *testing.T) { TestingT(t) }
 
-func (s *S) TearDownSuite(c *C) {
+func (s *S) SetUpSuite(c *C) {
+	Logger.Disable()
 }
 
 var app account.App
@@ -39,7 +41,7 @@ func (s *S) SetUpTest(c *C) {
 	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage", Transformers: []string{}}
 	app = account.App{ClientId: "ios", ClientSecret: "secret", Name: "Ios App", Team: team.Alias, Owner: owner.Email, RedirectUris: []string{"http://www.example.org/auth"}}
 	pluginConfig = account.Plugin{Name: "Plugin Config", Service: service.Subdomain, Config: make(map[string]interface{})}
-	hook = account.Hook{Name: "service.update", Events: []string{"service.update"}, Config: account.HookConfig{URL: "http://www.example.org"}}
+	hook = account.Hook{Name: "service.update", Events: []string{"service.update"}, Config: account.HookConfig{Address: "http://www.example.org"}}
 }
 
 // Run the tests in memory

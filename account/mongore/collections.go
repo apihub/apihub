@@ -37,7 +37,7 @@ func (strg *Storage) Services() *storage.Collection {
 	return collection
 }
 
-func (strg *Storage) PluginsConfig() *storage.Collection {
+func (strg *Storage) Plugins() *storage.Collection {
 	index := mgo.Index{Key: []string{"service", "name"}, Unique: true, Background: false}
 	collection := strg.Collection("plugins_config")
 	collection.EnsureIndex(index)

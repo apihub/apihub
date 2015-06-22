@@ -1,8 +1,10 @@
 package api
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
+	"text/template"
 
 	"github.com/backstage/maestro/account"
 	. "github.com/backstage/maestro/log"
@@ -29,25 +31,47 @@ func (api *Api) ListenEvents() {
 			if len(allHookw) > 0 && err == nil {
 				Logger.Debug(fmt.Sprintf("Start sending hooks to the following list: %+v.", allHookw))
 				for _, hook := range allHookw {
-					go sendWebHook(hook.Config.URL, string(event.Data()))
+					data, err := parseData(event, hook)
+					if err != nil {
+						Logger.Warn("Could not parse Event data: %+v.", err)
+					}
+
+					go sendWebHook(hook.Config.Address, data)
 				}
 			}
 		}
 	}()
 }
 
-func sendWebHook(URL string, body interface{}) {
-	if URL != "" {
-		httpClient := requests.NewHTTPClient(URL)
+func parseData(event Event, hook account.Hook) ([]byte, error) {
+	var err error
+	tmpl := template.New(event.Name())
+	data := bytes.NewBufferString("")
+
+	tmpl, err = tmpl.Parse(string(event.Data()))
+	if hook.Text != "" {
+		tmpl, err = tmpl.Parse(hook.Text)
+	}
+
+	err = tmpl.Execute(data, event)
+	if err != nil {
+		return event.Data(), err
+	}
+
+	return data.Bytes(), nil
+}
+
+func sendWebHook(Address string, body interface{}) {
+	if Address != "" {
+		httpClient := requests.NewHTTPClient(Address)
 		_, _, _, err := httpClient.MakeRequest(requests.Args{
 			AcceptableCode: http.StatusOK,
 			Method:         "POST",
-			Path:           "",
 			Body:           body,
 		})
 
 		if err != nil {
-			Logger.Warn(fmt.Sprintf("Failed to call WebHook for %s: %s.", URL, err.Error()))
+			Logger.Warn(fmt.Sprintf("Failed to call WebHook for %s: %s.", Address, err.Error()))
 		}
 	}
 }
