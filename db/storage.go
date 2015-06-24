@@ -12,7 +12,7 @@ import (
 
 const (
 	DefaultDatabaseHost = "127.0.0.1:27017"
-	DefaultDatabaseName = "backstage"
+	DefaultDatabaseName = "backstage_development"
 )
 
 type Storage struct {

@@ -25,9 +25,10 @@ type Api struct {
 	Events chan Event
 }
 
-func NewApi(store account.Storable) *Api {
+func NewApi(store account.Storable, subscription account.SubscriptionFn) *Api {
 	api := &Api{router: NewRouter(), auth: auth.NewAuth(store), Events: make(chan Event, DEFAULT_EVENTS_CHANNEL_LEN)}
 	api.Storage(store)
+	api.Subscription(subscription)
 
 	api.router.NotFoundHandler(http.HandlerFunc(api.notFoundHandler))
 	api.router.AddHandler(RouterArguments{Path: "/", Methods: []string{"GET"}, Handler: homeHandler})
@@ -106,6 +107,12 @@ func (api *Api) Storage(store account.Storable) {
 	api.store = store
 	account.Storage(store)
 	api.auth = auth.NewAuth(store)
+}
+
+// Allow to override the default subscription engine.
+// To be compatible, it is needed to implement the Subscription interface.
+func (api *Api) Subscription(subscription account.SubscriptionFn) {
+	account.NewSubscription = subscription
 }
 
 func (api *Api) Run() {

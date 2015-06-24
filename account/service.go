@@ -1,6 +1,8 @@
 package account
 
 import (
+	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/backstage/maestro/errors"
@@ -35,6 +37,9 @@ func (service *Service) Create(owner User, team Team) error {
 	}
 
 	err := store.UpsertService(*service)
+	if err == nil {
+		go publishService(service)
+	}
 	Logger.Info("service.Create: %+v. Err: %s.", service, err)
 	return err
 }
@@ -51,6 +56,9 @@ func (service *Service) Update() error {
 	}
 
 	err := store.UpsertService(*service)
+	if err == nil {
+		go publishService(service)
+	}
 	Logger.Info("service.Update: %+v. Err: %s.", service, err)
 	return err
 }
@@ -103,4 +111,21 @@ func FindServiceBySubdomain(subdomain string) (*Service, error) {
 		return nil, err
 	}
 	return &service, nil
+}
+
+func (service *Service) asJson() []byte {
+	j, _ := json.Marshal(service)
+	return j
+}
+
+func publishService(service *Service) {
+	if NewSubscription == nil {
+		Logger.Warn("Could not publish service because NewSubscription is nil.")
+		return
+	}
+
+	subscription := NewSubscription()
+	name := fmt.Sprintf("/services/%s", service.Subdomain)
+	subscription.Publish(name, service.asJson())
+	Logger.Info("The following service has been published: %s (subdomain) -> %s (endpoint).", service.Subdomain, service.Endpoint)
 }

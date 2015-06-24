@@ -33,10 +33,13 @@ func (api *Api) ListenEvents() {
 				for _, hook := range allHookw {
 					data, err := parseData(event, hook)
 					if err != nil {
-						Logger.Warn("Could not parse Event data: %+v.", err)
+						Logger.Warn("Could not parse Event data: %+v. Default format will be develired.", err)
+						data = event.Data()
 					}
 
-					go sendWebHook(hook.Config.Address, data)
+					go func(config account.HookConfig, data []byte) {
+						sendWebHook(config, data)
+					}(hook.Config, data)
 				}
 			}
 		}
@@ -48,30 +51,32 @@ func parseData(event Event, hook account.Hook) ([]byte, error) {
 	tmpl := template.New(event.Name())
 	data := bytes.NewBufferString("")
 
-	tmpl, err = tmpl.Parse(string(event.Data()))
 	if hook.Text != "" {
 		tmpl, err = tmpl.Parse(hook.Text)
 	}
 
 	err = tmpl.Execute(data, event)
 	if err != nil {
-		return event.Data(), err
+		return nil, err
 	}
 
 	return data.Bytes(), nil
 }
 
-func sendWebHook(Address string, body interface{}) {
-	if Address != "" {
-		httpClient := requests.NewHTTPClient(Address)
+func sendWebHook(config account.HookConfig, body interface{}) {
+	if config.Address != "" {
+		if config.Method == "" {
+			config.Method = "POST"
+		}
+		httpClient := requests.NewHTTPClient(config.Address)
 		_, _, _, err := httpClient.MakeRequest(requests.Args{
 			AcceptableCode: http.StatusOK,
-			Method:         "POST",
+			Method:         config.Method,
 			Body:           body,
 		})
 
 		if err != nil {
-			Logger.Warn(fmt.Sprintf("Failed to call WebHook for %s: %s.", Address, err.Error()))
+			Logger.Warn(fmt.Sprintf("Failed to call WebHook for %s: %s.", config.Address, err.Error()))
 		}
 	}
 }

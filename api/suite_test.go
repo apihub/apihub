@@ -10,6 +10,7 @@ import (
 	"github.com/backstage/maestro/account/mem"
 	"github.com/backstage/maestro/account/mongore"
 	"github.com/backstage/maestro/api"
+	"github.com/backstage/maestro/db"
 	. "github.com/backstage/maestro/log"
 	"github.com/backstage/maestro/requests"
 	. "gopkg.in/check.v1"
@@ -26,21 +27,24 @@ var team account.Team
 var user account.User
 
 type S struct {
-	api        *api.Api
-	authHeader string
-	store      account.Storable
-	server     *httptest.Server
+	api          *api.Api
+	authHeader   string
+	store        account.Storable
+	server       *httptest.Server
+	subscription account.SubscriptionFn
 }
 
 func (s *S) SetUpSuite(c *C) {
 	Logger.Disable()
+	// FIXME: add memory
+	s.subscription = account.NewEtcdSubscription([]string{"http://localhost:2379"}, &db.EtcdConfig{})
 }
 
 func (s *S) SetUpTest(c *C) {
 	// setUpMongoreTest(s)
 	setUpMemoryTest(s)
 
-	s.api = api.NewApi(s.store)
+	s.api = api.NewApi(s.store, s.subscription)
 	s.server = httptest.NewServer(s.api.Handler())
 	httpClient = requests.NewHTTPClient(s.server.URL)
 

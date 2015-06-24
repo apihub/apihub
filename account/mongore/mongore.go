@@ -17,7 +17,7 @@ type Mongore struct {
 	config Config
 }
 
-func New(config Config) account.Storable {
+func New(config Config) *Mongore {
 	return &Mongore{config: config}
 }
 

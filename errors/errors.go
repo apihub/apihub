@@ -4,11 +4,13 @@ package errors
 import "errors"
 
 const (
-	E_BAD_REQUEST          string = "bad_request"
-	E_FORBIDDEN_REQUEST    string = "access_denied"
-	E_NOT_FOUND            string = "not_found"
-	E_SERVICE_UNAVAILABLE  string = "service_unavailable"
-	E_UNAUTHORIZED_REQUEST string = "unauthorized_access"
+	E_BAD_REQUEST           string = "bad_request"
+	E_FORBIDDEN_REQUEST     string = "access_denied"
+	E_NOT_FOUND             string = "not_found"
+	E_SERVICE_UNAVAILABLE   string = "service_unavailable"
+	E_UNAUTHORIZED_REQUEST  string = "unauthorized_access"
+	E_INTERNAL_SERVER_ERROR string = "internal_server_error"
+	E_GATEWAY_TIMEOUT       string = "gateway_timeout"
 )
 
 var (
@@ -72,6 +74,18 @@ func NewNotFoundError(err error) NotFoundError {
 }
 
 func (err NotFoundError) Error() string {
+	return err.description.Error()
+}
+
+type DuplicateEntryError struct {
+	description error
+}
+
+func NewDuplicateEntryError(err error) DuplicateEntryError {
+	return DuplicateEntryError{description: err}
+}
+
+func (err DuplicateEntryError) Error() string {
 	return err.description.Error()
 }
 

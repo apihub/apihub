@@ -17,5 +17,5 @@ func TestMongore(t *testing.T) {
 	Suite(&test.StorableSuite{Storage: m})
 	TestingT(t)
 
-	m.(*Mongore).openSession().Collection("db").Database.DropDatabase()
+	m.openSession().Collection("db").Database.DropDatabase()
 }

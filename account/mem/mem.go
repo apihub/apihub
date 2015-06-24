@@ -19,7 +19,7 @@ type Mem struct {
 	Hooks      map[string]account.Hook
 }
 
-func New() account.Storable {
+func New() *Mem {
 	return &Mem{
 		Apps:       make(map[string]account.App),
 		Services:   make(map[string]account.Service),

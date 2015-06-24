@@ -8,6 +8,7 @@ import (
 
 type HookConfig struct {
 	Address string `json:"address"`
+	Method  string `json:"method,omitempty"`
 }
 
 type Hook struct {
