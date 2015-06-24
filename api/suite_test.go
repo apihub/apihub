@@ -60,9 +60,6 @@ func (s *S) SetUpTest(c *C) {
 
 func (s *S) TearDownTest(c *C) {
 	user.Delete()
-}
-
-func (s *S) TearDownSuite(c *C) {
 	s.server.Close()
 }
 
