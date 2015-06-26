@@ -6,6 +6,7 @@ import (
 	"github.com/backstage/maestro/account"
 	"github.com/backstage/maestro/account/mem"
 	"github.com/backstage/maestro/account/mongore"
+	"github.com/backstage/maestro/db"
 	. "github.com/backstage/maestro/log"
 	. "gopkg.in/check.v1"
 )
@@ -21,6 +22,9 @@ func Test(t *testing.T) { TestingT(t) }
 
 func (s *S) SetUpSuite(c *C) {
 	Logger.Disable()
+	// FIXME: add memory
+	pubsub := account.NewEtcdSubscription("/account_test/", &db.EtcdConfig{Machines: []string{"http://localhost:2379"}})
+	account.NewPubSub(pubsub)
 }
 
 var app account.App

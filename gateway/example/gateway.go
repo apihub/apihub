@@ -20,7 +20,7 @@ func main() {
 	hw := &account.Service{Endpoint: "http://gohttphelloworld.appspot.com", Subdomain: "helloworld", Timeout: 2}
 	services := []*account.Service{one, hw}
 
-	pubsub := account.NewEtcdSubscription(&db.EtcdConfig{Machines: []string{"http://localhost:2379"}})
+	pubsub := account.NewEtcdSubscription("/maestro_development", &db.EtcdConfig{Machines: []string{"http://localhost:2379"}})
 	gw := gateway.New(settings, pubsub)
 	gw.LoadServices(services)
 	gw.Run()

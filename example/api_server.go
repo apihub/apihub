@@ -11,7 +11,7 @@ import (
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	subscription := account.NewEtcdSubscription([]string{"http://localhost:2379"}, &db.EtcdConfig{})
+	subscription := account.NewEtcdSubscription("/maestro_development", &db.EtcdConfig{Machines: []string{"http://localhost:2379"}})
 	api := api.NewApi(mem.New(), subscription)
 
 	api.AddHook(account.Hook{

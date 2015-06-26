@@ -69,17 +69,15 @@ func (g *Gateway) LoadServices(services []*account.Service) {
 }
 
 func (g *Gateway) RefreshServices() {
-	if g.pubsub != nil {
-		receiverC := make(chan interface{})
-		done := make(chan bool)
+	receiverC := make(chan interface{})
+	done := make(chan bool)
 
-		g.pubsub.Subscribe("/services", receiverC, done)
+	g.pubsub.Subscribe("/services", receiverC, done)
 
-		for {
-			msg := <-receiverC
-			if msg != nil {
-				fmt.Printf("%+v", msg)
-			}
+	for {
+		msg := <-receiverC
+		if msg != nil {
+			fmt.Printf("%+v", msg)
 		}
 	}
 }

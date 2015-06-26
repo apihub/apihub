@@ -119,13 +119,7 @@ func (service *Service) asJson() []byte {
 }
 
 func publishService(service *Service) {
-	if NewSubscription == nil {
-		Logger.Warn("Could not publish service because NewSubscription is nil.")
-		return
-	}
-
-	subscription := NewSubscription()
 	name := fmt.Sprintf("/services/%s", service.Subdomain)
-	subscription.Publish(name, service.asJson())
+	pubsub.Publish(name, service.asJson())
 	Logger.Info("The following service has been published: %s (subdomain) -> %s (endpoint).", service.Subdomain, service.Endpoint)
 }

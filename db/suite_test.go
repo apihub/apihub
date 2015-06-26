@@ -10,13 +10,16 @@ import (
 //Hook up gocheck into the "go test" runner.
 func Test(t *testing.T) { TestingT(t) }
 
-type S struct{}
+type S struct {
+	etcd *Etcd
+}
 
 var _ = Suite(&S{})
 
 func (s *S) SetUpSuite(c *C) {
 	config.Set("database:url", "127.0.0.1:27017")
 	config.Set("database:name", "backstage_db_test")
+	s.etcd, _ = NewEtcd("/db_test", &EtcdConfig{Machines: []string{"http://127.0.0.1:2379"}})
 }
 
 func (s *S) TearDownSuite(c *C) {
@@ -25,5 +28,5 @@ func (s *S) TearDownSuite(c *C) {
 	defer storage.Close()
 	config.Unset("database:url")
 	config.Unset("database:name")
-	// storage.Collection("services").Database.DropDatabase()
+	s.etcd.Close()
 }

@@ -25,10 +25,10 @@ type Api struct {
 	Events chan Event
 }
 
-func NewApi(store account.Storable, subscription account.SubscriptionFn) *Api {
+func NewApi(store account.Storable, pubsub account.PubSub) *Api {
 	api := &Api{router: NewRouter(), auth: auth.NewAuth(store), Events: make(chan Event, DEFAULT_EVENTS_CHANNEL_LEN)}
 	api.Storage(store)
-	api.Subscription(subscription)
+	api.PubSub(pubsub)
 
 	api.router.NotFoundHandler(http.HandlerFunc(api.notFoundHandler))
 	api.router.AddHandler(RouterArguments{Path: "/", Methods: []string{"GET"}, Handler: homeHandler})
@@ -43,7 +43,6 @@ func NewApi(store account.Storable, subscription account.SubscriptionFn) *Api {
 	private := api.router.AddSubrouter("/api")
 	api.router.AddMiddleware("/api", negroni.New(
 		negroni.NewRecovery(),
-		negroni.NewLogger(),
 		negroni.HandlerFunc(api.errorMiddleware),
 		negroni.HandlerFunc(api.requestIdMiddleware),
 		negroni.HandlerFunc(api.authorizationMiddleware),
@@ -109,10 +108,10 @@ func (api *Api) Storage(store account.Storable) {
 	api.auth = auth.NewAuth(store)
 }
 
-// Allow to override the default subscription engine.
+// Allow to override the default pubsub engine.
 // To be compatible, it is needed to implement the Subscription interface.
-func (api *Api) Subscription(subscription account.SubscriptionFn) {
-	account.NewSubscription = subscription
+func (api *Api) PubSub(pubsub account.PubSub) {
+	account.NewPubSub(pubsub)
 }
 
 func (api *Api) Run() {

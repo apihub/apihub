@@ -27,24 +27,24 @@ var team account.Team
 var user account.User
 
 type S struct {
-	api          *api.Api
-	authHeader   string
-	store        account.Storable
-	server       *httptest.Server
-	subscription account.SubscriptionFn
+	api        *api.Api
+	authHeader string
+	store      account.Storable
+	server     *httptest.Server
+	pubsub     account.PubSub
 }
 
 func (s *S) SetUpSuite(c *C) {
 	Logger.Disable()
 	// FIXME: add memory
-	s.subscription = account.NewEtcdSubscription([]string{"http://localhost:2379"}, &db.EtcdConfig{})
+	s.pubsub = account.NewEtcdSubscription("/api_test", &db.EtcdConfig{Machines: []string{"http://localhost:2379"}})
 }
 
 func (s *S) SetUpTest(c *C) {
 	// setUpMongoreTest(s)
 	setUpMemoryTest(s)
 
-	s.api = api.NewApi(s.store, s.subscription)
+	s.api = api.NewApi(s.store, s.pubsub)
 	s.server = httptest.NewServer(s.api.Handler())
 	httpClient = requests.NewHTTPClient(s.server.URL)
 
