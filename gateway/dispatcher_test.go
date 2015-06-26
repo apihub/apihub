@@ -23,7 +23,7 @@ func (s *S) TestServer(c *C) {
 	}))
 	defer target.Close()
 
-	service := &ServiceHandler{service: &account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Timeout: 10, Disabled: false}}
+	service := ServiceHandler{service: &account.Service{Endpoint: "http://" + target.Listener.Addr().String(), Subdomain: "test", Timeout: 10, Disabled: false}}
 	dispatcher := NewDispatcher(service)
 
 	w := httptest.NewRecorder()

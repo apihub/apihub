@@ -26,7 +26,7 @@ const (
 )
 
 type Dispatcher struct {
-	handler   *ServiceHandler
+	handler   ServiceHandler
 	proxy     *ReverseProxy
 	Transport *http.Transport
 }
@@ -82,7 +82,7 @@ func (rp *Dispatcher) RoundTrip(r *http.Request) (*http.Response, error) {
 	return response, nil
 }
 
-func NewDispatcher(h *ServiceHandler) http.Handler {
+func NewDispatcher(h ServiceHandler) http.Handler {
 	rp := &Dispatcher{handler: h}
 	t := h.service.Timeout
 	if t <= 0 {

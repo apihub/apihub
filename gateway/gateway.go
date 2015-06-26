@@ -23,7 +23,7 @@ type Settings struct {
 type Gateway struct {
 	pubsub       account.PubSub
 	Settings     *Settings
-	services     map[string]*ServiceHandler
+	services     map[string]ServiceHandler
 	transformers transformer.Transformers
 	middlewares  middleware.Middlewares
 }
@@ -32,7 +32,7 @@ func New(config *Settings, pubsub account.PubSub) *Gateway {
 	g := &Gateway{
 		pubsub:       pubsub,
 		Settings:     config,
-		services:     make(map[string]*ServiceHandler),
+		services:     make(map[string]ServiceHandler),
 		middlewares:  map[string]func() middleware.Middleware{},
 		transformers: map[string]transformer.Transformer{},
 	}
@@ -105,7 +105,7 @@ func (g *Gateway) RefreshServices() {
 
 // Add a new service that will be used for proxying requests.
 func (g *Gateway) AddService(service *account.Service) {
-	h := &ServiceHandler{service: service}
+	h := ServiceHandler{service: service}
 	h.handler = newProxyHandler(h)
 	g.services[h.service.Subdomain] = h
 	Logger.Info("Service added on Maestro: %+v.", service)
@@ -119,7 +119,7 @@ func (g *Gateway) RemoveService(service *account.Service) {
 
 // newProxyHandler returns an instance of Dispatch, which implements http.Handler.
 // It is an instance of reverse proxy that will be available to be used by Backstage Gateway.
-func newProxyHandler(e *ServiceHandler) http.Handler {
+func newProxyHandler(e ServiceHandler) http.Handler {
 	if h := e.service.Endpoint; h != "" {
 		return NewDispatcher(e)
 	}
