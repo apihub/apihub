@@ -2,6 +2,8 @@
 package gateway
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -10,6 +12,7 @@ import (
 	"github.com/backstage/maestro/account"
 	"github.com/backstage/maestro/gateway/middleware"
 	"github.com/backstage/maestro/gateway/transformer"
+	. "github.com/backstage/maestro/log"
 )
 
 type Settings struct {
@@ -74,27 +77,53 @@ func (g *Gateway) RefreshServices() {
 
 	g.pubsub.Subscribe("/services", receiverC, done)
 
-	for {
-		msg := <-receiverC
-		if msg != nil {
-			fmt.Printf("%+v", msg)
+	go func() {
+		for msg := range receiverC {
+			if msg != nil {
+				m, ok := msg.(string)
+				if !ok {
+					Logger.Warn("Failed to convert message to string: %+v.", msg)
+					continue
+				}
+
+				mf := bytes.NewBufferString(m)
+				var service account.Service
+				if err := json.NewDecoder(mf).Decode(&service); err != nil {
+					Logger.Warn("Failed to decode service data: %+v.", msg)
+					continue
+				}
+
+				if service.Disabled {
+					g.RemoveService(&service)
+				} else {
+					g.AddService(&service)
+				}
+			}
 		}
-	}
+	}()
 }
 
-// newHandlerProxy returns an instance of Dispatch, which implements http.Handler.
+// Add a new service that will be used for proxying requests.
+func (g *Gateway) AddService(service *account.Service) {
+	h := &ServiceHandler{service: service}
+	h.handler = newProxyHandler(h)
+	g.services[h.service.Subdomain] = h
+	Logger.Info("Service added on Maestro: %+v.", service)
+}
+
+// Remove an existing service from the Gateway.
+func (g *Gateway) RemoveService(service *account.Service) {
+	delete(g.services, service.Subdomain)
+	Logger.Info("Service removed on Maestro: %+v.", service)
+}
+
+// newProxyHandler returns an instance of Dispatch, which implements http.Handler.
 // It is an instance of reverse proxy that will be available to be used by Backstage Gateway.
-func newHandlerProxy(e *ServiceHandler) http.Handler {
+func newProxyHandler(e *ServiceHandler) http.Handler {
 	if h := e.service.Endpoint; h != "" {
 		return NewDispatcher(e)
 	}
 	return nil
-}
-
-func (g *Gateway) AddService(service *account.Service) {
-	h := &ServiceHandler{service: service}
-	h.handler = newHandlerProxy(h)
-	g.services[h.service.Subdomain] = h
 }
 
 func notFound(w http.ResponseWriter) {

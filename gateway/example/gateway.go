@@ -23,5 +23,6 @@ func main() {
 	pubsub := account.NewEtcdSubscription("/maestro_development", &db.EtcdConfig{Machines: []string{"http://localhost:2379"}})
 	gw := gateway.New(settings, pubsub)
 	gw.LoadServices(services)
+	gw.RefreshServices()
 	gw.Run()
 }
