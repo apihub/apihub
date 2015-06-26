@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 
@@ -13,6 +12,10 @@ import (
 	"github.com/backstage/maestro/gateway/middleware"
 	"github.com/backstage/maestro/gateway/transformer"
 	. "github.com/backstage/maestro/log"
+)
+
+const (
+	DEFAULT_PORT = ":8001"
 )
 
 type Settings struct {
@@ -32,7 +35,7 @@ func New(config *Settings, pubsub account.PubSub) *Gateway {
 	g := &Gateway{
 		pubsub:       pubsub,
 		Settings:     config,
-		services:     make(map[string]ServiceHandler),
+		services:     map[string]ServiceHandler{},
 		middlewares:  map[string]func() middleware.Middleware{},
 		transformers: map[string]transformer.Transformer{},
 	}
@@ -41,13 +44,15 @@ func New(config *Settings, pubsub account.PubSub) *Gateway {
 }
 
 func (g *Gateway) Run() {
-	log.Print("Starting Backstage Maestro Gateway...")
+	Logger.Info("Starting Backstage Maestro Gateway...")
+	g.setDefaults()
 	l, err := net.Listen("tcp", g.Settings.Port)
 	if err != nil {
-		log.Fatal(err)
+		Logger.Error("Failed to run Maestro: %+v.", err)
+		panic(err)
 	}
-	log.Printf("Maestro is now ready to accept connections on port %s.", g.Settings.Port)
-	log.Fatal(http.Serve(l, g))
+	Logger.Info("Maestro is now ready to accept connections on port %s.", g.Settings.Port)
+	Logger.Error(http.Serve(l, g).Error())
 }
 
 // handler is responsible to check if the gateway has a service to respond the request.
@@ -67,7 +72,7 @@ func (g *Gateway) LoadServices(services []*account.Service) {
 		for _, service := range services {
 			g.AddService(service)
 		}
-		log.Print("Services loaded.")
+		Logger.Info("Services loaded.")
 	}
 }
 
@@ -133,4 +138,10 @@ func notFound(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusNotFound)
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprintln(w, fmt.Sprintf(`{"error":"not_found","error_description":"%s"}`, ERR_NOT_FOUND))
+}
+
+func (g *Gateway) setDefaults() {
+	if g.Settings.Port == "" {
+		g.Settings.Port = DEFAULT_PORT
+	}
 }
