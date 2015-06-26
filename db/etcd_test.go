@@ -1,8 +1,6 @@
 package db
 
 import (
-	"time"
-
 	"github.com/backstage/maestro/errors"
 	. "gopkg.in/check.v1"
 )
