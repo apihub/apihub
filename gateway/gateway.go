@@ -106,9 +106,12 @@ func (g *Gateway) RefreshServices() {
 // Add a new service that will be used for proxying requests.
 func (g *Gateway) AddService(service *account.Service) {
 	h := ServiceHandler{service: service}
-	h.handler = newProxyHandler(h)
-	g.services[h.service.Subdomain] = h
-	Logger.Info("Service added on Maestro: %+v.", service)
+	if h.handler = newProxyHandler(h); h.handler != nil {
+		g.services[h.service.Subdomain] = h
+		Logger.Info("Service added on Maestro: %+v.", service)
+		return
+	}
+	Logger.Warn("Failed to add a new service: %+v.", service)
 }
 
 // Remove an existing service from the Gateway.
