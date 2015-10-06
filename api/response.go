@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/backstage/maestro/errors"
+	"github.com/apihub/apihub/errors"
 )
 
 type HTTPResponse struct {

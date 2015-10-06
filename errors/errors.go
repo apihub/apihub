@@ -22,7 +22,7 @@ var (
 	ErrClientNotFound         = errors.New("Client not found.")
 	ErrClientNotFoundOnTeam   = errors.New("Client not found on this team.")
 	ErrInvalidTokenFormat     = errors.New("Invalid token format.")
-	ErrLoginRequired          = errors.New("Invalid or expired token. Please log in with your Backstage credentials.")
+	ErrLoginRequired          = errors.New("Invalid or expired token. Please log in with your ApiHub credentials.")
 	ErrOnlyOwnerHasPermission = errors.New("Only the owner has permission to perform this operation.")
 	ErrServiceNotFound        = errors.New("Service not found.")
 	ErrTeamNotFound           = errors.New("Team not found.")
@@ -146,7 +146,7 @@ func NewRequestError(err error) RequestError {
 }
 
 func (err RequestError) Error() string {
-	return "Failed to connect to Backstage server: " + err.description.Error()
+	return "Failed to connect to ApiHub server: " + err.description.Error()
 }
 
 type ResponseError struct {

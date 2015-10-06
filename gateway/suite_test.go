@@ -3,7 +3,7 @@ package gateway
 import (
 	"testing"
 
-	"github.com/backstage/maestro/account"
+	"github.com/apihub/apihub/account"
 	. "gopkg.in/check.v1"
 )
 
@@ -17,11 +17,11 @@ var service *account.Service
 
 func (s *S) SetUpTest(c *C) {
 	s.Settings = &Settings{
-		Host: "test.backstage.dev",
+		Host: "test.apihub.dev",
 		Port: ":4567",
 	}
 
-	service = &account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage"}
+	service = &account.Service{Endpoint: "http://example.org/api", Subdomain: "apihub"}
 }
 
 var _ = Suite(&S{})

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/backstage/maestro/requests"
+	"github.com/apihub/apihub/requests"
 	. "gopkg.in/check.v1"
 )
 
@@ -29,7 +29,7 @@ func (s *S) TestSaveHook(c *C) {
 	c.Check(err, IsNil)
 	c.Assert(code, Equals, http.StatusOK)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"name":"notify-slack","team":"backstage","events":["service.update"],"config":{"address":"http://example.org"}}`)
+	c.Assert(string(body), Equals, `{"name":"notify-slack","team":"apihub","events":["service.update"],"config":{"address":"http://example.org"}}`)
 }
 
 func (s *S) TestDeleteHookNotFound(c *C) {

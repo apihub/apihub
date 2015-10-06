@@ -6,13 +6,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/backstage/maestro/account"
-	"github.com/backstage/maestro/account/mem"
-	"github.com/backstage/maestro/account/mongore"
-	"github.com/backstage/maestro/api"
-	"github.com/backstage/maestro/db"
-	. "github.com/backstage/maestro/log"
-	"github.com/backstage/maestro/requests"
+	"github.com/apihub/apihub/account"
+	"github.com/apihub/apihub/account/mem"
+	"github.com/apihub/apihub/account/mongore"
+	"github.com/apihub/apihub/api"
+	"github.com/apihub/apihub/db"
+	. "github.com/apihub/apihub/log"
+	"github.com/apihub/apihub/requests"
 	. "gopkg.in/check.v1"
 )
 
@@ -48,8 +48,8 @@ func (s *S) SetUpTest(c *C) {
 	s.server = httptest.NewServer(s.api.Handler())
 	httpClient = requests.NewHTTPClient(s.server.URL)
 
-	team = account.Team{Name: "Backstage Team", Alias: "backstage"}
-	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage"}
+	team = account.Team{Name: "ApiHub Team", Alias: "apihub"}
+	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "apihub"}
 	user = account.User{Name: "Bob", Email: "bob@bar.example.org", Password: "secret"}
 	app = account.App{ClientId: "ios", ClientSecret: "secret", Name: "Ios App", Team: team.Alias, Owner: user.Email, RedirectUris: []string{"http://www.example.org/auth"}}
 	pluginConfig = account.Plugin{Name: "Plugin Config", Service: service.Subdomain, Config: map[string]interface{}{"version": 1}}
@@ -78,7 +78,7 @@ func setUpMemoryTest(s *S) {
 func setUpMongoreTest(s *S) {
 	s.store = mongore.New(mongore.Config{
 		Host:         "127.0.0.1:27017",
-		DatabaseName: "backstage_api_test",
+		DatabaseName: "apihub_api_test",
 	})
 }
 
@@ -88,5 +88,5 @@ func testWithoutSignIn(reqArgs requests.Args, c *C) {
 	c.Check(err, IsNil)
 	c.Assert(code, Equals, http.StatusUnauthorized)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"error":"unauthorized_access","error_description":"Invalid or expired token. Please log in with your Backstage credentials."}`)
+	c.Assert(string(body), Equals, `{"error":"unauthorized_access","error_description":"Invalid or expired token. Please log in with your ApiHub credentials."}`)
 }

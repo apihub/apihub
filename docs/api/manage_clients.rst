@@ -62,7 +62,7 @@ Example Request
 
 ::
 
-  curl -XPOST -i http://localhost:8000/api/teams/backstage/clients -H "Content-Type: application/json" -d '{"name": "Backstage App"}' -H "Authorization: Token hfbXZtQSxQQIAayKVneI8tkeAKHZHgY5JVr03r3YJuI="
+  curl -XPOST -i http://localhost:8000/api/teams/apihub/clients -H "Content-Type: application/json" -d '{"name": "ApiHub App"}' -H "Authorization: Token hfbXZtQSxQQIAayKVneI8tkeAKHZHgY5JVr03r3YJuI="
 
 Example Result
 ==============
@@ -76,7 +76,7 @@ Example Result
   Content-Length: 148
   Content-Type: application/json; charset=utf-8
 
-  {"id":"backstage-app","secret":"Ia_6BdHzkey6FF9dn3HeKsMaf_JrOi7kDKQlq-6PZN4=","name":"Backstage App","redirect_uri":"","owner":"alice@example.org","team":"backstage"}
+  {"id":"apihub-app","secret":"Ia_6BdHzkey6FF9dn3HeKsMaf_JrOi7kDKQlq-6PZN4=","name":"ApiHub App","redirect_uri":"","owner":"alice@example.org","team":"apihub"}
 
 If there is another client using the name provided, an error will be returned:
 

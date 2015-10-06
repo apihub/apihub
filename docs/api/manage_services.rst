@@ -66,7 +66,7 @@ Example Request
 
 ::
 
-  curl -XPOST -i http://localhost:8000/api/teams/backstage/services -H "Content-Type: application/json" -d '{"subdomain": "backstage", "description": "test this", "disabled": false, "documentation": "http://www.example.org/doc", "endpoint": "http://github.com/backstage", "timeout": 10}' -H "Authorization: Token r-fRrYtDJ0nMAQ3UvHGCZe6ASTal9LXu_PmdyZyGkTM="
+  curl -XPOST -i http://localhost:8000/api/teams/apihub/services -H "Content-Type: application/json" -d '{"subdomain": "apihub", "description": "test this", "disabled": false, "documentation": "http://www.example.org/doc", "endpoint": "http://github.com/apihub", "timeout": 10}' -H "Authorization: Token r-fRrYtDJ0nMAQ3UvHGCZe6ASTal9LXu_PmdyZyGkTM="
 
 
 Example Result
@@ -81,7 +81,7 @@ Example Result
   Date: Fri, 05 Dec 2014 19:44:39 GMT
   Content-Length: 309
 
-  {"subdomain":"backstage","created_at":"2014-12-05T17:44:39.462-02:00","updated_at":"2014-12-05T17:44:39.462-02:00","description":"test this","disabled":false,"documentation":"http://www.example.org/doc","endpoint":"http://github.com/backstage","owner":"alice@example.org","timeout":10,"team": "backstage"}
+  {"subdomain":"apihub","created_at":"2014-12-05T17:44:39.462-02:00","updated_at":"2014-12-05T17:44:39.462-02:00","description":"test this","disabled":false,"documentation":"http://www.example.org/doc","endpoint":"http://github.com/apihub","owner":"alice@example.org","timeout":10,"team": "apihub"}
 
 If any required field is missing, the result will be represented by `400 Bad Request`:
 
@@ -167,7 +167,7 @@ Example Request
 
 ::
 
-  curl -XDELETE -i http://localhost:8000/api/teams/backstage/services/hello -H "Authorization: Token 1HnbxXIYMJzECiE-lpH0uIaailRdDurz2JL_5kgtMVc="
+  curl -XDELETE -i http://localhost:8000/api/teams/apihub/services/hello -H "Authorization: Token 1HnbxXIYMJzECiE-lpH0uIaailRdDurz2JL_5kgtMVc="
 
 
 Example Result
@@ -183,7 +183,7 @@ Example Result
   Content-Length: 237
   Content-Type: application/json; charset=utf-8
 
-  {"subdomain":"hello","description":"test this","disabled":false,"documentation":"http://www.example.org/doc","endpoint":"http://github.com/backstage","owner":"backstage@example.org","team":"backstage","timeout":10}
+  {"subdomain":"hello","description":"test this","disabled":false,"documentation":"http://www.example.org/doc","endpoint":"http://github.com/apihub","owner":"apihub@example.org","team":"apihub","timeout":10}
 
 If the team does not exist, a not found error will be returned:
 

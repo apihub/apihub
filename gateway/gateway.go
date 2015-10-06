@@ -8,10 +8,10 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/backstage/maestro/account"
-	"github.com/backstage/maestro/gateway/middleware"
-	"github.com/backstage/maestro/gateway/transformer"
-	. "github.com/backstage/maestro/log"
+	"github.com/apihub/apihub/account"
+	"github.com/apihub/apihub/gateway/middleware"
+	"github.com/apihub/apihub/gateway/transformer"
+	. "github.com/apihub/apihub/log"
 )
 
 const (
@@ -44,14 +44,14 @@ func New(config *Settings, pubsub account.PubSub) *Gateway {
 }
 
 func (g *Gateway) Run() {
-	Logger.Info("Starting Backstage Maestro Gateway...")
+	Logger.Info("Starting ApiHub Gateway...")
 	g.setDefaults()
 	l, err := net.Listen("tcp", g.Settings.Port)
 	if err != nil {
-		Logger.Error("Failed to run Maestro: %+v.", err)
+		Logger.Error("Failed to run ApiHub: %+v.", err)
 		panic(err)
 	}
-	Logger.Info("Maestro is now ready to accept connections on port %s.", g.Settings.Port)
+	Logger.Info("ApiHub is now ready to accept connections on port %s.", g.Settings.Port)
 	Logger.Error(http.Serve(l, g).Error())
 }
 
@@ -113,7 +113,7 @@ func (g *Gateway) AddService(service *account.Service) {
 	h := ServiceHandler{service: service}
 	if h.handler = newProxyHandler(h); h.handler != nil {
 		g.services[h.service.Subdomain] = h
-		Logger.Info("Service added on Maestro: %+v.", service)
+		Logger.Info("Service added on ApiHub: %+v.", service)
 		return
 	}
 	Logger.Warn("Failed to add a new service: %+v.", service)
@@ -122,11 +122,11 @@ func (g *Gateway) AddService(service *account.Service) {
 // Remove an existing service from the Gateway.
 func (g *Gateway) RemoveService(service *account.Service) {
 	delete(g.services, service.Subdomain)
-	Logger.Info("Service removed on Maestro: %+v.", service)
+	Logger.Info("Service removed on ApiHub: %+v.", service)
 }
 
 // newProxyHandler returns an instance of Dispatch, which implements http.Handler.
-// It is an instance of reverse proxy that will be available to be used by Backstage Gateway.
+// It is an instance of reverse proxy that will be available to be used by ApiHub Gateway.
 func newProxyHandler(e ServiceHandler) http.Handler {
 	if h := e.service.Endpoint; h != "" {
 		return NewDispatcher(e)

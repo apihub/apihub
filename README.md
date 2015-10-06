@@ -1,19 +1,16 @@
-[![Build Status](https://travis-ci.org/backstage/maestro.png?branch=master)](https://travis-ci.org/backstage/maestro)
+[![Build Status](https://travis-ci.org/apihub/apihub.png?branch=master)](https://travis-ci.org/apihub/apihub)
 
-![Maestro](http://i.imgur.com/bFHfI4w.png?1 "Maestro")
 
-Logo Design by Eduardo Insaurriaga.
+##What is ApiHub?
 
-##What is Maestro?
-
-Maestro is an open source solution for publishing APIs. It's a reverse proxy that sits between your api server and the world.
+ApiHub is an open source solution for publishing APIs. It's a reverse proxy that sits between your api server and the world.
 Several apis require a similar set of features on the backend, such as: authentication, authorization, throttling, analytics and so on. The idea of this project is to provide a simple and easy way to integrate with existing apis and help the developers, so they do not need to implement all of those boilerplate features for each api they may have.
 
 ##Quickstart
 
 ```bash
-  git clone https://github.com/backstage/maestro.git
-  cd maestro
+  git clone https://github.com/apihub/apihub.git
+  cd apihub
   make setup
   make run-api-sample
 ```
@@ -27,11 +24,11 @@ Several apis require a similar set of features on the backend, such as: authenti
 
 ## Links:
 
-- Documentation: http://backstage.readthedocs.org/en/latest/
+- Documentation: https://apihub.readme.io/
 
 ##Contributing
 
-Please refer to the documentation: http://backstage.readthedocs.org/en/latest/contributing/index.html
+Please refer to the documentation: https://apihub.readme.io/docs/guidelines
 
 ##License
 

@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"code.google.com/p/go.crypto/bcrypt"
-	"github.com/backstage/maestro/account"
-	"github.com/backstage/maestro/errors"
-	. "github.com/backstage/maestro/log"
-	"github.com/backstage/maestro/util"
+	"github.com/apihub/apihub/account"
+	"github.com/apihub/apihub/errors"
+	. "github.com/apihub/apihub/log"
+	"github.com/apihub/apihub/util"
 )
 
 const (

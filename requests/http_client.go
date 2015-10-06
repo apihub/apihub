@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/backstage/maestro/errors"
+	"github.com/apihub/apihub/errors"
 	"github.com/franela/goreq"
 )
 

@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"time"
 
-	"github.com/backstage/maestro/account"
+	"github.com/apihub/apihub/account"
 	. "gopkg.in/check.v1"
 )
 
@@ -14,7 +14,7 @@ func (s *S) TestGatewayNotFound(c *C) {
 	gateway := New(s.Settings, nil)
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
-	r, _ := http.NewRequest("GET", "invalid.backstage.dev", nil)
+	r, _ := http.NewRequest("GET", "invalid.apihub.dev", nil)
 	gateway.ServeHTTP(w, r)
 
 	c.Assert(w.Code, Equals, http.StatusNotFound)
@@ -34,7 +34,7 @@ func (s *S) TestGatewayExistingService(c *C) {
 	gateway.LoadServices(services)
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
-	r, _ := http.NewRequest("GET", "http://test.backstage.dev", nil)
+	r, _ := http.NewRequest("GET", "http://test.apihub.dev", nil)
 	gateway.ServeHTTP(w, r)
 
 	c.Assert(w.Body.String(), Equals, "OK")
@@ -53,7 +53,7 @@ func (s *S) TestGatewayTimeout(c *C) {
 
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
-	r, _ := http.NewRequest("GET", "http://test.backstage.dev", nil)
+	r, _ := http.NewRequest("GET", "http://test.apihub.dev", nil)
 	gateway.ServeHTTP(w, r)
 
 	c.Assert(w.Code, Equals, http.StatusGatewayTimeout)
@@ -74,7 +74,7 @@ func (s *S) TestGatewayCopyResponseHeaders(c *C) {
 
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
-	r, _ := http.NewRequest("GET", "http://test.backstage.dev", nil)
+	r, _ := http.NewRequest("GET", "http://test.apihub.dev", nil)
 	gateway.ServeHTTP(w, r)
 
 	c.Assert(w.Code, Equals, http.StatusCreated)
@@ -88,7 +88,7 @@ func (s *S) TestGatewayInternalError(c *C) {
 
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
-	r, _ := http.NewRequest("GET", "http://test.backstage.dev", nil)
+	r, _ := http.NewRequest("GET", "http://test.apihub.dev", nil)
 	gateway.ServeHTTP(w, r)
 
 	c.Assert(w.Code, Equals, http.StatusInternalServerError)
@@ -108,7 +108,7 @@ func (s *S) TestAddService(c *C) {
 	gateway.AddService(service)
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
-	r, _ := http.NewRequest("GET", "http://test.backstage.dev", nil)
+	r, _ := http.NewRequest("GET", "http://test.apihub.dev", nil)
 	gateway.ServeHTTP(w, r)
 
 	c.Assert(w.Body.String(), Equals, "OK")
@@ -127,13 +127,13 @@ func (s *S) TestRemoveService(c *C) {
 	gateway.AddService(service)
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
-	r, _ := http.NewRequest("GET", "http://test.backstage.dev", nil)
+	r, _ := http.NewRequest("GET", "http://test.apihub.dev", nil)
 	gateway.ServeHTTP(w, r)
 	c.Assert(w.Body.String(), Equals, "OK")
 	c.Assert(w.Code, Equals, http.StatusOK)
 
 	gateway.RemoveService(service)
-	r, _ = http.NewRequest("GET", "http://test.backstage.dev", nil)
+	r, _ = http.NewRequest("GET", "http://test.apihub.dev", nil)
 	w = httptest.NewRecorder()
 	gateway.ServeHTTP(w, r)
 	c.Assert(w.Body.String(), Equals, "{\"error\":\"not_found\",\"error_description\":\"The requested resource could not be found but may be available again in the future.\"}\n")

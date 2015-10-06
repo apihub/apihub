@@ -3,7 +3,7 @@ package mem
 import (
 	"testing"
 
-	"github.com/backstage/maestro/account/test"
+	"github.com/apihub/apihub/account/test"
 	. "gopkg.in/check.v1"
 )
 

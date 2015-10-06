@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/backstage/maestro/requests"
+	"github.com/apihub/apihub/requests"
 	. "gopkg.in/check.v1"
 )
 
@@ -33,7 +33,7 @@ func (s *S) TestSubscribePlugin(c *C) {
 	c.Check(err, IsNil)
 	c.Assert(code, Equals, http.StatusOK)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"name":"cors","service":"backstage","config":{"version":1}}`)
+	c.Assert(string(body), Equals, `{"name":"cors","service":"apihub","config":{"version":1}}`)
 }
 
 func (s *S) TestSubscribePluginNotFound(c *C) {
@@ -74,7 +74,7 @@ func (s *S) TestUnsubscribePlugin(c *C) {
 	c.Check(err, IsNil)
 	c.Assert(code, Equals, http.StatusOK)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"name":"Plugin Config","service":"backstage","config":{"version":1}}`)
+	c.Assert(string(body), Equals, `{"name":"Plugin Config","service":"apihub","config":{"version":1}}`)
 }
 
 func (s *S) TestUnsubscribePluginNotFound(c *C) {

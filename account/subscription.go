@@ -3,8 +3,8 @@ package account
 import (
 	"fmt"
 
-	"github.com/backstage/maestro/db"
-	. "github.com/backstage/maestro/log"
+	"github.com/apihub/apihub/db"
+	. "github.com/apihub/apihub/log"
 )
 
 type PubSub interface {

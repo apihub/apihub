@@ -18,7 +18,7 @@ var _ = Suite(&S{})
 
 func (s *S) SetUpSuite(c *C) {
 	config.Set("database:url", "127.0.0.1:27017")
-	config.Set("database:name", "backstage_db_test")
+	config.Set("database:name", "apihub_db_test")
 	s.etcd, _ = NewEtcd("/db_test", &EtcdConfig{Machines: []string{"http://127.0.0.1:2379"}})
 }
 

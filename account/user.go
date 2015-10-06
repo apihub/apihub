@@ -2,8 +2,8 @@ package account
 
 import (
 	"code.google.com/p/go.crypto/bcrypt"
-	"github.com/backstage/maestro/errors"
-	. "github.com/backstage/maestro/log"
+	"github.com/apihub/apihub/errors"
+	. "github.com/apihub/apihub/log"
 )
 
 // The User type is an encapsulation of a user details.

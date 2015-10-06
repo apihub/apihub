@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/backstage/maestro/account"
-	"github.com/backstage/maestro/requests"
+	"github.com/apihub/apihub/account"
+	"github.com/apihub/apihub/requests"
 	. "gopkg.in/check.v1"
 )
 
 func (s *S) TestCreateApp(c *C) {
 	team.Create(user)
-	clientId := "backstage"
+	clientId := "apihub"
 
 	defer func() {
 		app, _ := s.store.FindAppByClientId(clientId)
@@ -29,7 +29,7 @@ func (s *S) TestCreateApp(c *C) {
 
 	c.Assert(code, Equals, http.StatusCreated)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"client_id":"backstage","client_secret":"secret","name":"Ios App","redirect_uris":["http://www.example.org/auth"],"owner":"bob@bar.example.org","team":"backstage"}`)
+	c.Assert(string(body), Equals, `{"client_id":"apihub","client_secret":"secret","name":"Ios App","redirect_uris":["http://www.example.org/auth"],"owner":"bob@bar.example.org","team":"apihub"}`)
 }
 
 func (s *S) TestCreateAppWhenAlreadyExists(c *C) {
@@ -108,7 +108,7 @@ func (s *S) TestUpdateApp(c *C) {
 
 	c.Assert(code, Equals, http.StatusOK)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"client_id":"ios","client_secret":"new secret","name":"new name","redirect_uris":["http://www.example.org/auth"],"owner":"bob@bar.example.org","team":"backstage"}`)
+	c.Assert(string(body), Equals, `{"client_id":"ios","client_secret":"new secret","name":"new name","redirect_uris":["http://www.example.org/auth"],"owner":"bob@bar.example.org","team":"apihub"}`)
 }
 
 func (s *S) TestUpdateAppNotFound(c *C) {
@@ -167,7 +167,7 @@ func (s *S) TestDeleteApp(c *C) {
 
 	c.Assert(code, Equals, http.StatusOK)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"client_id":"ios","client_secret":"secret","name":"Ios App","redirect_uris":["http://www.example.org/auth"],"owner":"bob@bar.example.org","team":"backstage"}`)
+	c.Assert(string(body), Equals, `{"client_id":"ios","client_secret":"secret","name":"Ios App","redirect_uris":["http://www.example.org/auth"],"owner":"bob@bar.example.org","team":"apihub"}`)
 }
 
 func (s *S) TestDeleteAppWithoutPermission(c *C) {
@@ -229,7 +229,7 @@ func (s *S) TestAppInfo(c *C) {
 
 	c.Assert(code, Equals, http.StatusOK)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"client_id":"ios","client_secret":"secret","name":"Ios App","redirect_uris":["http://www.example.org/auth"],"owner":"bob@bar.example.org","team":"backstage"}`)
+	c.Assert(string(body), Equals, `{"client_id":"ios","client_secret":"secret","name":"Ios App","redirect_uris":["http://www.example.org/auth"],"owner":"bob@bar.example.org","team":"apihub"}`)
 }
 
 func (s *S) TestAppInfoNotMember(c *C) {

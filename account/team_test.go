@@ -1,8 +1,8 @@
 package account_test
 
 import (
-	"github.com/backstage/maestro/account"
-	"github.com/backstage/maestro/errors"
+	"github.com/apihub/apihub/account"
+	"github.com/apihub/apihub/errors"
 	. "gopkg.in/check.v1"
 )
 
@@ -32,7 +32,7 @@ func (s *S) TestCreateTeamWithoutRequiredFields(c *C) {
 func (s *S) TestUpdateTeam(c *C) {
 	err := team.Create(owner)
 	c.Assert(err, IsNil)
-	c.Assert(team.Name, Equals, "Backstage Team")
+	c.Assert(team.Name, Equals, "ApiHub Team")
 
 	team.Name = "New name"
 	err = team.Update()
@@ -44,7 +44,7 @@ func (s *S) TestUpdateTeam(c *C) {
 func (s *S) TestUpdateTeamWithoutRequiredFields(c *C) {
 	err := team.Create(owner)
 	c.Assert(err, IsNil)
-	c.Assert(team.Name, Equals, "Backstage Team")
+	c.Assert(team.Name, Equals, "ApiHub Team")
 
 	team.Name = ""
 	err = team.Update()

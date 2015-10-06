@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/backstage/maestro/account"
-	"github.com/backstage/maestro/auth"
-	. "github.com/backstage/maestro/log"
+	"github.com/apihub/apihub/account"
+	"github.com/apihub/apihub/auth"
+	. "github.com/apihub/apihub/log"
 	"github.com/codegangsta/negroni"
 	"github.com/tylerb/graceful"
 )
@@ -88,7 +88,7 @@ func (api *Api) Handler() http.Handler {
 	return api.router.Handler()
 }
 
-// This is intend to be used when loading the api only, just to connect the maestro with maestro-gateway.
+// This is intend to be used when loading the api only, just to connect the apihub with apihub-gateway.
 // TODO: Need to improve this.
 func (api *Api) AddHook(wh account.Hook) {
 	api.store.UpsertHook(wh)
@@ -115,12 +115,12 @@ func (api *Api) PubSub(pubsub account.PubSub) {
 }
 
 func (api *Api) Run() {
-	Logger.Info(fmt.Sprintf("Backstage Maestro is now ready to accept connections on port %s.", DEFAULT_PORT))
+	Logger.Info(fmt.Sprintf("ApiHub is now ready to accept connections on port %s.", DEFAULT_PORT))
 	graceful.Run(DEFAULT_PORT, DEFAULT_TIMEOUT, api.Handler())
 }
 
 func homeHandler(rw http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(rw, "Hello Backstage!")
+	fmt.Fprintln(rw, "Hello ApiHub!")
 }
 
 type AuthorizationHandler func(w http.ResponseWriter, r *http.Request, user *account.User)

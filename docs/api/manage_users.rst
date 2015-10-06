@@ -4,7 +4,7 @@ Manage My Account
 
 Creating a new user account
 ---------------------------
-To start interacting with Backstage, it's needed to create a user account. Follow below an example, using CURL, of how to create a user account:
+To start interacting with ApiHub, it's needed to create a user account. Follow below an example, using CURL, of how to create a user account:
 
 Resource URL
 ============
@@ -80,7 +80,7 @@ On the other hand, if there's a validation error, for example: someone else alre
 Deleting a user account
 -----------------------
 
-The only way to remove a user account is by using a valid Token. For this, it's neeeded to log in with the Backstage credentials to gain a valid Token. If you want to see how to log in, see :ref:`Log in with Backstage Credentials <login>`.
+The only way to remove a user account is by using a valid Token. For this, it's neeeded to log in with the ApiHub credentials to gain a valid Token. If you want to see how to log in, see :ref:`Log in with ApiHub Credentials <login>`.
 
 .. warning::
 

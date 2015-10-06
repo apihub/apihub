@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/backstage/maestro/requests"
+	"github.com/apihub/apihub/requests"
 	. "gopkg.in/check.v1"
 )
 

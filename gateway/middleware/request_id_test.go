@@ -14,6 +14,6 @@ func (s *S) TestRequestId(c *C) {
 
 	rid := &RequestIdMiddleware{}
 	res := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "http://backstage.example.org", nil)
+	req, _ := http.NewRequest("GET", "http://apihub.example.org", nil)
 	rid.ServeHTTP(res, req, next)
 }

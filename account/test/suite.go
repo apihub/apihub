@@ -3,8 +3,8 @@ package test
 import (
 	"testing"
 
-	"github.com/backstage/maestro/account"
-	"github.com/backstage/maestro/errors"
+	"github.com/apihub/apihub/account"
+	"github.com/apihub/apihub/errors"
 	. "gopkg.in/check.v1"
 )
 
@@ -26,8 +26,8 @@ type StorableSuite struct {
 func (s *StorableSuite) SetUpTest(c *C) {
 	user = account.User{Name: "Alice", Email: "alice@example.org", Password: "123456"}
 	token = account.Token{AccessToken: "secret-token", Expires: 10, Type: "Token", User: &user}
-	team = account.Team{Name: "Backstage Team", Alias: "backstage", Users: []string{user.Email}, Owner: user.Email, Apps: []account.App{}, Services: []account.Service{}}
-	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "backstage", Team: team.Alias, Owner: user.Email, Transformers: []string{}}
+	team = account.Team{Name: "ApiHub Team", Alias: "apihub", Users: []string{user.Email}, Owner: user.Email, Apps: []account.App{}, Services: []account.Service{}}
+	service = account.Service{Endpoint: "http://example.org/api", Subdomain: "apihub", Team: team.Alias, Owner: user.Email, Transformers: []string{}}
 	app = account.App{ClientId: "ios", ClientSecret: "secret", Name: "Ios App", Team: team.Alias, Owner: user.Email, RedirectUris: []string{"http://www.example.org/auth"}}
 	plugin = account.Plugin{Name: "cors", Service: service.Subdomain, Config: map[string]interface{}{"version": 1}}
 	hook = account.Hook{Name: "service.update", Events: []string{"service.update"}, Config: account.HookConfig{Address: "http://www.example.org"}}

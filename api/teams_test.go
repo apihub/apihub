@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/backstage/maestro/account"
-	"github.com/backstage/maestro/requests"
+	"github.com/apihub/apihub/account"
+	"github.com/apihub/apihub/requests"
 	. "gopkg.in/check.v1"
 )
 
 func (s *S) TestCreateTeam(c *C) {
-	alias := "backstage-team"
+	alias := "apihub-team"
 
 	defer func() {
 		s.store.DeleteTeamByAlias(alias)
@@ -20,17 +20,17 @@ func (s *S) TestCreateTeam(c *C) {
 		AcceptableCode: http.StatusCreated,
 		Method:         "POST",
 		Path:           "/api/teams",
-		Body:           `{"name": "Backstage Team"}`,
+		Body:           `{"name": "ApiHub Team"}`,
 		Headers:        http.Header{"Authorization": {s.authHeader}},
 	})
 
 	c.Assert(code, Equals, http.StatusCreated)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, fmt.Sprintf(`{"name":"Backstage Team","alias":"%s","users":["%s"],"owner":"%s"}`, alias, user.Email, user.Email))
+	c.Assert(string(body), Equals, fmt.Sprintf(`{"name":"ApiHub Team","alias":"%s","users":["%s"],"owner":"%s"}`, alias, user.Email, user.Email))
 }
 
 func (s *S) TestCreateTeamWithCustomAlias(c *C) {
-	alias := "backstage"
+	alias := "apihub"
 
 	defer func() {
 		s.store.DeleteTeamByAlias(alias)
@@ -40,17 +40,17 @@ func (s *S) TestCreateTeamWithCustomAlias(c *C) {
 		AcceptableCode: http.StatusCreated,
 		Method:         "POST",
 		Path:           "/api/teams",
-		Body:           fmt.Sprintf(`{"name": "Backstage Team", "alias": "%s"}`, alias),
+		Body:           fmt.Sprintf(`{"name": "ApiHub Team", "alias": "%s"}`, alias),
 		Headers:        http.Header{"Authorization": {s.authHeader}},
 	})
 
 	c.Assert(code, Equals, http.StatusCreated)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, fmt.Sprintf(`{"name":"Backstage Team","alias":"%s","users":["%s"],"owner":"%s"}`, alias, user.Email, user.Email))
+	c.Assert(string(body), Equals, fmt.Sprintf(`{"name":"ApiHub Team","alias":"%s","users":["%s"],"owner":"%s"}`, alias, user.Email, user.Email))
 }
 
 func (s *S) TestCreateTeamWhenAlreadyExists(c *C) {
-	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team := account.Team{Name: "ApiHub Team", Alias: "apihub"}
 	team.Create(user)
 
 	defer func() {
@@ -61,7 +61,7 @@ func (s *S) TestCreateTeamWhenAlreadyExists(c *C) {
 		AcceptableCode: http.StatusBadRequest,
 		Method:         "POST",
 		Path:           "/api/teams",
-		Body:           fmt.Sprintf(`{"name": "Backstage Team", "alias": "%s"}`, team.Alias),
+		Body:           fmt.Sprintf(`{"name": "ApiHub Team", "alias": "%s"}`, team.Alias),
 		Headers:        http.Header{"Authorization": {s.authHeader}},
 	})
 
@@ -72,7 +72,7 @@ func (s *S) TestCreateTeamWhenAlreadyExists(c *C) {
 }
 
 func (s *S) TestCreateTeamWithoutSignIn(c *C) {
-	testWithoutSignIn(requests.Args{AcceptableCode: http.StatusUnauthorized, Method: "POST", Path: "/api/teams", Body: `{"name": "Backstage Team"}`}, c)
+	testWithoutSignIn(requests.Args{AcceptableCode: http.StatusUnauthorized, Method: "POST", Path: "/api/teams", Body: `{"name": "ApiHub Team"}`}, c)
 }
 
 func (s *S) TestCreateTeamWithInvalidRequest(c *C) {
@@ -80,7 +80,7 @@ func (s *S) TestCreateTeamWithInvalidRequest(c *C) {
 		AcceptableCode: http.StatusBadRequest,
 		Method:         "POST",
 		Path:           "/api/teams",
-		Body:           `"name": "Backstage Team"`,
+		Body:           `"name": "ApiHub Team"`,
 		Headers:        http.Header{"Authorization": {s.authHeader}},
 	})
 
@@ -107,7 +107,7 @@ func (s *S) TestTeamListWithoutSignIn(c *C) {
 }
 
 func (s *S) TestDeleteTeam(c *C) {
-	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team := account.Team{Name: "ApiHub Team", Alias: "apihub"}
 	team.Create(user)
 
 	headers, code, body, _ := httpClient.MakeRequest(requests.Args{
@@ -123,7 +123,7 @@ func (s *S) TestDeleteTeam(c *C) {
 }
 
 func (s *S) TestDeleteTeamWithoutSignIn(c *C) {
-	testWithoutSignIn(requests.Args{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/teams/backstage"}, c)
+	testWithoutSignIn(requests.Args{AcceptableCode: http.StatusUnauthorized, Method: "DELETE", Path: "/api/teams/apihub"}, c)
 }
 
 func (s *S) TestDeleteTeamWithoutPermission(c *C) {
@@ -131,7 +131,7 @@ func (s *S) TestDeleteTeamWithoutPermission(c *C) {
 	alice.Create()
 	defer alice.Delete()
 
-	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team := account.Team{Name: "ApiHub Team", Alias: "apihub"}
 	team.Create(alice)
 	defer func() {
 		s.store.DeleteTeamByAlias(team.Alias)
@@ -163,7 +163,7 @@ func (s *S) TestDeleteTeamNotFound(c *C) {
 }
 
 func (s *S) TestTeamInfo(c *C) {
-	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team := account.Team{Name: "ApiHub Team", Alias: "apihub"}
 	team.Create(user)
 	defer team.Delete(user)
 
@@ -196,7 +196,7 @@ func (s *S) TestTeamInfoWithoutPermission(c *C) {
 	alice.Create()
 	defer alice.Delete()
 
-	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team := account.Team{Name: "ApiHub Team", Alias: "apihub"}
 	team.Create(alice)
 	defer func() {
 		s.store.DeleteTeamByAlias(team.Alias)
@@ -215,7 +215,7 @@ func (s *S) TestTeamInfoWithoutPermission(c *C) {
 }
 
 func (s *S) TestAddUser(c *C) {
-	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team := account.Team{Name: "ApiHub Team", Alias: "apihub"}
 	team.Create(user)
 	defer func() {
 		s.store.DeleteTeamByAlias(team.Alias)
@@ -233,7 +233,7 @@ func (s *S) TestAddUser(c *C) {
 		Body:           fmt.Sprintf(`{"users": ["%s"]}`, alice.Email),
 	})
 
-	c.Assert(string(body), Equals, `{"name":"Backstage Team","alias":"backstage","users":["bob@bar.example.org","alice@bar.example.org"],"owner":"bob@bar.example.org"}`)
+	c.Assert(string(body), Equals, `{"name":"ApiHub Team","alias":"apihub","users":["bob@bar.example.org","alice@bar.example.org"],"owner":"bob@bar.example.org"}`)
 	c.Assert(code, Equals, http.StatusOK)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
 }
@@ -243,7 +243,7 @@ func (s *S) TestAddUserNotMember(c *C) {
 	alice.Create()
 	defer alice.Delete()
 
-	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team := account.Team{Name: "ApiHub Team", Alias: "apihub"}
 	team.Create(alice)
 	defer func() {
 		s.store.DeleteTeamByAlias(team.Alias)
@@ -263,7 +263,7 @@ func (s *S) TestAddUserNotMember(c *C) {
 }
 
 func (s *S) TestAddUserWithoutSignIn(c *C) {
-	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team := account.Team{Name: "ApiHub Team", Alias: "apihub"}
 	team.Create(user)
 	defer func() {
 		s.store.DeleteTeamByAlias(team.Alias)
@@ -296,7 +296,7 @@ func (s *S) TestRemoveUser(c *C) {
 	alice.Create()
 	defer alice.Delete()
 
-	team := account.Team{Name: "Backstage Team", Alias: "backstage", Users: []string{alice.Email}}
+	team := account.Team{Name: "ApiHub Team", Alias: "apihub", Users: []string{alice.Email}}
 	team.Create(user)
 	defer func() {
 		s.store.DeleteTeamByAlias(team.Alias)
@@ -312,11 +312,11 @@ func (s *S) TestRemoveUser(c *C) {
 
 	c.Assert(code, Equals, http.StatusOK)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"name":"Backstage Team","alias":"backstage","users":["bob@bar.example.org"],"owner":"bob@bar.example.org"}`)
+	c.Assert(string(body), Equals, `{"name":"ApiHub Team","alias":"apihub","users":["bob@bar.example.org"],"owner":"bob@bar.example.org"}`)
 }
 
 func (s *S) TestRemoveUserWithoutSignIn(c *C) {
-	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team := account.Team{Name: "ApiHub Team", Alias: "apihub"}
 	team.Create(user)
 	defer func() {
 		s.store.DeleteTeamByAlias(team.Alias)
@@ -335,7 +335,7 @@ func (s *S) TestRemoveUserNotMember(c *C) {
 	alice.Create()
 	defer alice.Delete()
 
-	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team := account.Team{Name: "ApiHub Team", Alias: "apihub"}
 	team.Create(alice)
 	defer func() {
 		s.store.DeleteTeamByAlias(team.Alias)
@@ -369,7 +369,7 @@ func (s *S) TestRemoveUserNotFound(c *C) {
 }
 
 func (s *S) TestUpdateTeam(c *C) {
-	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team := account.Team{Name: "ApiHub Team", Alias: "apihub"}
 	team.Create(user)
 
 	defer func() {
@@ -394,7 +394,7 @@ func (s *S) TestUpdateTeamNotMember(c *C) {
 	alice.Create()
 	defer alice.Delete()
 
-	team := account.Team{Name: "Backstage Team", Alias: "backstage"}
+	team := account.Team{Name: "ApiHub Team", Alias: "apihub"}
 	team.Create(alice)
 
 	defer func() {

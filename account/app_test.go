@@ -1,8 +1,8 @@
 package account_test
 
 import (
-	"github.com/backstage/maestro/account"
-	"github.com/backstage/maestro/errors"
+	"github.com/apihub/apihub/account"
+	"github.com/apihub/apihub/errors"
 	. "gopkg.in/check.v1"
 )
 
@@ -30,10 +30,10 @@ func (s *S) TestCreateAppWithoutRequiredFields(c *C) {
 }
 
 func (s *S) TestUpdateApp(c *C) {
-	app.Name = "Backstage App"
+	app.Name = "ApiHub App"
 	err := app.Create(owner, team)
 	c.Assert(err, IsNil)
-	c.Assert(app.Name, Equals, "Backstage App")
+	c.Assert(app.Name, Equals, "ApiHub App")
 
 	app.Name = "Another name"
 	err = app.Update()
@@ -43,10 +43,10 @@ func (s *S) TestUpdateApp(c *C) {
 }
 
 func (s *S) TestUpdateAppWithoutRequiredFields(c *C) {
-	app.Name = "Backstage App"
+	app.Name = "ApiHub App"
 	err := app.Create(owner, team)
 	c.Assert(err, IsNil)
-	c.Assert(app.Name, Equals, "Backstage App")
+	c.Assert(app.Name, Equals, "ApiHub App")
 	defer app.Delete(owner)
 
 	app.Name = ""

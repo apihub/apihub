@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"sync"
 
-	"github.com/backstage/maestro/account"
-	"github.com/backstage/maestro/requests"
+	"github.com/apihub/apihub/account"
+	"github.com/apihub/apihub/requests"
 	. "gopkg.in/check.v1"
 )
 
@@ -21,30 +21,30 @@ func (s *S) TestListenEvents(c *C) {
 	customText := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		wg.Done()
 		body, _ := ioutil.ReadAll(r.Body)
-		c.Assert(string(body), Equals, `{"username": "Backstage Maestro", "channel": "#backstage",
-		"icon_url": "http://www.albertoleal.me/images/maestro-pq.png",
-		"text": "Um novo serviço foi criado no Backstage Maestro, com o seguinte subdomínio: backstage."}`)
+		c.Assert(string(body), Equals, `{"username": "ApiHub", "channel": "#apihub",
+		"icon_url": "http://www.albertoleal.me/images/apihub-pq.png",
+		"text": "Um novo serviço foi criado no ApiHub, com o seguinte subdomínio: apihub."}`)
 	})
 	svrC := httptest.NewServer(customText)
 	s.api.AddHook(account.Hook{
-		Name:   "backstage-maestro-custom",
+		Name:   "apihub-apihub-custom",
 		Team:   account.ALL_TEAMS,
 		Events: []string{"service.create"},
 		Config: account.HookConfig{Address: svrC.URL},
-		Text: `{"username": "Backstage Maestro", "channel": "#backstage",
-		"icon_url": "http://www.albertoleal.me/images/maestro-pq.png",
-		"text": "Um novo serviço foi criado no Backstage Maestro, com o seguinte subdomínio: {{.Service.Subdomain}}."}`,
+		Text: `{"username": "ApiHub", "channel": "#apihub",
+		"icon_url": "http://www.albertoleal.me/images/apihub-pq.png",
+		"text": "Um novo serviço foi criado no ApiHub, com o seguinte subdomínio: {{.Service.Subdomain}}."}`,
 	})
 
 	// Default Text
 	defaultText := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		wg.Done()
 		body, _ := ioutil.ReadAll(r.Body)
-		c.Assert(string(body), Matches, fmt.Sprintf(`{"created_at":".*","name":"service.create","service":{"subdomain":"backstage","endpoint":"http://example.org","owner":"bob@bar.example.org","team":"backstage"}}`))
+		c.Assert(string(body), Matches, fmt.Sprintf(`{"created_at":".*","name":"service.create","service":{"subdomain":"apihub","endpoint":"http://example.org","owner":"bob@bar.example.org","team":"apihub"}}`))
 	})
 	svrD := httptest.NewServer(defaultText)
 	s.api.AddHook(account.Hook{
-		Name:   "backstage-maestro-default",
+		Name:   "apihub-apihub-default",
 		Team:   account.ALL_TEAMS,
 		Events: []string{"service.create"},
 		Config: account.HookConfig{Address: svrD.URL},
@@ -54,19 +54,19 @@ func (s *S) TestListenEvents(c *C) {
 	wrongTmpl := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		wg.Done()
 		body, _ := ioutil.ReadAll(r.Body)
-		c.Assert(string(body), Matches, fmt.Sprintf(`{"created_at":".*","name":"service.create","service":{"subdomain":"backstage","endpoint":"http://example.org","owner":"bob@bar.example.org","team":"backstage"}}`))
+		c.Assert(string(body), Matches, fmt.Sprintf(`{"created_at":".*","name":"service.create","service":{"subdomain":"apihub","endpoint":"http://example.org","owner":"bob@bar.example.org","team":"apihub"}}`))
 	})
 	svrT := httptest.NewServer(wrongTmpl)
 	s.api.AddHook(account.Hook{
-		Name:   "backstage-maestro-wrong-tmpl",
+		Name:   "apihub-apihub-wrong-tmpl",
 		Team:   account.ALL_TEAMS,
 		Events: []string{"service.create"},
 		Config: account.HookConfig{Address: svrT.URL},
-		Text:   `{"username": "Backstage Maestro", "channel": "{{.Team.NotFound}}"}`,
+		Text:   `{"username": "ApiHub", "channel": "{{.Team.NotFound}}"}`,
 	})
 
 	team.Create(user)
-	subdomain := "backstage"
+	subdomain := "apihub"
 
 	defer func() {
 		serv, _ := s.store.FindServiceBySubdomain(subdomain)
@@ -84,6 +84,6 @@ func (s *S) TestListenEvents(c *C) {
 
 	c.Assert(code, Equals, http.StatusCreated)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"subdomain":"backstage","endpoint":"http://example.org","owner":"bob@bar.example.org","team":"backstage"}`)
+	c.Assert(string(body), Equals, `{"subdomain":"apihub","endpoint":"http://example.org","owner":"bob@bar.example.org","team":"apihub"}`)
 	wg.Wait()
 }

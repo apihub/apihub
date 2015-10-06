@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"os"
 
-	"github.com/backstage/maestro/account"
+	"github.com/apihub/apihub/account"
 	. "gopkg.in/check.v1"
 )
 
@@ -28,7 +28,7 @@ func (s *S) TestServer(c *C) {
 
 	w := httptest.NewRecorder()
 	w.Body = new(bytes.Buffer)
-	r, _ := http.NewRequest("GET", "test.backstage.dev", nil)
+	r, _ := http.NewRequest("GET", "test.apihub.dev", nil)
 	dispatcher.ServeHTTP(w, r)
 	c.Assert(w.Code, Equals, http.StatusOK)
 	c.Assert(w.Body.String(), Equals, "OK")

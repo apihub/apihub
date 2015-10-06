@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/backstage/maestro/errors"
-	. "github.com/backstage/maestro/log"
+	"github.com/apihub/apihub/errors"
+	. "github.com/apihub/apihub/log"
 )
 
 type Service struct {

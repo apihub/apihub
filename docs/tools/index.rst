@@ -2,7 +2,7 @@
 Tools
 =====
 
-Backstage provides a jsonschema-based Restful API. And, there're some greate tools out there that may help in interacting with the API:
+ApiHub provides a jsonschema-based Restful API. And, there're some greate tools out there that may help in interacting with the API:
 
 
 Browser

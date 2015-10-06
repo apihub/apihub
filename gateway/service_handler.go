@@ -3,9 +3,9 @@ package gateway
 import (
 	"net/http"
 
-	"github.com/backstage/maestro/account"
-	"github.com/backstage/maestro/gateway/middleware"
-	"github.com/backstage/maestro/gateway/transformer"
+	"github.com/apihub/apihub/account"
+	"github.com/apihub/apihub/gateway/middleware"
+	"github.com/apihub/apihub/gateway/transformer"
 )
 
 // ServiceHandler registers the handler, transformers and middlewares for the given

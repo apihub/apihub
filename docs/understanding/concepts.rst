@@ -13,9 +13,9 @@ App
 An app is any kind of application - mobile or not, that somehow interact with the apis that are distributed through the gateway.
 
 
-Backstage Client (cli)
+ApiHub Client (cli)
 ----------------------
-An open source command line solution for publishing APIs on Backstage. And, can be found at: `https://github.com/backstage/backstage-client <https://github.com/backstage/backstage-client>`_. It is used to interact with multiple Backstage serves. It's just need to add more than one target. You can find more about it here: `http://godoc.org/github.com/backstage/backstage-client <http://godoc.org/github.com/backstage/backstage-client>`_.
+An open source command line solution for publishing APIs on ApiHub. And, can be found at: `https://github.com/apihub/apihub-client <https://github.com/apihub/apihub-client>`_. It is used to interact with multiple ApiHub serves. It's just need to add more than one target. You can find more about it here: `http://godoc.org/github.com/apihub/apihub-client <http://godoc.org/github.com/apihub/apihub-client>`_.
 
 
 Gateway/Reverse Proxy
@@ -36,7 +36,7 @@ OAuth 2.0
 
 Restful Api
 -----------
-Backstage takes advantage of `Json-Schema <http://json-schema.org/>`_ to describe its existing data and include support to `hypermedia <http://en.wikipedia.org/wiki/HATEOAS>`_ to it.
+ApiHub takes advantage of `Json-Schema <http://json-schema.org/>`_ to describe its existing data and include support to `hypermedia <http://en.wikipedia.org/wiki/HATEOAS>`_ to it.
 
 
 Team

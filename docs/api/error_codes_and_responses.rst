@@ -5,7 +5,7 @@ Error Codes & Responses
 HTTP Status Codes
 -----------------
 
-The Backstage API returns appropriate HTTP status codes for every request, as follow:
+The ApiHub API returns appropriate HTTP status codes for every request, as follow:
 
 +------------+------------------------------+----------------------------------------------------------------------------------+
 |    Code    |             Text             |            Description                                                           |
@@ -26,7 +26,7 @@ The Backstage API returns appropriate HTTP status codes for every request, as fo
 +------------+------------------------------+----------------------------------------------------------------------------------+
 | 500        |    Internal Server  Error    | Something is broken. Please open an issue on Github.                             |
 +------------+------------------------------+----------------------------------------------------------------------------------+
-| 502        |    Bad Gateway               | Backstage is down.                                                               |
+| 502        |    Bad Gateway               | ApiHub is down.                                                               |
 +------------+------------------------------+----------------------------------------------------------------------------------+
-| 504        |    Gateway timeout           | Backstage is up, but the request couldn't be served by the backend.              |
+| 504        |    Gateway timeout           | ApiHub is up, but the request couldn't be served by the backend.              |
 +------------+------------------------------+----------------------------------------------------------------------------------+

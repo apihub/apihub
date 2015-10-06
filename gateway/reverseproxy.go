@@ -20,7 +20,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/backstage/maestro/gateway/transformer"
+	"github.com/apihub/apihub/gateway/transformer"
 )
 
 // onExitFlushLoop is a callback set by tests to detect the state of the

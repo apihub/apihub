@@ -8,8 +8,8 @@ Clonning and Running the project
 
 ::
 
-  git clone https://github.com/backstage/backstage.git
-  cd backstage
+  git clone https://github.com/apihub/apihub.git
+  cd apihub
   make setup
   make run-api
 

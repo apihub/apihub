@@ -2,7 +2,7 @@
 Plugins
 =======
 
-It's possible to add functionalities to your APIs just by using plugins. Backstage supports two type: Middleware and Transformer.
+It's possible to add functionalities to your APIs just by using plugins. ApiHub supports two type: Middleware and Transformer.
 
 
 Middleware
@@ -89,7 +89,7 @@ The response:
   HTTP/1.1 200 OK
   access-control-allow-credentials: true
   access-control-allow-methods: PUT
-  access-control-allow-origin: http://helloworld.backstage.dev
+  access-control-allow-origin: http://helloworld.apihub.dev
   access-control-max-age: 10
   vary: Origin
   date: Sat, 16 May 2015 13:40:44 GMT
@@ -106,7 +106,7 @@ To use a Middleware, it's needed to create a config for each service and it's ne
 
 ::
 
-  curl -XOPTIONS -H 'Access-Control-Request-Method: PUT' -H 'Origin: http://helloworld.backstage.dev' http://helloworld.backstage.dev/ -i
+  curl -XOPTIONS -H 'Access-Control-Request-Method: PUT' -H 'Origin: http://helloworld.apihub.dev' http://helloworld.apihub.dev/ -i
 
 .. highlight:: go
 
@@ -116,7 +116,7 @@ To use a Middleware, it's needed to create a config for each service and it's ne
   confCors := &account.Plugin{
     Name:    "cors",
     Service: services[0].Subdomain,
-    Config:  map[string]interface{}{"allowed_origins": []string{"http://helloworld.backstage.dev"}, "debug": true, "allowed_methods": []string{"DELETE", "PUT"}, "allow_credentials": true, "max_age": 10},
+    Config:  map[string]interface{}{"allowed_origins": []string{"http://helloworld.apihub.dev"}, "debug": true, "allowed_methods": []string{"DELETE", "PUT"}, "allow_credentials": true, "max_age": 10},
   }
   confCors.Save()
 

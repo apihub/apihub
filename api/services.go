@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/backstage/maestro/account"
-	"github.com/backstage/maestro/errors"
-	. "github.com/backstage/maestro/log"
+	"github.com/apihub/apihub/account"
+	"github.com/apihub/apihub/errors"
+	. "github.com/apihub/apihub/log"
 	"github.com/gorilla/mux"
 )
 

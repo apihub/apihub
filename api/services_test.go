@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/backstage/maestro/account"
-	"github.com/backstage/maestro/requests"
+	"github.com/apihub/apihub/account"
+	"github.com/apihub/apihub/requests"
 	. "gopkg.in/check.v1"
 )
 
 func (s *S) TestCreateService(c *C) {
 	team.Create(user)
-	subdomain := "backstage"
+	subdomain := "apihub"
 
 	defer func() {
 		serv, _ := s.store.FindServiceBySubdomain(subdomain)
@@ -29,7 +29,7 @@ func (s *S) TestCreateService(c *C) {
 
 	c.Assert(code, Equals, http.StatusCreated)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"subdomain":"backstage","endpoint":"http://example.org","owner":"bob@bar.example.org","team":"backstage"}`)
+	c.Assert(string(body), Equals, `{"subdomain":"apihub","endpoint":"http://example.org","owner":"bob@bar.example.org","team":"apihub"}`)
 }
 
 func (s *S) TestCreateServiceWhenAlreadyExists(c *C) {
@@ -108,7 +108,7 @@ func (s *S) TestUpdateService(c *C) {
 
 	c.Assert(code, Equals, http.StatusOK)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"subdomain":"backstage","disabled":true,"documentation":"http://docs.org","endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"backstage"}`)
+	c.Assert(string(body), Equals, `{"subdomain":"apihub","disabled":true,"documentation":"http://docs.org","endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"apihub"}`)
 }
 
 func (s *S) TestUpdateServiceNotFound(c *C) {
@@ -167,7 +167,7 @@ func (s *S) TestDeleteService(c *C) {
 
 	c.Assert(code, Equals, http.StatusOK)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"subdomain":"backstage","endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"backstage"}`)
+	c.Assert(string(body), Equals, `{"subdomain":"apihub","endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"apihub"}`)
 }
 
 func (s *S) TestDeleteServiceWithoutPermission(c *C) {
@@ -228,7 +228,7 @@ func (s *S) TestServiceInfo(c *C) {
 
 	c.Assert(code, Equals, http.StatusOK)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"subdomain":"backstage","endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"backstage"}`)
+	c.Assert(string(body), Equals, `{"subdomain":"apihub","endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"apihub"}`)
 }
 
 func (s *S) TestServiceInfoNotMember(c *C) {
@@ -287,7 +287,7 @@ func (s *S) TestServiceList(c *C) {
 
 	c.Assert(code, Equals, http.StatusOK)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"items":[{"subdomain":"backstage","endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"backstage"}],"item_count":1}`)
+	c.Assert(string(body), Equals, `{"items":[{"subdomain":"apihub","endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"apihub"}],"item_count":1}`)
 }
 
 func (s *S) TestServiceListWithoutSignIn(c *C) {

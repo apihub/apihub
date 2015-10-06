@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/backstage/maestro/api"
-	"github.com/backstage/maestro/errors"
-	"github.com/backstage/maestro/gateway/middleware"
+	"github.com/apihub/apihub/api"
+	"github.com/apihub/apihub/errors"
+	"github.com/apihub/apihub/gateway/middleware"
 	"github.com/codegangsta/negroni"
 )
 

@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/backstage/maestro/errors"
-	"github.com/backstage/maestro/requests"
+	"github.com/apihub/apihub/errors"
+	"github.com/apihub/apihub/requests"
 	. "gopkg.in/check.v1"
 )
 

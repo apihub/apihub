@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/backstage/maestro/errors"
+	"github.com/apihub/apihub/errors"
 	. "gopkg.in/check.v1"
 )
 

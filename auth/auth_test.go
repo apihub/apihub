@@ -3,11 +3,11 @@ package auth_test
 import (
 	"testing"
 
-	"github.com/backstage/maestro/account"
-	"github.com/backstage/maestro/account/mem"
-	"github.com/backstage/maestro/account/mongore"
-	"github.com/backstage/maestro/auth"
-	"github.com/backstage/maestro/auth/test"
+	"github.com/apihub/apihub/account"
+	"github.com/apihub/apihub/account/mem"
+	"github.com/apihub/apihub/account/mongore"
+	"github.com/apihub/apihub/auth"
+	"github.com/apihub/apihub/auth/test"
 	. "gopkg.in/check.v1"
 )
 
@@ -31,7 +31,7 @@ func setUpMemoryTest() account.Storable {
 func setUpMongoreTest() account.Storable {
 	cfg := mongore.Config{
 		Host:         "127.0.0.1:27017",
-		DatabaseName: "backstage_auth_test",
+		DatabaseName: "apihub_auth_test",
 	}
 	store := mongore.New(cfg)
 	account.Storage(store)

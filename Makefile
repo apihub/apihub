@@ -1,9 +1,9 @@
 define HG_ERROR
-FATAL: You need Mercurial (hg) to download backstage dependencies.
+FATAL: You need Mercurial (hg) to download apihub dependencies.
 endef
 
 define GIT_ERROR
-FATAL: You need Git to download backstage dependencies.
+FATAL: You need Git to download apihub dependencies.
 endef
 
 help:

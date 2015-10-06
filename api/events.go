@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"text/template"
 
-	"github.com/backstage/maestro/account"
-	. "github.com/backstage/maestro/log"
-	"github.com/backstage/maestro/requests"
+	"github.com/apihub/apihub/account"
+	. "github.com/apihub/apihub/log"
+	"github.com/apihub/apihub/requests"
 )
 
 type Event interface {

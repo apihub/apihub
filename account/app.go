@@ -1,9 +1,9 @@
 package account
 
 import (
-	"github.com/backstage/maestro/errors"
-	. "github.com/backstage/maestro/log"
-	"github.com/backstage/maestro/util"
+	"github.com/apihub/apihub/errors"
+	. "github.com/apihub/apihub/log"
+	"github.com/apihub/apihub/util"
 	goutils "github.com/mrvdot/golang-utils"
 )
 

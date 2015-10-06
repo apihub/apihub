@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"github.com/backstage/maestro/errors"
+	"github.com/apihub/apihub/errors"
 	"github.com/gorilla/context"
 	"github.com/satori/go.uuid"
 )

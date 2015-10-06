@@ -4,8 +4,8 @@ package mem
 import (
 	"fmt"
 
-	"github.com/backstage/maestro/account"
-	"github.com/backstage/maestro/errors"
+	"github.com/apihub/apihub/account"
+	"github.com/apihub/apihub/errors"
 )
 
 type Mem struct {

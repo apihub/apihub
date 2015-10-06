@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"github.com/backstage/maestro/account"
+	"github.com/apihub/apihub/account"
 )
 
 type Authenticatable interface {

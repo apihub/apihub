@@ -4,7 +4,7 @@ Manage My Teams
 
 .. note::
 
-  To perform all the following operations, it's needed to be authenticated. If you do not know how to log in using your Backstage credentials, see :ref:`Log in with Backstage Credentials <login>`.
+  To perform all the following operations, it's needed to be authenticated. If you do not know how to log in using your ApiHub credentials, see :ref:`Log in with ApiHub Credentials <login>`.
 
 
 Creating a new team
@@ -60,7 +60,7 @@ Example Request
 
 ::
 
-  curl -XPOST -i http://localhost:8000/api/teams -H "Content-Type: application/json" -d '{"name": "Backstage", "alias": "backstage"} ' -H "Authorization: Token EDWZEheeeDnKt0B4IoH8IsOUSnGdumfHmHGQlZDdRbg="
+  curl -XPOST -i http://localhost:8000/api/teams -H "Content-Type: application/json" -d '{"name": "ApiHub", "alias": "apihub"} ' -H "Authorization: Token EDWZEheeeDnKt0B4IoH8IsOUSnGdumfHmHGQlZDdRbg="
 
 
 Example Result
@@ -75,7 +75,7 @@ Example Result
   Date: Sat, 06 Dec 2014 01:33:05 GMT
   Content-Length: 83
 
-  {"name":"backstage","users":["alice@example.org"],"owner":"alice@example.org"}
+  {"name":"apihub","users":["alice@example.org"],"owner":"alice@example.org"}
 
 
 If you do not include a valid token in the header, an error will be returned:
@@ -111,7 +111,7 @@ If someone else is using the provided name, an error will be returned:
 Retrieving all teams for the signed user
 ----------------------------------------
 
-Once you're logged in, it is possible to retrieve all the teams. Backstage takes advantage of the token to identify the user and find the teams.
+Once you're logged in, it is possible to retrieve all the teams. ApiHub takes advantage of the token to identify the user and find the teams.
 
 Resource URL
 ============
@@ -163,7 +163,7 @@ Example Result
   Date: Sat, 06 Dec 2014 02:33:37 GMT
   Content-Length: 179
 
-  {"items":[{"name":"backstage","alias":"backstage","users":["alice@example.org"],"owner":"alice@example.org"},{"name":"cli","alias":"cli","users":["alice@example.org"],"owner":"alice@example.org"}],"item_count":2}
+  {"items":[{"name":"apihub","alias":"apihub","users":["alice@example.org"],"owner":"alice@example.org"},{"name":"cli","alias":"cli","users":["alice@example.org"],"owner":"alice@example.org"}],"item_count":2}
 
 
 If the user does not belong to any team, an empty list will be returned:
@@ -217,7 +217,7 @@ Example Request
 
 ::
 
-  curl -XGET -i http://localhost:8000/api/teams/backstage -H "Authorization: Token 6rrKX79WwwEnECZMmeYLm8tzSWZmN_mLT7XiFPN14Og="
+  curl -XGET -i http://localhost:8000/api/teams/apihub -H "Authorization: Token 6rrKX79WwwEnECZMmeYLm8tzSWZmN_mLT7XiFPN14Og="
 
 
 Example Result
@@ -233,7 +233,7 @@ Example Result
   Date: Sat, 06 Dec 2014 02:33:37 GMT
   Content-Length: 179
 
-  {"name":"backstage","alias":"backstage","users":["alice@example.org"],"owner":"alice@example.org"}
+  {"name":"apihub","alias":"apihub","users":["alice@example.org"],"owner":"alice@example.org"}
 
 
 When trying to retrieve the info for a non-existing team, an error will be returned:
@@ -282,7 +282,7 @@ Resource URL
 
 ::
 
-  http://localhost:8000/api/teams/backstage/users
+  http://localhost:8000/api/teams/apihub/users
 
 Header Parameters
 =================
@@ -300,7 +300,7 @@ Example Request
 
 ::
 
-  curl -XPOST -i http://localhost:8000/api/teams/backstage/users -H "Content-Type: application/json" -d '{"users": ["bob@example.org"]}' -H "Authorization: Token 6rrKX79WwwEnECZMmeYLm8tzSWZmN_mLT7XiFPN14Og"
+  curl -XPOST -i http://localhost:8000/api/teams/apihub/users -H "Content-Type: application/json" -d '{"users": ["bob@example.org"]}' -H "Authorization: Token 6rrKX79WwwEnECZMmeYLm8tzSWZmN_mLT7XiFPN14Og"
 
 
 Example Result
@@ -316,7 +316,7 @@ Example Result
   Date: Sat, 06 Dec 2014 01:44:11 GMT
   Content-Length: 90
 
-  {"name":"backstage","users":["alice@example.org","bob@example.org"],"owner":"alice@example.org"}
+  {"name":"apihub","users":["alice@example.org","bob@example.org"],"owner":"alice@example.org"}
 
 
 If the user does not belong to the team, an error wil be returned:
@@ -343,7 +343,7 @@ Resource URL
 
 ::
 
-  http://localhost:8000/api/teams/backstage/users
+  http://localhost:8000/api/teams/apihub/users
 
 Resource Information
 ====================
@@ -369,7 +369,7 @@ Example Request
 
 ::
 
-  curl -XDELETE -i http://localhost:8000/api/teams/backstage/users -H "Content-Type: application/json" -d '{"users": ["bob@example.org"]}' -H "Authorization: Token vdpazZHBWZCufs-fFaX8teC7Wx1ID5KGTEXRdo3b9vk="
+  curl -XDELETE -i http://localhost:8000/api/teams/apihub/users -H "Content-Type: application/json" -d '{"users": ["bob@example.org"]}' -H "Authorization: Token vdpazZHBWZCufs-fFaX8teC7Wx1ID5KGTEXRdo3b9vk="
 
 
 Example Result
@@ -384,7 +384,7 @@ Example Result
   Date: Sat, 06 Dec 2014 01:47:49 GMT
   Content-Length: 83
 
-  {"name":"backstage","users":["alice@example.org", "bob@example.org"],"owner":"alice@example.org"}
+  {"name":"apihub","users":["alice@example.org", "bob@example.org"],"owner":"alice@example.org"}
 
 
 The owner is a special member of the team. And, nobody has permission to remove him from that.
@@ -456,7 +456,7 @@ Example Request
 
 ::
 
-  curl -XDELETE -i http://localhost:8000/api/teams/backstage -H "Authorization: Token 1HnbxXIYMJzECiE-lpH0uIaailRdDurz2JL_5kgtMVc="
+  curl -XDELETE -i http://localhost:8000/api/teams/apihub -H "Authorization: Token 1HnbxXIYMJzECiE-lpH0uIaailRdDurz2JL_5kgtMVc="
 
 
 Example Result
@@ -472,7 +472,7 @@ Example Result
   Date: Sat, 06 Dec 2014 01:55:23 GMT
   Content-Length: 58
 
-  {"name":"backstage","users":["alice@example.org","bob@example.org"],"owner":"alice@example.org"}
+  {"name":"apihub","users":["alice@example.org","bob@example.org"],"owner":"alice@example.org"}
 
 
 If the team does not exist, a not found will be returned:
