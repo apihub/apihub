@@ -5,11 +5,11 @@ import (
 	"strings"
 	"time"
 
-	"code.google.com/p/go.crypto/bcrypt"
 	"github.com/apihub/apihub/account"
 	"github.com/apihub/apihub/errors"
 	. "github.com/apihub/apihub/log"
 	"github.com/apihub/apihub/util"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (

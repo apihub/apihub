@@ -1,29 +1,31 @@
 language: go
 
+sudo: false
+
 go:
-  - 1.4
+  - 1.5
   - tip
 
 env:
   - GOARCH=amd64
-  - GOARCH=386
 
 before_install:
-  - "sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10"
-  - "echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list"
-  - "sudo apt-get update"
-  - "sudo apt-get install mongodb-org-server"
+  - chmod +x ./travis/install-etcd.sh
 
 install:
   - export PATH="$HOME/gopath/bin:$PATH"
   - go get github.com/tools/godep
   - go get -t -d ./...
   - godep restore ./...
+  - ./travis/install-etcd.sh
 
 before_script:
   - "until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done"
+  - chmod +x ./etcd/etcd
 
 script:
+  - ./etcd/etcd &
+  - cd $HOME/gopath/src/github.com/apihub/apihub
   - go test -x ./...
 
 services:
