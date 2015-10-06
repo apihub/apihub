@@ -22,6 +22,13 @@ Several apis require a similar set of features on the backend, such as: authenti
   make race # If you want to check if there's any race condition.
 ```
 
+
+## Related projects
+This project's inspired by the following projects:
+
+- https://github.com/tsuru/tsuru
+- https://github.com/mailgun/vulcand
+
 ## Links:
 
 - Documentation: https://apihub.readme.io/
