@@ -1,0 +1,14 @@
+web:
+  build: .
+  ports:
+    - "8000:8000"
+  links:
+    - etcd
+    - mongo
+    - redis
+etcd:
+  image: quay.io/coreos/etcd
+mongo:
+  image: mongo
+redis:
+  image: redis

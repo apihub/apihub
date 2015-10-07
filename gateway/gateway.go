@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"sync"
 
 	"github.com/apihub/apihub/account"
 	"github.com/apihub/apihub/gateway/middleware"
@@ -29,6 +30,7 @@ type Gateway struct {
 	services     map[string]ServiceHandler
 	transformers transformer.Transformers
 	middlewares  middleware.Middlewares
+	mtx          sync.RWMutex
 }
 
 func New(config *Settings, pubsub account.PubSub) *Gateway {
@@ -57,6 +59,8 @@ func (g *Gateway) Run() {
 
 // handler is responsible to check if the gateway has a service to respond the request.
 func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	g.mtx.RLock()
+	defer g.mtx.RUnlock()
 	subdomain := extractSubdomainFromRequest(r)
 	if serviceH, ok := g.services[subdomain]; ok {
 		serviceH.handler.ServeHTTP(w, r)
@@ -112,7 +116,9 @@ func (g *Gateway) RefreshServices() {
 func (g *Gateway) AddService(service *account.Service) {
 	h := ServiceHandler{service: service}
 	if h.handler = newProxyHandler(h); h.handler != nil {
+		g.mtx.Lock()
 		g.services[h.service.Subdomain] = h
+		g.mtx.Unlock()
 		Logger.Info("Service added on ApiHub: %+v.", service)
 		return
 	}
@@ -121,7 +127,9 @@ func (g *Gateway) AddService(service *account.Service) {
 
 // Remove an existing service from the Gateway.
 func (g *Gateway) RemoveService(service *account.Service) {
+	g.mtx.Lock()
 	delete(g.services, service.Subdomain)
+	g.mtx.Unlock()
 	Logger.Info("Service removed on ApiHub: %+v.", service)
 }
 
