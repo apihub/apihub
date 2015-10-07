@@ -93,7 +93,7 @@ func (s *S) TestGatewayInternalError(c *C) {
 
 	c.Assert(w.Code, Equals, http.StatusInternalServerError)
 	c.Assert(w.Header().Get("Content-Type"), Equals, "application/json")
-	c.Assert(w.Body.String(), Equals, `{"error":"internal_server_error","error_description":"dial tcp: lookup invalidurl: no such host"}`)
+	c.Assert(w.Body.String(), Matches, `{"error":"internal_server_error","error_description":"dial tcp: lookup invalidurl:.*no such host"}`)
 }
 
 func (s *S) TestAddService(c *C) {
