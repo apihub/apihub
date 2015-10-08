@@ -12,7 +12,7 @@ Several apis require a similar set of features on the backend, such as: authenti
   git clone https://github.com/apihub/apihub.git
   cd apihub
   make setup
-  make run-api-sample
+  make run-api
 ```
 
 ##Running Tests
