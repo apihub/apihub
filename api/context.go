@@ -5,6 +5,7 @@ import (
 
 	"github.com/apihub/apihub/account"
 	"github.com/apihub/apihub/errors"
+	. "github.com/apihub/apihub/log"
 	"github.com/gorilla/context"
 )
 
@@ -41,6 +42,7 @@ func SetCurrentUser(r *http.Request, user *account.User) {
 
 // Get the user from the request context and check if it's still valid.
 func GetCurrentUser(r *http.Request) (*account.User, error) {
+	Logger.Info("GetCurrentUser")
 	user, ok := context.GetOk(r, CurrentUser)
 	if !ok {
 		return nil, errors.ErrLoginRequired

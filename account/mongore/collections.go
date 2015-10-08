@@ -1,6 +1,10 @@
 package mongore
 
 import (
+	"fmt"
+
+	"github.com/apihub/apihub/db"
+	"github.com/garyburd/redigo/redis"
 	"github.com/tsuru/tsuru/db/storage"
 	"gopkg.in/mgo.v2"
 )
@@ -49,4 +53,37 @@ func (strg *Storage) Hooks() *storage.Collection {
 	collection := strg.Collection("hooks")
 	collection.EnsureIndex(index)
 	return collection
+}
+
+func (strg *Storage) GetTokenValue(key string, t interface{}) error {
+	var (
+		data []interface{}
+		err  error
+	)
+
+	if item := db.Cache.Get(key); item != nil && item.Value() != nil {
+		if !item.Expired() {
+			data = item.Value().([]interface{})
+		}
+	}
+	if len(data) == 0 {
+		data, err = db.GetHCache(key)
+		if err != nil {
+			return err
+		}
+	}
+
+	if err = redis.ScanStruct(data, t); err != nil {
+		fmt.Print(err)
+		return err
+	}
+	if len(data) > 0 {
+		db.Cache.Replace(key, data)
+	}
+	return nil
+}
+
+func (strg *Storage) DeleteToken(key string) (interface{}, error) {
+	db.Cache.Delete(key)
+	return db.DelCache(key)
 }

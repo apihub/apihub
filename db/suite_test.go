@@ -23,9 +23,6 @@ func (s *S) SetUpSuite(c *C) {
 }
 
 func (s *S) TearDownSuite(c *C) {
-	storage, err := Conn()
-	c.Assert(err, IsNil)
-	defer storage.Close()
 	config.Unset("database:url")
 	config.Unset("database:name")
 	s.etcd.Close()

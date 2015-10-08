@@ -172,23 +172,19 @@ func (m *Mongore) CreateToken(token account.Token) error {
 }
 
 func (m *Mongore) DecodeToken(key string, t interface{}) error {
-	conn, err := db.Conn()
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
 
-	return conn.GetTokenValue(key, t)
+	return strg.GetTokenValue(key, t)
 }
 
 func (m *Mongore) DeleteToken(key string) error {
-	conn, err := db.Conn()
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
+	var strg Storage
+	strg.Storage = m.openSession()
+	defer strg.Close()
 
-	_, err = conn.DeleteToken(key)
+	_, err := strg.DeleteToken(key)
 	return err
 }
 

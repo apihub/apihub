@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/apihub/apihub/errors"
+	. "github.com/apihub/apihub/log"
 	"github.com/gorilla/context"
 	"github.com/satori/go.uuid"
 )
@@ -20,10 +21,11 @@ func (api *Api) authorizationMiddleware(rw http.ResponseWriter, r *http.Request,
 
 	user, err := api.auth.UserFromToken(authorization)
 	if err != nil {
+		Logger.Info("authorizationMiddleware: Err: %s.", err)
 		AddRequestError(r, errors.NewUnauthorizedError(errors.ErrLoginRequired))
 		return
 	}
-
+	Logger.Info("authorizationMiddleware: User %+v", user)
 	SetCurrentUser(r, user)
 	next(rw, r)
 }

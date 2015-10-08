@@ -112,7 +112,7 @@ func NewRedisClient() *RedisClient {
 	return client
 }
 
-func delCache(key string) (interface{}, error) {
+func DelCache(key string) (interface{}, error) {
 	conn := NewRedisClient().conn
 	defer conn.Close()
 	result, err := conn.Do("DEL", key)
@@ -123,7 +123,7 @@ func delCache(key string) (interface{}, error) {
 	return result, nil
 }
 
-func getHCache(key string) ([]interface{}, error) {
+func GetHCache(key string) ([]interface{}, error) {
 	conn := getRedis().Get()
 	defer conn.Close()
 	keyValue, err := conn.Do("HGETALL", key)
@@ -134,7 +134,7 @@ func getHCache(key string) ([]interface{}, error) {
 	return keyValue.([]interface{}), nil
 }
 
-func addHCache(key string, expires int, data map[string]interface{}) {
+func AddHCache(key string, expires int, data map[string]interface{}) {
 	conn := NewRedisClient().conn
 	defer conn.Close()
 

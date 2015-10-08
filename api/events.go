@@ -33,7 +33,7 @@ func (api *Api) ListenEvents() {
 				for _, hook := range allHookw {
 					data, err := parseData(event, hook)
 					if err != nil {
-						Logger.Warn("Could not parse Event data: %+v. Default format will be develired.", err)
+						Logger.Warn("Could not parse Event data: %+v. Default format will be delivered.", err)
 						data = event.Data()
 					}
 
