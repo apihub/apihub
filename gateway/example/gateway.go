@@ -12,7 +12,7 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	settings := &gateway.Settings{
-		Host: "apihub.example.org",
+		Host: "apimanager.org",
 		Port: ":8001",
 	}
 
