@@ -63,15 +63,19 @@ func (service *Service) Update() error {
 	return err
 }
 
-func (service Service) Delete(owner User) error {
+func (service *Service) Delete(owner User) error {
 	if service.Owner != owner.Email {
 		Logger.Warn("Only the owner has permission to delete the following service: %s.", service.Subdomain)
 		return errors.NewForbiddenError(errors.ErrOnlyOwnerHasPermission)
 	}
 
-	go store.DeletePluginsByService(service)
+	go store.DeletePluginsByService(*service)
 
-	err := store.DeleteService(service)
+	err := store.DeleteService(*service)
+	if err == nil {
+		service.Disabled = true
+		go publishService(service)
+	}
 	Logger.Info("service.Delete: %+v. Err: %s.", service, err)
 	return err
 }

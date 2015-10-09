@@ -10,6 +10,7 @@ import (
 	"github.com/tsuru/config"
 )
 
+// const DefaultRedisHost = "apihub_redis_1:6379"
 const DefaultRedisHost = "127.0.0.1:6379"
 
 var redisPool *redis.Pool

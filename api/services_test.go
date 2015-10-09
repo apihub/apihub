@@ -106,9 +106,9 @@ func (s *S) TestUpdateService(c *C) {
 		Headers:        http.Header{"Authorization": {s.authHeader}},
 	})
 
-	c.Assert(code, Equals, http.StatusOK)
-	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
 	c.Assert(string(body), Equals, `{"subdomain":"apihub","disabled":true,"documentation":"http://docs.org","endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"apihub"}`)
+	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
+	c.Assert(code, Equals, http.StatusOK)
 }
 
 func (s *S) TestUpdateServiceNotFound(c *C) {
@@ -167,7 +167,7 @@ func (s *S) TestDeleteService(c *C) {
 
 	c.Assert(code, Equals, http.StatusOK)
 	c.Assert(headers.Get("Content-Type"), Equals, "application/json")
-	c.Assert(string(body), Equals, `{"subdomain":"apihub","endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"apihub"}`)
+	c.Assert(string(body), Equals, `{"subdomain":"apihub","disabled":true,"endpoint":"http://example.org/api","owner":"bob@bar.example.org","team":"apihub"}`)
 }
 
 func (s *S) TestDeleteServiceWithoutPermission(c *C) {

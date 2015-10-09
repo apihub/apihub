@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"net/url"
 	"text/template"
 
 	"github.com/apihub/apihub/account"
@@ -65,14 +66,17 @@ func parseData(event Event, hook account.Hook) ([]byte, error) {
 
 func sendWebHook(config account.HookConfig, body interface{}) {
 	if config.Address != "" {
+		url, err := url.Parse(config.Address)
 		if config.Method == "" {
 			config.Method = "POST"
 		}
-		httpClient := requests.NewHTTPClient(config.Address)
-		_, _, _, err := httpClient.MakeRequest(requests.Args{
+		b := body.([]byte)
+		httpClient := requests.NewHTTPClient(fmt.Sprintf("%s://%s", url.Scheme, url.Host))
+		_, _, _, err = httpClient.MakeRequest(requests.Args{
 			AcceptableCode: http.StatusOK,
 			Method:         config.Method,
-			Body:           body,
+			Path:           url.RequestURI(),
+			Body:           string(b),
 		})
 
 		if err != nil {

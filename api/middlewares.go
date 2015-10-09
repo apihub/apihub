@@ -25,7 +25,7 @@ func (api *Api) authorizationMiddleware(rw http.ResponseWriter, r *http.Request,
 		AddRequestError(r, errors.NewUnauthorizedError(errors.ErrLoginRequired))
 		return
 	}
-	Logger.Info("authorizationMiddleware: User %+v", user)
+
 	SetCurrentUser(r, user)
 	next(rw, r)
 }
