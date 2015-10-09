@@ -164,10 +164,10 @@ func (m *Mongore) TeamServices(team account.Team) ([]account.Service, error) {
 func (m *Mongore) CreateToken(token account.Token) error {
 	key := fmt.Sprintf("%s: %s", token.Type, token.User.Email)
 	db.Cache.Set(key, nil, time.Duration(token.Expires)*time.Minute)
-	db.HMSET(key, token.Expires, structs.Map(token))
+	db.AddHCache(key, token.Expires, structs.Map(token))
 
 	db.Cache.Set(token.AccessToken, nil, time.Duration(token.Expires))
-	db.HMSET(token.AccessToken, token.Expires, structs.Map(token.User))
+	db.AddHCache(token.AccessToken, token.Expires, structs.Map(token.User))
 	return nil
 }
 

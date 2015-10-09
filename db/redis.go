@@ -14,44 +14,14 @@ const DefaultRedisHost = "127.0.0.1:6379"
 
 var redisPool *redis.Pool
 
-// A pub-sub message
-type Message struct {
-	Type    string
-	Channel string
-	Data    string
-}
-
-type Client interface {
-	Subscribe(channels ...interface{}) (err error)
-	Unsubscribe(channels ...interface{}) (err error)
-	Publish(channel string, message string)
-	Receive() (message Message)
-}
-
 type RedisClient struct {
 	conn redis.Conn
 	redis.PubSubConn
 	sync.Mutex
 }
 
-func (c *RedisClient) Publish(channel string, message string) {
-	c.Lock()
-	c.conn.Send("PUBLISH", channel, message)
-	c.Unlock()
-}
-
 func (c *RedisClient) Close() {
 	c.conn.Close()
-}
-
-func (c *RedisClient) Receive() Message {
-	switch message := c.PubSubConn.Receive().(type) {
-	case redis.Message:
-		return Message{"message", message.Channel, string(message.Data)}
-	case redis.Subscription:
-		return Message{message.Kind, message.Channel, string(message.Count)}
-	}
-	return Message{}
 }
 
 func getRedis() *redis.Pool {
@@ -135,16 +105,6 @@ func GetHCache(key string) ([]interface{}, error) {
 }
 
 func AddHCache(key string, expires int, data map[string]interface{}) {
-	conn := NewRedisClient().conn
-	defer conn.Close()
-
-	if _, err := conn.Do("HMSET", redis.Args{key}.AddFlat(data)...); err != nil {
-		fmt.Print(err)
-	}
-	conn.Do("EXPIRE", key, expires)
-}
-
-func HMSET(key string, expires int, data map[string]interface{}) {
 	conn := NewRedisClient().conn
 	defer conn.Close()
 

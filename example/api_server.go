@@ -4,7 +4,7 @@ import (
 	"runtime"
 
 	"github.com/apihub/apihub/account"
-	"github.com/apihub/apihub/account/mongore"
+	"github.com/apihub/apihub/account/mem"
 	"github.com/apihub/apihub/api"
 	"github.com/apihub/apihub/db"
 )
