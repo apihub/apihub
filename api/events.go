@@ -26,25 +26,33 @@ func (api *Api) ListenEvents() {
 
 	go func() {
 		for event := range api.Events {
-			// TODO: Need to load team specific!
-			allHookw, err := account.FindHooksByEvent(event.Name())
+			// Send Hook events
+			go func(event Event) {
+				sendHooks(event)
+			}(event)
 
-			if len(allHookw) > 0 && err == nil {
-				Logger.Debug(fmt.Sprintf("Start sending hooks to the following list: %+v.", allHookw))
-				for _, hook := range allHookw {
-					data, err := parseData(event, hook)
-					if err != nil {
-						Logger.Warn("Could not parse Event data: %+v. Default format will be delivered.", err)
-						data = event.Data()
-					}
-
-					go func(config account.HookConfig, data []byte) {
-						sendWebHook(config, data)
-					}(hook.Config, data)
-				}
-			}
 		}
 	}()
+}
+
+func sendHooks(event Event) {
+	// TODO: Need to load team specific!
+	allHookw, err := account.FindHooksByEvent(event.Name())
+
+	if len(allHookw) > 0 && err == nil {
+		Logger.Debug(fmt.Sprintf("Start sending hooks to the following list: %+v.", allHookw))
+		for _, hook := range allHookw {
+			data, err := parseData(event, hook)
+			if err != nil {
+				Logger.Warn("Could not parse Event data: %+v. Default format will be delivered.", err)
+				data = event.Data()
+			}
+
+			go func(config account.HookConfig, data []byte) {
+				sendWebHook(config, data)
+			}(hook.Config, data)
+		}
+	}
 }
 
 func parseData(event Event, hook account.Hook) ([]byte, error) {
