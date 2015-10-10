@@ -24,11 +24,11 @@ Several apis require a similar set of features on the backend, such as: authenti
 #### Create a team and add a service
 ```bash
   apihub team-create -n "My Team" -a "my-team"
-  apihub service-create -e https://tsuru.io -s my-tsuru -timeout 5 -t my-team-nb
+  apihub service-create -e https://tsuru.io -s my-tsuru -timeout 5 -t my-team
 ```
 #### Well done!
 ```bash
-curl -I http://tsuru-3.apimanager.org
+curl -I http://my-tsuru.apimanager.org
 ```
 ##Quickstart
 
