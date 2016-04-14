@@ -9,28 +9,15 @@ go:
 env:
   - GOARCH=amd64
 
-before_install:
-  - chmod +x ./travis/install-etcd.sh
-
 install:
   - export PATH="$HOME/gopath/bin:$PATH"
   - go get github.com/tools/godep
   - go get -t -d ./...
   - godep restore ./...
-  - ./travis/install-etcd.sh
-
-before_script:
-  - "until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done"
-  - chmod +x ./etcd/etcd
 
 script:
-  - ./etcd/etcd &
   - cd $HOME/gopath/src/github.com/apihub/apihub
   - go test -x ./...
-
-services:
-  - mongodb
-  - redis-server
 
 notifications:
   email:
