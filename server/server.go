@@ -3,7 +3,6 @@ package server
 import (
 	"net"
 	"net/http"
-	"time"
 
 	"github.com/apihub/apihub"
 	"github.com/pivotal-golang/lager"
@@ -15,15 +14,13 @@ type ApihubServer struct {
 	backend apihub.Backend
 
 	listenAddr string
-	timeout    time.Duration
 }
 
-func New(log lager.Logger, listenAddr string, timeout time.Duration, backend apihub.Backend) *ApihubServer {
+func New(log lager.Logger, listenAddr string, backend apihub.Backend) *ApihubServer {
 	return &ApihubServer{
 		backend:    backend,
 		logger:     log,
 		listenAddr: listenAddr,
-		timeout:    timeout,
 	}
 }
 

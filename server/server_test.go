@@ -3,7 +3,6 @@ package server_test
 import (
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/apihub/apihub/apihubfakes"
 	"github.com/apihub/apihub/server"
@@ -19,7 +18,6 @@ var _ = Describe("The Apihub Server", func() {
 	var (
 		fakeBackend  *apihubfakes.FakeBackend
 		listenAddr   string
-		timeout      time.Duration
 		log          lager.Logger
 		apihubServer *server.ApihubServer
 	)
@@ -27,12 +25,11 @@ var _ = Describe("The Apihub Server", func() {
 	BeforeEach(func() {
 		listenAddr = fmt.Sprintf(":%d", 8080+config.GinkgoConfig.ParallelNode)
 		log = lagertest.NewTestLogger("apihub-test")
-		timeout = 10 * time.Second
 	})
 
 	JustBeforeEach(func() {
 		fakeBackend = new(apihubfakes.FakeBackend)
-		apihubServer = server.New(log, listenAddr, timeout, fakeBackend)
+		apihubServer = server.New(log, listenAddr, fakeBackend)
 	})
 
 	Describe("when starting up the server", func() {
