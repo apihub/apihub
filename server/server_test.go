@@ -2,6 +2,7 @@ package server_test
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/apihub/apihub/apihubfakes"
@@ -10,6 +11,7 @@ import (
 	"github.com/pivotal-golang/lager/lagertest"
 
 	. "github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
 )
 
@@ -23,7 +25,7 @@ var _ = Describe("The Apihub Server", func() {
 	)
 
 	BeforeEach(func() {
-		listenAddr = ":8080"
+		listenAddr = fmt.Sprintf(":%d", 8080+config.GinkgoConfig.ParallelNode)
 		log = lagertest.NewTestLogger("apihub-test")
 		timeout = 10 * time.Second
 	})
