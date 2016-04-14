@@ -1,3 +1,0 @@
-api: go run ./example/*.go
-mongodb: mongod --config /usr/local/etc/mongod.conf
-redis: redis-server

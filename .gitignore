@@ -2,3 +2,4 @@ Godeps/_workspace
 Godeps/Readme
 dump.rdb
 docs/_build
+.DS_Store
