@@ -22,11 +22,20 @@ type Service interface {
 	// Info returns information about a service.
 	Info() (ServiceInfo, error)
 
-	//Addbackend adds a new backend in the list of available be's.
-	AddBackend(be Backend) error
+	// Backends lists all backends.
+	Backends() ([]Backend, error)
+
+	// Addbackend adds a new backend in the list of available be's.
+	AddBackend(be BackendInfo) error
 
 	// RemoveBackend removes an existing backend from the list of available be's.
-	RemoveBackend(be Backend) error
+	RemoveBackend(be BackendInfo) error
+
+	// Lookup returns the backend corresponding to the address specified.
+	//
+	// Errors:
+	// * Backend not found for given address.
+	Lookup(address string) (Backend, error)
 
 	// Timeout waits for the duration before returning an error to the client.
 	SetTimeout(time.Duration)
@@ -40,4 +49,15 @@ type ServiceInfo struct {
 
 	// Backends available to handle upcoming requests.
 	Backends []Backend
+}
+
+// ServiceSpec specifies the params to add a new service.
+type ServiceSpec struct {
+	// Handle specifies the subdomain/host used to access the service.
+	Handle        string        `json:"handle,omitempty"`
+	Description   string        `json:"description,omitempty"`
+	Disabled      bool          `json:"disabled,omitempty"`
+	Documentation string        `json:"documentation,omitempty"`
+	Timeout       int           `json:"timeout,omitempty"`
+	Backends      []BackendInfo `json:"backend,omitempty"`
 }

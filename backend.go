@@ -4,36 +4,20 @@ import "time"
 
 //go:generate counterfeiter . Backend
 type Backend interface {
-	// AddService adds a new service in the pool.
-	//
-	// Errors:
-	// * When the service handle is already taken.
-	AddService(Service) error
+	Address() string
 
-	// RemoveService removes an existing service from the pool.
-	//
-	// Errors:
-	// * When the service handle is not found.
-	RemoveService(handle string) (Service, error)
+	// Returns information about a backend.
+	Info() (BackendInfo, error)
 
-	// Services lists all services.
-	Services() ([]Service, error)
-
-	// Lookup returns the service corresponding to the handle specified.
-	//
-	// Errors:
-	// * Service not found for given handle.
-	Lookup(handle string) (Service, error)
-
-	// Start starts the backend.
+	// Start starts receiving requests.
 	Start() error
 
-	// Stop stops the backend.
+	// Stop stops receiving requests.
 	Stop() error
 }
 
 // Backend holds information about a backend.
-type backend struct {
+type BackendInfo struct {
 	Name             string
 	Address          string
 	HeartBeatAddress string
