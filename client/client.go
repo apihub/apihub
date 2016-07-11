@@ -16,7 +16,7 @@ func New(connection connection.Connection) apihub.Client {
 }
 
 func (cli *client) Ping() error {
-	return nil
+	return cli.connection.Ping()
 }
 
 func (cli *client) AddService(apihub.ServiceSpec) (apihub.Service, error) {

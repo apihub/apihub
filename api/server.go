@@ -26,7 +26,9 @@ func New(log lager.Logger, listenNetwork, listenAddr string) *ApihubServer {
 		router:        NewRouter(),
 	}
 
-	s.router.AddHandler(RouterArguments{Path: "/", Methods: []string{"GET"}, Handler: homeHandler})
+	for _, route := range Routes {
+		s.router.AddHandler(RouterArguments{Path: route.Path, Method: route.Method, Handler: route.Handler})
+	}
 
 	s.server = &http.Server{
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

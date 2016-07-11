@@ -18,7 +18,7 @@ type RouterArguments struct {
 	Handler    http.HandlerFunc
 	Path       string
 	PathPrefix string
-	Methods    []string
+	Method     string
 }
 
 func NewRouter() *Router {
@@ -62,5 +62,5 @@ func (router *Router) AddHandler(args RouterArguments) {
 		prefix = fmt.Sprintf("/%s", strings.Trim(args.PathPrefix, "/"))
 	}
 	path = fmt.Sprintf("/%s", strings.Trim(args.Path, "/"))
-	r.Methods(args.Methods...).Path(fmt.Sprintf("%s%s", prefix, path)).HandlerFunc(args.Handler)
+	r.Methods(args.Method).Path(fmt.Sprintf("%s%s", prefix, path)).HandlerFunc(args.Handler)
 }
