@@ -5,7 +5,7 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/pivotal-golang/lager"
+	"code.cloudfoundry.org/lager"
 )
 
 type ApihubServer struct {

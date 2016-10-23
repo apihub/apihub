@@ -10,7 +10,7 @@ import (
 	"github.com/apihub/apihub/api"
 	"github.com/apihub/apihub/client"
 	"github.com/apihub/apihub/client/connection"
-	"github.com/pivotal-golang/lager/lagertest"
+	"code.cloudfoundry.org/lager/lagertest"
 
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/config"

@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/apihub/apihub/api"
-	"github.com/pivotal-golang/lager"
+	"code.cloudfoundry.org/lager"
 )
 
 func main() {
