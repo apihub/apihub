@@ -1,0 +1,8 @@
+FROM albertoleal/wily
+MAINTAINER Alberto Leal <albertonb@gmail.com>
+
+RUN set -x \
+  && go get github.com/onsi/ginkgo/ginkgo \
+  && go get github.com/onsi/gomega
+
+WORKDIR $GOPATH/src/github.com/apihub/apihub/
