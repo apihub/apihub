@@ -1,0 +1,9 @@
+package: github.com/apihub/apihub
+import:
+- package: github.com/gorilla/mux
+- package: code.cloudfoundry.org/lager
+testImport:
+- package: github.com/onsi/ginkgo
+  subpackages:
+  - config
+- package: github.com/onsi/gomega
