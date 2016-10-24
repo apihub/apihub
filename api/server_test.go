@@ -6,27 +6,30 @@ import (
 	"os"
 	"path"
 
+	"code.cloudfoundry.org/lager/lagertest"
 	"github.com/apihub/apihub"
 	"github.com/apihub/apihub/api"
+	"github.com/apihub/apihub/apihubfakes"
 	"github.com/apihub/apihub/client"
 	"github.com/apihub/apihub/client/connection"
-	"code.cloudfoundry.org/lager/lagertest"
 
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("The Apihub Server", func() {
+var _ = Describe("Apihub Server", func() {
 	var (
 		tmpDir       string
 		log          *lagertest.TestLogger
+		storage      apihub.Storage
 		apihubServer *api.ApihubServer
 		apihubClient apihub.Client
 	)
 
 	BeforeEach(func() {
 		log = lagertest.NewTestLogger("apihub-test")
+		storage = new(apihubfakes.FakeStorage)
 	})
 
 	AfterEach(func() {
@@ -40,7 +43,7 @@ var _ = Describe("The Apihub Server", func() {
 			var err error
 			tmpDir, err = ioutil.TempDir(os.TempDir(), "apihub-server-test")
 			socketPath := path.Join(tmpDir, "apihub.sock")
-			apihubServer = api.New(log, "unix", socketPath)
+			apihubServer = api.New(log, "unix", socketPath, storage)
 			Expect(err).NotTo(HaveOccurred())
 
 			err = apihubServer.Start()
@@ -56,7 +59,7 @@ var _ = Describe("The Apihub Server", func() {
 			var err error
 			port := fmt.Sprintf(":%d", 8000+config.GinkgoConfig.ParallelNode)
 
-			apihubServer = api.New(log, "tcp", port)
+			apihubServer = api.New(log, "tcp", port, storage)
 
 			err = apihubServer.Start()
 			Expect(err).NotTo(HaveOccurred())
@@ -64,5 +67,4 @@ var _ = Describe("The Apihub Server", func() {
 			Expect(apihubClient.Ping()).To(Succeed())
 		})
 	})
-
 })

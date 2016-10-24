@@ -5,17 +5,19 @@ import (
 	"os"
 	"path"
 
+	"code.cloudfoundry.org/lager/lagertest"
 	"github.com/apihub/apihub"
 	"github.com/apihub/apihub/api"
+	"github.com/apihub/apihub/apihubfakes"
 	"github.com/apihub/apihub/client"
 	"github.com/apihub/apihub/client/connection"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"code.cloudfoundry.org/lager/lagertest"
 )
 
 var _ = Describe("When a client connects", func() {
 	var (
+		storage      apihub.Storage
 		apihubClient apihub.Client
 		apihubServer *api.ApihubServer
 		err          error
@@ -24,10 +26,11 @@ var _ = Describe("When a client connects", func() {
 	)
 
 	BeforeEach(func() {
+		storage = new(apihubfakes.FakeStorage)
 		log = lagertest.NewTestLogger("apihub-test")
 		tmpDir, err = ioutil.TempDir(os.TempDir(), "apihub-server-test")
 		socketPath := path.Join(tmpDir, "apihub.sock")
-		apihubServer = api.New(log, "unix", socketPath)
+		apihubServer = api.New(log, "unix", socketPath, storage)
 		Expect(err).NotTo(HaveOccurred())
 
 		Expect(apihubServer.Start()).NotTo(HaveOccurred())

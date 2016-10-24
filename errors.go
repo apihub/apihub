@@ -1,24 +1,10 @@
 package apihub
 
-import "fmt"
+const (
+	E_BAD_REQUEST string = "bad_request"
+)
 
-type ServiceNotFoundError struct {
-	Handle string
-}
-
-func (err ServiceNotFoundError) Error() string {
-	return fmt.Sprintf("service not found with the following handle: %s.", err.Handle)
-}
-
-type InternalError struct {
-	Description string
-}
-
-func NewInternalError(description string) error {
-	return &InternalError{Description: description}
-}
-
-func (ie InternalError) Error() string {
-	return ie.Description
-
+type ErrorResponse struct {
+	Error       string `json:"error,omitempty"`
+	Description string `json:"error_description,omitempty"`
 }

@@ -1,4 +1,4 @@
-package apihub_test
+package connection_test
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestApihub(t *testing.T) {
+func TestConnection(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Apihub Suite")
+	RunSpecs(t, "Connection Suite")
 }

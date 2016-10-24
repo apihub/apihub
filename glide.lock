@@ -1,16 +1,22 @@
-hash: ae24c22f2af1d5e79306a405b39c16c48c84f083329d9bd6e157deab006dbeed
-updated: 2016-10-23T16:52:50.209427595Z
+hash: a8e8776a85f90ffc98d53f69f3e5b5c2825ac4cf0b6babe6a6fd6e9c10d64e8f
+updated: 2016-10-26T18:31:12.619240934+01:00
 imports:
 - name: code.cloudfoundry.org/lager
   version: b273f19621a28f627423f658e71e014f114dd53e
   subpackages:
   - lagertest
+- name: github.com/albertoleal/requests
+  version: c59faf2a290abe61241b8a8c6dc2fb9db0b5ae81
+- name: github.com/golang/protobuf
+  version: 98fa357170587e470c5f27d3c3ea0947b71eb455
+  subpackages:
+  - proto
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
   version: 757bef944d0f21880861c2dd9c871ca543023cba
 - name: github.com/onsi/ginkgo
-  version: 29e24c04228e1a522b29c76a34e8e0fc2d7279cf
+  version: a8ccd817611666211fdf6e6a752174a0db8374a8
   subpackages:
   - config
   - internal/codelocation
@@ -29,10 +35,12 @@ imports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: d59fa0ac68bb5dd932ee8d24eed631cdd519efc3
+  version: 7e2072f716a912a29b2dfa54398faf096a9909e3
   subpackages:
   - format
   - gbytes
+  - gexec
+  - ghttp
   - internal/assertion
   - internal/asyncassertion
   - internal/oraclematcher

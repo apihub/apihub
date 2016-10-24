@@ -5,7 +5,7 @@ IMAGE_TEST := apihub_test
 PROJECT := github.com/apihub/apihub
 
 all:
-		go build -o apihub-api ./api/
+		go build -o apihub-api ./cmd/api/
 
 ###### Help ###################################################################
 

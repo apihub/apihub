@@ -3,6 +3,8 @@ package apihub
 import "time"
 
 //go:generate counterfeiter . Service
+//go:generate counterfeiter . Backend
+
 type Service interface {
 	// Handle returns the subdomain/host used to access a service.
 	Handle() string
@@ -15,21 +17,21 @@ type Service interface {
 	// If kill is false, Apihub stops proxying the requests to one of the backends
 	// registered.
 	//
-	// If kill is true, Apihub stops proxuing the requests and remove the service
+	// If kill is true, Apihub stops proxing the requests and remove the service
 	// from the service pool.
 	Stop(kill bool) error
 
 	// Info returns information about a service.
-	Info() (ServiceInfo, error)
-
-	// Backends lists all backends.
-	Backends() ([]Backend, error)
+	Info() (ServiceSpec, error)
 
 	// Addbackend adds a new backend in the list of available be's.
 	AddBackend(be BackendInfo) error
 
 	// RemoveBackend removes an existing backend from the list of available be's.
 	RemoveBackend(be BackendInfo) error
+
+	// Backends returns all backends in the service.
+	Backends() []Backend
 
 	// Lookup returns the backend corresponding to the address specified.
 	//
@@ -43,21 +45,32 @@ type Service interface {
 }
 
 // ServiceInfo holds information about a service.
-type ServiceInfo struct {
-	// Either 'active' or 'stopped'.
-	State string
-
-	// Backends available to handle upcoming requests.
-	Backends []Backend
-}
-
-// ServiceSpec specifies the params to add a new service.
 type ServiceSpec struct {
 	// Handle specifies the subdomain/host used to access the service.
-	Handle        string        `json:"handle,omitempty"`
-	Description   string        `json:"description,omitempty"`
-	Disabled      bool          `json:"disabled,omitempty"`
-	Documentation string        `json:"documentation,omitempty"`
-	Timeout       int           `json:"timeout,omitempty"`
-	Backends      []BackendInfo `json:"backend,omitempty"`
+	Handle   string        `json:"handle"`
+	Disabled bool          `json:"disabled"`
+	Timeout  int           `json:"timeout"`
+	Backends []BackendInfo `json:"backends"`
+}
+
+type Backend interface {
+	Address() string
+
+	// Returns information about a backend.
+	Info() (BackendInfo, error)
+
+	// Start starts receiving requests.
+	Start() error
+
+	// Stop stops receiving requests.
+	Stop() error
+}
+
+// Backend holds information about a backend.
+type BackendInfo struct {
+	Name             string `json:"name"`
+	Address          string `json:"address"`
+	HeartBeatAddress string `json:"heart_beat_address"`
+	HeartBeatTimeout int    `json:"heart_beat_timeout"`
+	HeartBeatRetry   int    `json:"heart_beat_retry"`
 }

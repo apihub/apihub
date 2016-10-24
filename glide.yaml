@@ -2,6 +2,8 @@ package: github.com/apihub/apihub
 import:
 - package: github.com/gorilla/mux
 - package: code.cloudfoundry.org/lager
+- package: github.com/golang/protobuf
+- package: github.com/albertoleal/requests
 testImport:
 - package: github.com/onsi/ginkgo
   subpackages:

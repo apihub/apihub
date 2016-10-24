@@ -5,6 +5,8 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/apihub/apihub"
+
 	"code.cloudfoundry.org/lager"
 )
 
@@ -16,18 +18,25 @@ type ApihubServer struct {
 	listenNetwork string
 	router        *Router
 	server        *http.Server
+	storage       apihub.Storage
 }
 
-func New(log lager.Logger, listenNetwork, listenAddr string) *ApihubServer {
+func New(log lager.Logger, listenNetwork, listenAddr string, storage apihub.Storage) *ApihubServer {
 	s := &ApihubServer{
 		logger:        log,
 		listenAddr:    listenAddr,
 		listenNetwork: listenNetwork,
 		router:        NewRouter(),
+		storage:       storage,
 	}
 
-	for _, route := range Routes {
-		s.router.AddHandler(RouterArguments{Path: route.Path, Method: route.Method, Handler: route.Handler})
+	var handlers = map[Route]http.HandlerFunc{
+		Home:       http.HandlerFunc(homeHandler),
+		Ping:       http.HandlerFunc(pingHandler),
+		AddService: http.HandlerFunc(s.addService),
+	}
+	for route, handler := range handlers {
+		s.router.AddHandler(RouterArguments{Path: Routes[route].Path, Method: Routes[route].Method, Handler: handler})
 	}
 
 	s.server = &http.Server{
@@ -51,12 +60,17 @@ func (a *ApihubServer) Start() error {
 	}
 
 	go a.server.Serve(a.Listener)
+	a.logger.Info("apihub-started")
 
 	return nil
 }
 
+func (a *ApihubServer) Handler() http.Handler {
+	return a.router.Handler()
+}
+
 func (a *ApihubServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	a.router.Handler()
+	a.Handler()
 }
 
 func (a *ApihubServer) Stop() error {

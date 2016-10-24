@@ -2,11 +2,13 @@ package format_test
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/format"
 	"github.com/onsi/gomega/types"
-	"strings"
 )
 
 //recursive struct
@@ -69,6 +71,25 @@ type Stringer struct {
 
 func (g Stringer) String() string {
 	return "string"
+}
+
+type ctx struct {
+}
+
+func (c *ctx) Deadline() (deadline time.Time, ok bool) {
+	return time.Time{}, false
+}
+
+func (c *ctx) Done() <-chan struct{} {
+	return nil
+}
+
+func (c *ctx) Err() error {
+	return nil
+}
+
+func (c *ctx) Value(key interface{}) interface{} {
+	return nil
 }
 
 var _ = Describe("Format", func() {
@@ -162,19 +183,19 @@ var _ = Describe("Format", func() {
 		})
 
 		Describe("formatting []byte slices", func() {
-      Context("when the slice is made of printable bytes", func () {
-        It("should present it as string", func() {
-          b := []byte("a b c")
-          Ω(Object(b, 1)).Should(matchRegexp(`\[\]uint8 \| len:5, cap:\d+`, `a b c`))
-        })
-      })
-      Context("when the slice contains non-printable bytes", func () {
-        It("should present it as slice", func() {
-          b := []byte("a b c\n\x01\x02\x03\xff\x1bH")
-          Ω(Object(b, 1)).Should(matchRegexp(`\[\]uint8 \| len:12, cap:\d+`,  `\[97, 32, 98, 32, 99, 10, 1, 2, 3, 255, 27, 72\]`))
-        })
-      })
-    })
+			Context("when the slice is made of printable bytes", func() {
+				It("should present it as string", func() {
+					b := []byte("a b c")
+					Ω(Object(b, 1)).Should(matchRegexp(`\[\]uint8 \| len:5, cap:\d+`, `a b c`))
+				})
+			})
+			Context("when the slice contains non-printable bytes", func() {
+				It("should present it as slice", func() {
+					b := []byte("a b c\n\x01\x02\x03\xff\x1bH")
+					Ω(Object(b, 1)).Should(matchRegexp(`\[\]uint8 \| len:12, cap:\d+`, `\[97, 32, 98, 32, 99, 10, 1, 2, 3, 255, 27, 72\]`))
+				})
+			})
+		})
 
 		Describe("formatting functions", func() {
 			It("should give the type and format values correctly", func() {
@@ -429,6 +450,18 @@ var _ = Describe("Format", func() {
 			m["map"] = m
 			Ω(Object(m, 1)).Should(ContainSubstring("..."))
 		})
+
+		It("really should not go crazy...", func() {
+			type complexKey struct {
+				Value map[interface{}]int
+			}
+
+			complexObject := complexKey{}
+			complexObject.Value = make(map[interface{}]int)
+
+			complexObject.Value[&complexObject] = 2
+			Ω(Object(complexObject, 1)).Should(ContainSubstring("..."))
+		})
 	})
 
 	Describe("When instructed to use the Stringer representation", func() {
@@ -449,6 +482,39 @@ var _ = Describe("Format", func() {
 		Context("when passed a stringer", func() {
 			It("should use what String() returns", func() {
 				Ω(Object(Stringer{}, 1)).Should(ContainSubstring("<format_test.Stringer>: string"))
+			})
+		})
+	})
+
+	Describe("Printing a context.Context field", func() {
+
+		type structWithContext struct {
+			Context Ctx
+			Value   string
+		}
+
+		context := ctx{}
+		objWithContext := structWithContext{Value: "some-value", Context: &context}
+
+		It("Suppresses the content by default", func() {
+			Ω(Object(objWithContext, 1)).Should(ContainSubstring("<suppressed context>"))
+		})
+
+		It("Doesn't supress the context if it's the object being printed", func() {
+			Ω(Object(context, 1)).ShouldNot(MatchRegexp("^.*<suppressed context>$"))
+		})
+
+		Context("PrintContextObjects is set", func() {
+			BeforeEach(func() {
+				PrintContextObjects = true
+			})
+
+			AfterEach(func() {
+				PrintContextObjects = false
+			})
+
+			It("Prints the context", func() {
+				Ω(Object(objWithContext, 1)).ShouldNot(ContainSubstring("<suppressed context>"))
 			})
 		})
 	})
