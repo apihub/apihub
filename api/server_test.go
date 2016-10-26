@@ -46,7 +46,7 @@ var _ = Describe("Apihub Server", func() {
 			apihubServer = api.New(log, "unix", socketPath, storage)
 			Expect(err).NotTo(HaveOccurred())
 
-			err = apihubServer.Start()
+			err = apihubServer.Start(false)
 			Expect(err).NotTo(HaveOccurred())
 			info, err := os.Stat(socketPath)
 			Expect(err).NotTo(HaveOccurred())
@@ -61,7 +61,7 @@ var _ = Describe("Apihub Server", func() {
 
 			apihubServer = api.New(log, "tcp", port, storage)
 
-			err = apihubServer.Start()
+			err = apihubServer.Start(false)
 			Expect(err).NotTo(HaveOccurred())
 			apihubClient = client.New(connection.New("tcp", port))
 			Expect(apihubClient.Ping()).To(Succeed())

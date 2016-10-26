@@ -33,7 +33,7 @@ var _ = Describe("When a client connects", func() {
 		apihubServer = api.New(log, "unix", socketPath, storage)
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(apihubServer.Start()).NotTo(HaveOccurred())
+		Expect(apihubServer.Start(false)).NotTo(HaveOccurred())
 		apihubClient = client.New(connection.New("unix", socketPath))
 	})
 

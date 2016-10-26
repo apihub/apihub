@@ -21,10 +21,8 @@ func main() {
 	log := lager.NewLogger("apihub")
 	log.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
 
-	// Start api server
+	// Configure and start server
 	store := storage.New()
 	server := api.New(log, *network, *address, store)
-	server.Start()
-	//TODO: Remove this!
-	select {}
+	server.Start(true)
 }

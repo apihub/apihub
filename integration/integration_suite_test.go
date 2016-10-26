@@ -52,7 +52,7 @@ func startApihub(network string, address string) *RunningApihub {
 	cmd := exec.Command(ApihubAPI, args...)
 	session, err := gexec.Start(cmd, io.MultiWriter(buf, GinkgoWriter), GinkgoWriter)
 	Expect(err).NotTo(HaveOccurred())
-	Eventually(session).Should(gbytes.Say("apihub-started"))
+	Eventually(session).Should(gbytes.Say("started"))
 	go func() { session.Wait() }()
 
 	ah := &RunningApihub{
