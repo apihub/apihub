@@ -45,3 +45,22 @@ func (s *ApihubServer) addService(rw http.ResponseWriter, r *http.Request) {
 		Body:       spec,
 	})
 }
+
+func (s *ApihubServer) listServices(rw http.ResponseWriter, r *http.Request) {
+	log := s.logger.Session("list-services")
+	log.Debug("start")
+	defer log.Debug("end")
+
+	services, err := s.storage.Services()
+	if err != nil {
+		log.Info("failed-to-list-services")
+		s.handleError(rw, err)
+		return
+	}
+
+	log.Debug("services-found", lager.Data{"services": services})
+	s.writeResponse(rw, response{
+		StatusCode: http.StatusOK,
+		Body:       services,
+	})
+}

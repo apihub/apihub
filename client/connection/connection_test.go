@@ -35,12 +35,38 @@ var _ = Describe("Connection", func() {
 		server.Close()
 	})
 
+	Context("when the request fails", func() {
+		It("returns the default message when failing to parse response", func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest(http.MethodGet, api.Routes[api.Ping].Path),
+					ghttp.RespondWith(400, `this is not a valid json`),
+				),
+			)
+
+			err := conn.Ping()
+			Expect(err).To(MatchError(ContainSubstring("request failed")))
+		})
+
+		It("returns the error message when succeding to parse response", func() {
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest(http.MethodGet, api.Routes[api.Ping].Path),
+					ghttp.RespondWith(400, `{"error":"bad_request", "error_description":"Failed to ping."}`),
+				),
+			)
+
+			err := conn.Ping()
+			Expect(err).To(MatchError(ContainSubstring("Failed to ping.")))
+		})
+	})
+
 	Describe("Ping", func() {
 		Context("when the request succeeds", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest("GET", "/ping"),
+						ghttp.VerifyRequest(http.MethodGet, api.Routes[api.Ping].Path),
 						ghttp.RespondWith(200, `{"ping":"pong"}`),
 					),
 				)
@@ -103,6 +129,46 @@ var _ = Describe("Connection", func() {
 
 			It("returns an error", func() {
 				_, err := conn.AddService(apihub.ServiceSpec{})
+				Expect(err).To(HaveOccurred())
+			})
+		})
+	})
+
+	Describe("Services", func() {
+		Context("when the request succeeds", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, api.Routes[api.ListServices].Path),
+						ghttp.RespondWith(200, `[{"handle":"my-handle"}, {"handle":"another-handle"}]`),
+					),
+				)
+			})
+
+			It("lists existing services specs", func() {
+				specs, err := conn.Services()
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(specs)).To(Equal(2))
+				Expect(specs).To(ConsistOf([]apihub.ServiceSpec{
+					apihub.ServiceSpec{Handle: "my-handle"},
+					apihub.ServiceSpec{Handle: "another-handle"},
+				}))
+			})
+		})
+
+		Context("when the request fails", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, api.Routes[api.ListServices].Path),
+						ghttp.RespondWith(400, "{}"),
+					),
+				)
+			})
+
+			It("returns an error", func() {
+				_, err := conn.Services()
 				Expect(err).To(HaveOccurred())
 			})
 		})

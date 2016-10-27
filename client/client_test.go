@@ -47,10 +47,34 @@ var _ = Describe("Client", func() {
 					Handle: "my-handle",
 				}
 				_, err := cli.AddService(spec)
-				Expect(err).To(HaveOccurred())
+				Expect(err).To(MatchError(ContainSubstring("failed to add service")))
 			})
 		})
-
 	})
 
+	Describe("Services", func() {
+		It("sends a request to list services", func() {
+			fakeConnection.ServicesReturns([]apihub.ServiceSpec{
+				apihub.ServiceSpec{
+					Handle: "my-handle",
+				},
+			}, nil)
+
+			services, err := cli.Services()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(services)).To(Equal(1))
+			Expect(services[0].Handle()).To(Equal("my-handle"))
+		})
+
+		Context("when the request fails", func() {
+			BeforeEach(func() {
+				fakeConnection.ServicesReturns(nil, errors.New("failed to list services"))
+			})
+
+			It("returns an error", func() {
+				_, err := cli.Services()
+				Expect(err).To(MatchError(ContainSubstring("failed to list services")))
+			})
+		})
+	})
 })

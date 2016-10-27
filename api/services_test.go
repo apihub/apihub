@@ -143,4 +143,52 @@ var _ = Describe("Services", func() {
 			})
 		})
 	})
+
+	Describe("listServices", func() {
+		BeforeEach(func() {
+			fakeStorage.ServicesReturns([]apihub.ServiceSpec{
+				apihub.ServiceSpec{
+					Handle: "my-handle",
+					Backends: []apihub.BackendInfo{
+						apihub.BackendInfo{
+							Name:    "server-a",
+							Address: "http://server-a",
+						},
+					},
+				},
+			}, nil)
+		})
+
+		It("lists all existing services", func() {
+			headers, code, body, _ := httpClient.MakeRequest(requests.Args{
+				AcceptableCode: http.StatusOK,
+				Method:         http.MethodGet,
+				Path:           "/services",
+			})
+
+			Expect(stringify(body)).To(Equal(`[{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"name":"server-a","address":"http://server-a","heart_beat_address":"","heart_beat_timeout":0,"heart_beat_retry":0}]}]`))
+			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
+			Expect(code).To(Equal(http.StatusOK))
+			Expect(fakeStorage.ServicesCallCount()).To(Equal(1))
+		})
+
+		Context("when getting the list of services fails", func() {
+			BeforeEach(func() {
+				fakeStorage.ServicesReturns(nil, errors.New("failed to list services."))
+			})
+
+			It("returns an error", func() {
+				headers, code, body, _ := httpClient.MakeRequest(requests.Args{
+					AcceptableCode: http.StatusBadRequest,
+					Method:         http.MethodGet,
+					Path:           "/services",
+				})
+
+				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
+				Expect(code).To(Equal(http.StatusBadRequest))
+				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":"failed to list services."}`))
+			})
+		})
+	})
+
 })

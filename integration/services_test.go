@@ -64,4 +64,19 @@ var _ = Describe("Service", func() {
 		})
 	})
 
+	Describe("List existing services", func() {
+		JustBeforeEach(func() {
+			service, err := client.AddService(spec)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(service.Handle()).To(Equal("my-service"))
+		})
+
+		It("lists services", func() {
+			services, err := client.Services()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(services)).To(Equal(1))
+			Expect(services[0].Handle()).To(Equal("my-service"))
+		})
+	})
+
 })

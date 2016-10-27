@@ -19,6 +19,7 @@ import (
 type Connection interface {
 	Ping() error
 	AddService(apihub.ServiceSpec) (apihub.ServiceSpec, error)
+	Services() ([]apihub.ServiceSpec, error)
 }
 
 type connection struct {
@@ -48,6 +49,15 @@ func (c *connection) AddService(spec apihub.ServiceSpec) (apihub.ServiceSpec, er
 	}
 
 	return service, nil
+}
+
+func (c *connection) Services() ([]apihub.ServiceSpec, error) {
+	var specs []apihub.ServiceSpec
+	if err := c.do(api.ListServices, nil, &specs); err != nil {
+		return []apihub.ServiceSpec{}, err
+	}
+
+	return specs, nil
 }
 
 func (c *connection) handleError(body io.ReadCloser) error {

@@ -36,4 +36,16 @@ var _ = Describe("Memory", func() {
 			Expect(found).To(Equal(spec))
 		})
 	})
+
+	Describe("Services", func() {
+		BeforeEach(func() {
+			Expect(store.UpsertService(spec)).To(Succeed())
+		})
+
+		It("lists all services", func() {
+			services, err := store.Services()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(services).To(ConsistOf(spec))
+		})
+	})
 })

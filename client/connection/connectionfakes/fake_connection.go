@@ -24,6 +24,13 @@ type FakeConnection struct {
 		result1 apihub.ServiceSpec
 		result2 error
 	}
+	ServicesStub        func() ([]apihub.ServiceSpec, error)
+	servicesMutex       sync.RWMutex
+	servicesArgsForCall []struct{}
+	servicesReturns     struct {
+		result1 []apihub.ServiceSpec
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -87,6 +94,32 @@ func (fake *FakeConnection) AddServiceReturns(result1 apihub.ServiceSpec, result
 	}{result1, result2}
 }
 
+func (fake *FakeConnection) Services() ([]apihub.ServiceSpec, error) {
+	fake.servicesMutex.Lock()
+	fake.servicesArgsForCall = append(fake.servicesArgsForCall, struct{}{})
+	fake.recordInvocation("Services", []interface{}{})
+	fake.servicesMutex.Unlock()
+	if fake.ServicesStub != nil {
+		return fake.ServicesStub()
+	} else {
+		return fake.servicesReturns.result1, fake.servicesReturns.result2
+	}
+}
+
+func (fake *FakeConnection) ServicesCallCount() int {
+	fake.servicesMutex.RLock()
+	defer fake.servicesMutex.RUnlock()
+	return len(fake.servicesArgsForCall)
+}
+
+func (fake *FakeConnection) ServicesReturns(result1 []apihub.ServiceSpec, result2 error) {
+	fake.ServicesStub = nil
+	fake.servicesReturns = struct {
+		result1 []apihub.ServiceSpec
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeConnection) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -94,6 +127,8 @@ func (fake *FakeConnection) Invocations() map[string][][]interface{} {
 	defer fake.pingMutex.RUnlock()
 	fake.addServiceMutex.RLock()
 	defer fake.addServiceMutex.RUnlock()
+	fake.servicesMutex.RLock()
+	defer fake.servicesMutex.RUnlock()
 	return fake.invocations
 }
 

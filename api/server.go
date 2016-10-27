@@ -31,9 +31,10 @@ func New(log lager.Logger, listenNetwork, listenAddr string, storage apihub.Stor
 	}
 
 	var handlers = map[Route]http.HandlerFunc{
-		Home:       http.HandlerFunc(homeHandler),
-		Ping:       http.HandlerFunc(pingHandler),
-		AddService: http.HandlerFunc(s.addService),
+		Home:         http.HandlerFunc(homeHandler),
+		Ping:         http.HandlerFunc(pingHandler),
+		AddService:   http.HandlerFunc(s.addService),
+		ListServices: http.HandlerFunc(s.listServices),
 	}
 	for route, handler := range handlers {
 		s.router.AddHandler(RouterArguments{Path: Routes[route].Path, Method: Routes[route].Method, Handler: handler})
