@@ -140,7 +140,7 @@ var _ = Describe("Connection", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodGet, api.Routes[api.ListServices].Path),
-						ghttp.RespondWith(200, `[{"handle":"my-handle"}, {"handle":"another-handle"}]`),
+						ghttp.RespondWith(200, `{"items":[{"handle":"my-handle"}, {"handle":"another-handle"}],"item_count":1}`),
 					),
 				)
 			})

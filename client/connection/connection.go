@@ -52,12 +52,16 @@ func (c *connection) AddService(spec apihub.ServiceSpec) (apihub.ServiceSpec, er
 }
 
 func (c *connection) Services() ([]apihub.ServiceSpec, error) {
-	var specs []apihub.ServiceSpec
+	specs := struct {
+		Items []apihub.ServiceSpec `json:"items"`
+		Count int                  `json:"item_count"`
+	}{}
+
 	if err := c.do(api.ListServices, nil, &specs); err != nil {
 		return []apihub.ServiceSpec{}, err
 	}
 
-	return specs, nil
+	return specs.Items, nil
 }
 
 func (c *connection) handleError(body io.ReadCloser) error {

@@ -50,7 +50,7 @@ type ServiceSpec struct {
 	Handle   string        `json:"handle"`
 	Disabled bool          `json:"disabled"`
 	Timeout  int           `json:"timeout"`
-	Backends []BackendInfo `json:"backends"`
+	Backends []BackendInfo `json:"backends,omitempty"`
 }
 
 type Backend interface {

@@ -166,7 +166,7 @@ var _ = Describe("Services", func() {
 				Path:           "/services",
 			})
 
-			Expect(stringify(body)).To(Equal(`[{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"name":"server-a","address":"http://server-a","heart_beat_address":"","heart_beat_timeout":0,"heart_beat_retry":0}]}]`))
+			Expect(stringify(body)).To(Equal(`{"items":[{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"name":"server-a","address":"http://server-a","heart_beat_address":"","heart_beat_timeout":0,"heart_beat_retry":0}]}],"item_count":1}`))
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 			Expect(code).To(Equal(http.StatusOK))
 			Expect(fakeStorage.ServicesCallCount()).To(Equal(1))

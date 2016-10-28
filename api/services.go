@@ -58,9 +58,11 @@ func (s *ApihubServer) listServices(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	collection := Collection(services, len(services))
+
 	log.Debug("services-found", lager.Data{"services": services})
 	s.writeResponse(rw, response{
 		StatusCode: http.StatusOK,
-		Body:       services,
+		Body:       collection,
 	})
 }
