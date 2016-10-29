@@ -49,3 +49,15 @@ func (m *Memory) Services() ([]apihub.ServiceSpec, error) {
 
 	return services, nil
 }
+
+func (m *Memory) RemoveService(handle string) error {
+	m.mtx.Lock()
+	defer m.mtx.Unlock()
+
+	if _, ok := m.services[handle]; !ok {
+		return errors.New("service not found")
+	}
+
+	delete(m.services, handle)
+	return nil
+}

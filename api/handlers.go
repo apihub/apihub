@@ -36,5 +36,7 @@ func (s *ApihubServer) handleError(rw http.ResponseWriter, err error) {
 func (s *ApihubServer) writeResponse(rw http.ResponseWriter, resp response) {
 	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(resp.StatusCode)
-	json.NewEncoder(rw).Encode(resp.Body)
+	if resp.Body != nil {
+		json.NewEncoder(rw).Encode(resp.Body)
+	}
 }

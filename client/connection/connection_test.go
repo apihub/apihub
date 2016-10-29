@@ -173,4 +173,38 @@ var _ = Describe("Connection", func() {
 			})
 		})
 	})
+
+	Describe("RemoveService", func() {
+		Context("when the request succeeds", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodDelete, "/services/my-handle"),
+						ghttp.RespondWith(204, ""),
+					),
+				)
+			})
+
+			It("removes an existing service", func() {
+				err := conn.RemoveService("my-handle")
+				Expect(err).NotTo(HaveOccurred())
+			})
+		})
+
+		Context("when the request fails", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodDelete, "/services/my-handle"),
+						ghttp.RespondWith(400, "{}"),
+					),
+				)
+			})
+
+			It("returns an error", func() {
+				err := conn.RemoveService("my-handle")
+				Expect(err).To(HaveOccurred())
+			})
+		})
+	})
 })

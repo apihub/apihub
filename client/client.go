@@ -43,7 +43,7 @@ func (cli *client) Services() ([]apihub.Service, error) {
 }
 
 func (cli *client) RemoveService(handle string) error {
-	return nil
+	return cli.conn.RemoveService(handle)
 }
 
 func (cli *client) Lookup(handle string) (apihub.Service, error) {

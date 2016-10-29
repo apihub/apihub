@@ -35,6 +35,13 @@ var _ = Describe("Memory", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(found).To(Equal(spec))
 		})
+
+		Context("when service is not found", func() {
+			It("returns an error", func() {
+				_, err := store.FindServiceByHandle("invalid-handle")
+				Expect(err).To(MatchError(ContainSubstring("service not found")))
+			})
+		})
 	})
 
 	Describe("Services", func() {
@@ -46,6 +53,22 @@ var _ = Describe("Memory", func() {
 			services, err := store.Services()
 			Expect(err).NotTo(HaveOccurred())
 			Expect(services).To(ConsistOf(spec))
+		})
+	})
+
+	Describe("RemoveService", func() {
+		BeforeEach(func() {
+			Expect(store.UpsertService(spec)).To(Succeed())
+		})
+
+		It("removes service by handle", func() {
+			Expect(store.RemoveService(spec.Handle)).NotTo(HaveOccurred())
+		})
+
+		Context("when service is not found", func() {
+			It("returns an error", func() {
+				Expect(store.RemoveService("invalid-handle")).To(MatchError(ContainSubstring("service not found")))
+			})
 		})
 	})
 })

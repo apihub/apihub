@@ -139,7 +139,7 @@ var _ = Describe("Services", func() {
 
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
-				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":"failed to store service."}`))
+				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":"Failed to add new service."}`))
 			})
 		})
 	})
@@ -186,9 +186,45 @@ var _ = Describe("Services", func() {
 
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
-				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":"failed to list services."}`))
+				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":"Failed to retrieve service list."}`))
 			})
 		})
 	})
 
+	Describe("removeService", func() {
+		BeforeEach(func() {
+			fakeStorage.FindServiceByHandleReturns(apihub.ServiceSpec{Handle: "my-handle"}, nil)
+		})
+
+		It("removes a service by handle", func() {
+			headers, code, body, _ := httpClient.MakeRequest(requests.Args{
+				AcceptableCode: http.StatusNoContent,
+				Method:         http.MethodDelete,
+				Path:           "/services/my-handle",
+			})
+
+			Expect(stringify(body)).To(Equal(""))
+			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
+			Expect(code).To(Equal(http.StatusNoContent))
+			Expect(fakeStorage.RemoveServiceCallCount()).To(Equal(1))
+		})
+
+		Context("when removing a service fails", func() {
+			BeforeEach(func() {
+				fakeStorage.RemoveServiceReturns(errors.New("service not found"))
+			})
+
+			It("returns an error", func() {
+				headers, code, body, _ := httpClient.MakeRequest(requests.Args{
+					AcceptableCode: http.StatusBadRequest,
+					Method:         http.MethodDelete,
+					Path:           "/services/my-bad-handle",
+				})
+
+				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
+				Expect(code).To(Equal(http.StatusBadRequest))
+				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":"Failed to remove service."}`))
+			})
+		})
+	})
 })

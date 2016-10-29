@@ -77,4 +77,25 @@ var _ = Describe("Client", func() {
 			})
 		})
 	})
+
+	Describe("RemoveService", func() {
+		It("sends a request to remove a service", func() {
+			fakeConnection.RemoveServiceReturns(nil)
+
+			err := cli.RemoveService("my-handle")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(fakeConnection.RemoveServiceArgsForCall(0)).To(Equal("my-handle"))
+		})
+
+		Context("when the request fails", func() {
+			BeforeEach(func() {
+				fakeConnection.RemoveServiceReturns(errors.New("failed to remove service: `my-handle`"))
+			})
+
+			It("returns an error", func() {
+				err := cli.RemoveService("my-handle")
+				Expect(err).To(MatchError(ContainSubstring("failed to remove service: `my-handle`")))
+			})
+		})
+	})
 })

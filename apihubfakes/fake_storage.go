@@ -32,6 +32,14 @@ type FakeStorage struct {
 		result1 []apihub.ServiceSpec
 		result2 error
 	}
+	RemoveServiceStub        func(string) error
+	removeServiceMutex       sync.RWMutex
+	removeServiceArgsForCall []struct {
+		arg1 string
+	}
+	removeServiceReturns struct {
+		result1 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -129,6 +137,39 @@ func (fake *FakeStorage) ServicesReturns(result1 []apihub.ServiceSpec, result2 e
 	}{result1, result2}
 }
 
+func (fake *FakeStorage) RemoveService(arg1 string) error {
+	fake.removeServiceMutex.Lock()
+	fake.removeServiceArgsForCall = append(fake.removeServiceArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("RemoveService", []interface{}{arg1})
+	fake.removeServiceMutex.Unlock()
+	if fake.RemoveServiceStub != nil {
+		return fake.RemoveServiceStub(arg1)
+	} else {
+		return fake.removeServiceReturns.result1
+	}
+}
+
+func (fake *FakeStorage) RemoveServiceCallCount() int {
+	fake.removeServiceMutex.RLock()
+	defer fake.removeServiceMutex.RUnlock()
+	return len(fake.removeServiceArgsForCall)
+}
+
+func (fake *FakeStorage) RemoveServiceArgsForCall(i int) string {
+	fake.removeServiceMutex.RLock()
+	defer fake.removeServiceMutex.RUnlock()
+	return fake.removeServiceArgsForCall[i].arg1
+}
+
+func (fake *FakeStorage) RemoveServiceReturns(result1 error) {
+	fake.RemoveServiceStub = nil
+	fake.removeServiceReturns = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeStorage) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -138,6 +179,8 @@ func (fake *FakeStorage) Invocations() map[string][][]interface{} {
 	defer fake.findServiceByHandleMutex.RUnlock()
 	fake.servicesMutex.RLock()
 	defer fake.servicesMutex.RUnlock()
+	fake.removeServiceMutex.RLock()
+	defer fake.removeServiceMutex.RUnlock()
 	return fake.invocations
 }
 
