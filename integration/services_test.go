@@ -43,7 +43,7 @@ var _ = Describe("Service", func() {
 		Expect(client.Stop()).To(Succeed())
 	})
 
-	Describe("Add a service", func() {
+	Describe("AddService", func() {
 		It("adds a new service", func() {
 			service, err := client.AddService(spec)
 			Expect(err).NotTo(HaveOccurred())
@@ -64,7 +64,7 @@ var _ = Describe("Service", func() {
 		})
 	})
 
-	Describe("List existing services", func() {
+	Describe("Services", func() {
 		JustBeforeEach(func() {
 			service, err := client.AddService(spec)
 			Expect(err).NotTo(HaveOccurred())
@@ -79,7 +79,7 @@ var _ = Describe("Service", func() {
 		})
 	})
 
-	Describe("Remove a service", func() {
+	Describe("RemoveService", func() {
 		JustBeforeEach(func() {
 			_, err := client.AddService(spec)
 			Expect(err).NotTo(HaveOccurred())
