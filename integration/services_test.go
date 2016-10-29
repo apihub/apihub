@@ -95,9 +95,29 @@ var _ = Describe("Service", func() {
 		})
 
 		Context("when service is not found", func() {
-			It("returns an error message with bad request", func() {
+			It("returns an error", func() {
 				err := client.RemoveService("invalid-handle")
 				Expect(err).To(MatchError(ContainSubstring("Handle not found.")))
+			})
+		})
+	})
+
+	Describe("Finding a service", func() {
+		JustBeforeEach(func() {
+			_, err := client.AddService(spec)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("finds a service by handle", func() {
+			service, err := client.FindService("my-service")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(service.Handle()).To(Equal("my-service"))
+		})
+
+		Context("when service is not found", func() {
+			It("returns an error", func() {
+				_, err := client.FindService("invalid-handle")
+				Expect(err).To(MatchError(ContainSubstring("Failed to find service.")))
 			})
 		})
 	})

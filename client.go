@@ -26,9 +26,9 @@ type Client interface {
 	// * None.
 	Services() ([]Service, error)
 
-	// Lookup returns the service with the specified handle.
+	// FindService returns the service with the specified handle.
 	//
 	// Errors:
 	// * Service not found.
-	Lookup(handle string) (Service, error)
+	FindService(handle string) (Service, error)
 }

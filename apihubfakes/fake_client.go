@@ -38,12 +38,12 @@ type FakeClient struct {
 		result1 []apihub.Service
 		result2 error
 	}
-	LookupStub        func(handle string) (apihub.Service, error)
-	lookupMutex       sync.RWMutex
-	lookupArgsForCall []struct {
+	FindServiceStub        func(handle string) (apihub.Service, error)
+	findServiceMutex       sync.RWMutex
+	findServiceArgsForCall []struct {
 		handle string
 	}
-	lookupReturns struct {
+	findServiceReturns struct {
 		result1 apihub.Service
 		result2 error
 	}
@@ -169,35 +169,35 @@ func (fake *FakeClient) ServicesReturns(result1 []apihub.Service, result2 error)
 	}{result1, result2}
 }
 
-func (fake *FakeClient) Lookup(handle string) (apihub.Service, error) {
-	fake.lookupMutex.Lock()
-	fake.lookupArgsForCall = append(fake.lookupArgsForCall, struct {
+func (fake *FakeClient) FindService(handle string) (apihub.Service, error) {
+	fake.findServiceMutex.Lock()
+	fake.findServiceArgsForCall = append(fake.findServiceArgsForCall, struct {
 		handle string
 	}{handle})
-	fake.recordInvocation("Lookup", []interface{}{handle})
-	fake.lookupMutex.Unlock()
-	if fake.LookupStub != nil {
-		return fake.LookupStub(handle)
+	fake.recordInvocation("FindService", []interface{}{handle})
+	fake.findServiceMutex.Unlock()
+	if fake.FindServiceStub != nil {
+		return fake.FindServiceStub(handle)
 	} else {
-		return fake.lookupReturns.result1, fake.lookupReturns.result2
+		return fake.findServiceReturns.result1, fake.findServiceReturns.result2
 	}
 }
 
-func (fake *FakeClient) LookupCallCount() int {
-	fake.lookupMutex.RLock()
-	defer fake.lookupMutex.RUnlock()
-	return len(fake.lookupArgsForCall)
+func (fake *FakeClient) FindServiceCallCount() int {
+	fake.findServiceMutex.RLock()
+	defer fake.findServiceMutex.RUnlock()
+	return len(fake.findServiceArgsForCall)
 }
 
-func (fake *FakeClient) LookupArgsForCall(i int) string {
-	fake.lookupMutex.RLock()
-	defer fake.lookupMutex.RUnlock()
-	return fake.lookupArgsForCall[i].handle
+func (fake *FakeClient) FindServiceArgsForCall(i int) string {
+	fake.findServiceMutex.RLock()
+	defer fake.findServiceMutex.RUnlock()
+	return fake.findServiceArgsForCall[i].handle
 }
 
-func (fake *FakeClient) LookupReturns(result1 apihub.Service, result2 error) {
-	fake.LookupStub = nil
-	fake.lookupReturns = struct {
+func (fake *FakeClient) FindServiceReturns(result1 apihub.Service, result2 error) {
+	fake.FindServiceStub = nil
+	fake.findServiceReturns = struct {
 		result1 apihub.Service
 		result2 error
 	}{result1, result2}
@@ -214,8 +214,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.removeServiceMutex.RUnlock()
 	fake.servicesMutex.RLock()
 	defer fake.servicesMutex.RUnlock()
-	fake.lookupMutex.RLock()
-	defer fake.lookupMutex.RUnlock()
+	fake.findServiceMutex.RLock()
+	defer fake.findServiceMutex.RUnlock()
 	return fake.invocations
 }
 

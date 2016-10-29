@@ -207,4 +207,41 @@ var _ = Describe("Connection", func() {
 			})
 		})
 	})
+
+	Describe("FindService", func() {
+		Context("when the request succeeds", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, "/services/my-handle"),
+						ghttp.RespondWith(200, `{"handle":"my-handle"}`),
+					),
+				)
+			})
+
+			It("finds a service", func() {
+				spec, err := conn.FindService("my-handle")
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(spec.Handle).To(Equal("my-handle"))
+			})
+		})
+
+		Context("when the request fails", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodGet, "/services/invalid-handle"),
+						ghttp.RespondWith(400, "{}"),
+					),
+				)
+			})
+
+			It("returns an error", func() {
+				_, err := conn.FindService("invalid-handle")
+				Expect(err).To(HaveOccurred())
+			})
+		})
+	})
+
 })

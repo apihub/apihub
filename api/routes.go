@@ -10,6 +10,7 @@ const (
 	AddService
 	ListServices
 	RemoveService
+	FindService
 )
 
 var Routes = map[Route]RouterArguments{
@@ -18,4 +19,5 @@ var Routes = map[Route]RouterArguments{
 	AddService:    RouterArguments{Path: "/services", Method: http.MethodPost},
 	ListServices:  RouterArguments{Path: "/services", Method: http.MethodGet},
 	RemoveService: RouterArguments{Path: "/services/{handle}", Method: http.MethodDelete},
+	FindService:   RouterArguments{Path: "/services/{handle}", Method: http.MethodGet},
 }

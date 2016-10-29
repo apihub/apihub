@@ -36,6 +36,7 @@ func New(log lager.Logger, listenNetwork, listenAddr string, storage apihub.Stor
 		AddService:    http.HandlerFunc(s.addService),
 		ListServices:  http.HandlerFunc(s.listServices),
 		RemoveService: http.HandlerFunc(s.removeService),
+		FindService:   http.HandlerFunc(s.findService),
 	}
 	for route, handler := range handlers {
 		s.router.AddHandler(RouterArguments{Path: Routes[route].Path, Method: Routes[route].Method, Handler: handler})

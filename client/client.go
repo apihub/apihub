@@ -46,6 +46,11 @@ func (cli *client) RemoveService(handle string) error {
 	return cli.conn.RemoveService(handle)
 }
 
-func (cli *client) Lookup(handle string) (apihub.Service, error) {
-	return nil, nil
+func (cli *client) FindService(handle string) (apihub.Service, error) {
+	service, err := cli.conn.FindService(handle)
+	if err != nil {
+		return nil, err
+	}
+
+	return newService(service.Handle, cli.conn), nil
 }

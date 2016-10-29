@@ -39,6 +39,15 @@ type FakeConnection struct {
 	removeServiceReturns struct {
 		result1 error
 	}
+	FindServiceStub        func(string) (apihub.ServiceSpec, error)
+	findServiceMutex       sync.RWMutex
+	findServiceArgsForCall []struct {
+		arg1 string
+	}
+	findServiceReturns struct {
+		result1 apihub.ServiceSpec
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -161,6 +170,40 @@ func (fake *FakeConnection) RemoveServiceReturns(result1 error) {
 	}{result1}
 }
 
+func (fake *FakeConnection) FindService(arg1 string) (apihub.ServiceSpec, error) {
+	fake.findServiceMutex.Lock()
+	fake.findServiceArgsForCall = append(fake.findServiceArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("FindService", []interface{}{arg1})
+	fake.findServiceMutex.Unlock()
+	if fake.FindServiceStub != nil {
+		return fake.FindServiceStub(arg1)
+	} else {
+		return fake.findServiceReturns.result1, fake.findServiceReturns.result2
+	}
+}
+
+func (fake *FakeConnection) FindServiceCallCount() int {
+	fake.findServiceMutex.RLock()
+	defer fake.findServiceMutex.RUnlock()
+	return len(fake.findServiceArgsForCall)
+}
+
+func (fake *FakeConnection) FindServiceArgsForCall(i int) string {
+	fake.findServiceMutex.RLock()
+	defer fake.findServiceMutex.RUnlock()
+	return fake.findServiceArgsForCall[i].arg1
+}
+
+func (fake *FakeConnection) FindServiceReturns(result1 apihub.ServiceSpec, result2 error) {
+	fake.FindServiceStub = nil
+	fake.findServiceReturns = struct {
+		result1 apihub.ServiceSpec
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeConnection) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -172,6 +215,8 @@ func (fake *FakeConnection) Invocations() map[string][][]interface{} {
 	defer fake.servicesMutex.RUnlock()
 	fake.removeServiceMutex.RLock()
 	defer fake.removeServiceMutex.RUnlock()
+	fake.findServiceMutex.RLock()
+	defer fake.findServiceMutex.RUnlock()
 	return fake.invocations
 }
 

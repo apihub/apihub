@@ -227,4 +227,50 @@ var _ = Describe("Services", func() {
 			})
 		})
 	})
+
+	Describe("findService", func() {
+		BeforeEach(func() {
+			fakeStorage.FindServiceByHandleReturns(apihub.ServiceSpec{
+				Handle: "my-handle",
+				Backends: []apihub.BackendInfo{
+					apihub.BackendInfo{
+						Name:    "server-a",
+						Address: "http://server-a",
+					},
+				},
+			}, nil)
+		})
+
+		It("finds a service", func() {
+			headers, code, body, _ := httpClient.MakeRequest(requests.Args{
+				AcceptableCode: http.StatusOK,
+				Method:         http.MethodGet,
+				Path:           "/services/my-handle",
+			})
+
+			Expect(stringify(body)).To(Equal(`{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"name":"server-a","address":"http://server-a","heart_beat_address":"","heart_beat_timeout":0,"heart_beat_retry":0}]}`))
+			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
+			Expect(code).To(Equal(http.StatusOK))
+			Expect(fakeStorage.FindServiceByHandleCallCount()).To(Equal(1))
+		})
+
+		Context("when finding a service fails", func() {
+			BeforeEach(func() {
+				fakeStorage.FindServiceByHandleReturns(apihub.ServiceSpec{}, errors.New("failed to find service."))
+			})
+
+			It("returns an error", func() {
+				headers, code, body, _ := httpClient.MakeRequest(requests.Args{
+					AcceptableCode: http.StatusBadRequest,
+					Method:         http.MethodGet,
+					Path:           "/services/invalid-handle",
+				})
+
+				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
+				Expect(code).To(Equal(http.StatusBadRequest))
+				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":"Failed to find service."}`))
+			})
+		})
+	})
+
 })

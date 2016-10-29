@@ -93,3 +93,23 @@ func (s *ApihubServer) removeService(rw http.ResponseWriter, r *http.Request) {
 		StatusCode: http.StatusNoContent,
 	})
 }
+
+func (s *ApihubServer) findService(rw http.ResponseWriter, r *http.Request) {
+	log := s.logger.Session("find-service")
+	log.Debug("start")
+	defer log.Debug("end")
+
+	handle := mux.Vars(r)["handle"]
+
+	service, err := s.storage.FindServiceByHandle(handle)
+	if err != nil {
+		log.Error("failed-to-find-service", err, lager.Data{"handle": handle})
+		s.handleError(rw, errors.New("Failed to find service."))
+		return
+	}
+
+	s.writeResponse(rw, response{
+		StatusCode: http.StatusOK,
+		Body:       service,
+	})
+}
