@@ -244,4 +244,45 @@ var _ = Describe("Connection", func() {
 		})
 	})
 
+	Describe("UpdateService", func() {
+		Context("when the request succeeds", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodPut, "/services/my-handle"),
+						ghttp.RespondWith(200, `{"handle":"my-handle","disabled":true}`),
+					),
+				)
+			})
+
+			It("updates the service", func() {
+				spec := apihub.ServiceSpec{
+					Handle:   "my-handle",
+					Disabled: true,
+				}
+
+				spec, err := conn.UpdateService("my-handle", spec)
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(spec.Handle).To(Equal("my-handle"))
+			})
+		})
+
+		Context("when the request fails", func() {
+			BeforeEach(func() {
+				server.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest(http.MethodPut, "/services/invalid-handle"),
+						ghttp.RespondWith(400, "{}"),
+					),
+				)
+			})
+
+			It("returns an error", func() {
+				_, err := conn.UpdateService("invalid-handle", apihub.ServiceSpec{})
+				Expect(err).To(HaveOccurred())
+			})
+		})
+	})
+
 })

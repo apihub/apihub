@@ -54,3 +54,12 @@ func (cli *client) FindService(handle string) (apihub.Service, error) {
 
 	return newService(service.Handle, cli.conn), nil
 }
+
+func (cli *client) UpdateService(handle string, spec apihub.ServiceSpec) (apihub.Service, error) {
+	service, err := cli.conn.UpdateService(handle, spec)
+	if err != nil {
+		return nil, err
+	}
+
+	return newService(service.Handle, cli.conn), nil
+}

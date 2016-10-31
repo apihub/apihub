@@ -123,4 +123,37 @@ var _ = Describe("Client", func() {
 			})
 		})
 	})
+
+	Describe("UpdateService", func() {
+		var spec apihub.ServiceSpec
+
+		BeforeEach(func() {
+			spec = apihub.ServiceSpec{
+				Handle: "my-handle",
+			}
+			fakeConnection.FindServiceReturns(spec, nil)
+		})
+
+		It("sends a request to updaate a service", func() {
+			fakeConnection.UpdateServiceReturns(spec, nil)
+
+			_, err := cli.UpdateService("my-handle", spec)
+			Expect(err).NotTo(HaveOccurred())
+
+			handle, s := fakeConnection.UpdateServiceArgsForCall(0)
+			Expect(handle).To(Equal("my-handle"))
+			Expect(s).To(Equal(spec))
+		})
+
+		Context("when the request fails", func() {
+			BeforeEach(func() {
+				fakeConnection.FindServiceReturns(apihub.ServiceSpec{}, errors.New("failed to find service: `my-handle`"))
+			})
+
+			It("returns an error", func() {
+				_, err := cli.FindService("my-handle")
+				Expect(err).To(MatchError(ContainSubstring("failed to find service: `my-handle`")))
+			})
+		})
+	})
 })

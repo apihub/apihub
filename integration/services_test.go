@@ -100,7 +100,7 @@ var _ = Describe("Service", func() {
 		})
 	})
 
-	Describe("Finding a service", func() {
+	Describe("FindService", func() {
 		JustBeforeEach(func() {
 			_, err := client.AddService(spec)
 			Expect(err).NotTo(HaveOccurred())
@@ -115,6 +115,40 @@ var _ = Describe("Service", func() {
 		Context("when service is not found", func() {
 			It("returns an error", func() {
 				_, err := client.FindService("invalid-handle")
+				Expect(err).To(MatchError(ContainSubstring("Failed to find service.")))
+			})
+		})
+	})
+
+	Describe("UpdateService", func() {
+		JustBeforeEach(func() {
+			_, err := client.AddService(spec)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("update an existing service by handle", func() {
+			spec.Backends = []apihub.BackendInfo{
+				apihub.BackendInfo{
+					Address:          "http://server-b",
+					HeartBeatAddress: "http://server-b/healthcheck",
+					HeartBeatTimeout: 3,
+				},
+			}
+
+			service, err := client.UpdateService("my-service", spec)
+			Expect(err).NotTo(HaveOccurred())
+
+			service, err = client.FindService("my-service")
+			Expect(err).NotTo(HaveOccurred())
+			backends, err := service.Backends()
+			Expect(err).NotTo(HaveOccurred())
+			info := backends[0].Info()
+			Expect(info.Address).To(Equal("http://server-b"))
+		})
+
+		Context("when service is not found", func() {
+			It("returns an error", func() {
+				_, err := client.UpdateService("invalid-handle", spec)
 				Expect(err).To(MatchError(ContainSubstring("Failed to find service.")))
 			})
 		})

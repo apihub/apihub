@@ -53,10 +53,8 @@ type ServiceSpec struct {
 }
 
 type Backend interface {
-	Address() string
-
 	// Returns information about a backend.
-	Info() (BackendInfo, error)
+	Info() BackendInfo
 
 	// Start starts receiving requests.
 	Start() error

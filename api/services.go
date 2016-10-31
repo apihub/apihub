@@ -19,7 +19,7 @@ func (s *ApihubServer) addService(rw http.ResponseWriter, r *http.Request) {
 	var spec apihub.ServiceSpec
 	if err := json.NewDecoder(r.Body).Decode(&spec); err != nil {
 		log.Error("failed-to-parse-spec", err)
-		s.handleError(rw, err)
+		s.handleError(rw, errors.New("Failed to parse request."))
 		return
 	}
 
@@ -108,6 +108,40 @@ func (s *ApihubServer) findService(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	s.writeResponse(rw, response{
+		StatusCode: http.StatusOK,
+		Body:       service,
+	})
+}
+
+func (s *ApihubServer) updateService(rw http.ResponseWriter, r *http.Request) {
+	log := s.logger.Session("update-service")
+	log.Debug("start")
+	defer log.Debug("end")
+
+	handle := mux.Vars(r)["handle"]
+
+	service, err := s.storage.FindServiceByHandle(handle)
+	if err != nil {
+		log.Error("failed-to-find-service", err, lager.Data{"handle": handle})
+		s.handleError(rw, errors.New("Failed to find service."))
+		return
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&service); err != nil {
+		log.Error("failed-to-parse-spec", err)
+		s.handleError(rw, errors.New("Failed to parse request."))
+		return
+	}
+
+	service.Handle = handle
+	if err := s.storage.UpsertService(service); err != nil {
+		log.Error("failed-to-store-service", err)
+		s.handleError(rw, errors.New("Failed to update service."))
+		return
+	}
+
+	log.Info("service-updated", lager.Data{"serviceSpec": service})
 	s.writeResponse(rw, response{
 		StatusCode: http.StatusOK,
 		Body:       service,

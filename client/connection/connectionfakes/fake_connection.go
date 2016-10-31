@@ -48,6 +48,16 @@ type FakeConnection struct {
 		result1 apihub.ServiceSpec
 		result2 error
 	}
+	UpdateServiceStub        func(string, apihub.ServiceSpec) (apihub.ServiceSpec, error)
+	updateServiceMutex       sync.RWMutex
+	updateServiceArgsForCall []struct {
+		arg1 string
+		arg2 apihub.ServiceSpec
+	}
+	updateServiceReturns struct {
+		result1 apihub.ServiceSpec
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -204,6 +214,41 @@ func (fake *FakeConnection) FindServiceReturns(result1 apihub.ServiceSpec, resul
 	}{result1, result2}
 }
 
+func (fake *FakeConnection) UpdateService(arg1 string, arg2 apihub.ServiceSpec) (apihub.ServiceSpec, error) {
+	fake.updateServiceMutex.Lock()
+	fake.updateServiceArgsForCall = append(fake.updateServiceArgsForCall, struct {
+		arg1 string
+		arg2 apihub.ServiceSpec
+	}{arg1, arg2})
+	fake.recordInvocation("UpdateService", []interface{}{arg1, arg2})
+	fake.updateServiceMutex.Unlock()
+	if fake.UpdateServiceStub != nil {
+		return fake.UpdateServiceStub(arg1, arg2)
+	} else {
+		return fake.updateServiceReturns.result1, fake.updateServiceReturns.result2
+	}
+}
+
+func (fake *FakeConnection) UpdateServiceCallCount() int {
+	fake.updateServiceMutex.RLock()
+	defer fake.updateServiceMutex.RUnlock()
+	return len(fake.updateServiceArgsForCall)
+}
+
+func (fake *FakeConnection) UpdateServiceArgsForCall(i int) (string, apihub.ServiceSpec) {
+	fake.updateServiceMutex.RLock()
+	defer fake.updateServiceMutex.RUnlock()
+	return fake.updateServiceArgsForCall[i].arg1, fake.updateServiceArgsForCall[i].arg2
+}
+
+func (fake *FakeConnection) UpdateServiceReturns(result1 apihub.ServiceSpec, result2 error) {
+	fake.UpdateServiceStub = nil
+	fake.updateServiceReturns = struct {
+		result1 apihub.ServiceSpec
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeConnection) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -217,6 +262,8 @@ func (fake *FakeConnection) Invocations() map[string][][]interface{} {
 	defer fake.removeServiceMutex.RUnlock()
 	fake.findServiceMutex.RLock()
 	defer fake.findServiceMutex.RUnlock()
+	fake.updateServiceMutex.RLock()
+	defer fake.updateServiceMutex.RUnlock()
 	return fake.invocations
 }
 

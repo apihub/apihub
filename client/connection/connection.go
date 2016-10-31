@@ -22,6 +22,7 @@ type Connection interface {
 	Services() ([]apihub.ServiceSpec, error)
 	RemoveService(string) error
 	FindService(string) (apihub.ServiceSpec, error)
+	UpdateService(string, apihub.ServiceSpec) (apihub.ServiceSpec, error)
 }
 
 type Params map[string]string
@@ -82,6 +83,17 @@ func (c *connection) FindService(handle string) (apihub.ServiceSpec, error) {
 	}
 
 	return spec, nil
+}
+
+func (c *connection) UpdateService(handle string, spec apihub.ServiceSpec) (apihub.ServiceSpec, error) {
+	params := map[string]string{"handle": handle}
+
+	var updatedSpec apihub.ServiceSpec
+	if err := c.do(api.UpdateService, params, spec, &updatedSpec); err != nil {
+		return apihub.ServiceSpec{}, err
+	}
+
+	return updatedSpec, nil
 }
 
 func (c *connection) handleError(body io.ReadCloser) error {

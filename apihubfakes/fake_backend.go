@@ -8,18 +8,11 @@ import (
 )
 
 type FakeBackend struct {
-	AddressStub        func() string
-	addressMutex       sync.RWMutex
-	addressArgsForCall []struct{}
-	addressReturns     struct {
-		result1 string
-	}
-	InfoStub        func() (apihub.BackendInfo, error)
+	InfoStub        func() apihub.BackendInfo
 	infoMutex       sync.RWMutex
 	infoArgsForCall []struct{}
 	infoReturns     struct {
 		result1 apihub.BackendInfo
-		result2 error
 	}
 	StartStub        func() error
 	startMutex       sync.RWMutex
@@ -37,32 +30,7 @@ type FakeBackend struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeBackend) Address() string {
-	fake.addressMutex.Lock()
-	fake.addressArgsForCall = append(fake.addressArgsForCall, struct{}{})
-	fake.recordInvocation("Address", []interface{}{})
-	fake.addressMutex.Unlock()
-	if fake.AddressStub != nil {
-		return fake.AddressStub()
-	} else {
-		return fake.addressReturns.result1
-	}
-}
-
-func (fake *FakeBackend) AddressCallCount() int {
-	fake.addressMutex.RLock()
-	defer fake.addressMutex.RUnlock()
-	return len(fake.addressArgsForCall)
-}
-
-func (fake *FakeBackend) AddressReturns(result1 string) {
-	fake.AddressStub = nil
-	fake.addressReturns = struct {
-		result1 string
-	}{result1}
-}
-
-func (fake *FakeBackend) Info() (apihub.BackendInfo, error) {
+func (fake *FakeBackend) Info() apihub.BackendInfo {
 	fake.infoMutex.Lock()
 	fake.infoArgsForCall = append(fake.infoArgsForCall, struct{}{})
 	fake.recordInvocation("Info", []interface{}{})
@@ -70,7 +38,7 @@ func (fake *FakeBackend) Info() (apihub.BackendInfo, error) {
 	if fake.InfoStub != nil {
 		return fake.InfoStub()
 	} else {
-		return fake.infoReturns.result1, fake.infoReturns.result2
+		return fake.infoReturns.result1
 	}
 }
 
@@ -80,12 +48,11 @@ func (fake *FakeBackend) InfoCallCount() int {
 	return len(fake.infoArgsForCall)
 }
 
-func (fake *FakeBackend) InfoReturns(result1 apihub.BackendInfo, result2 error) {
+func (fake *FakeBackend) InfoReturns(result1 apihub.BackendInfo) {
 	fake.InfoStub = nil
 	fake.infoReturns = struct {
 		result1 apihub.BackendInfo
-		result2 error
-	}{result1, result2}
+	}{result1}
 }
 
 func (fake *FakeBackend) Start() error {
@@ -141,8 +108,6 @@ func (fake *FakeBackend) StopReturns(result1 error) {
 func (fake *FakeBackend) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.addressMutex.RLock()
-	defer fake.addressMutex.RUnlock()
 	fake.infoMutex.RLock()
 	defer fake.infoMutex.RUnlock()
 	fake.startMutex.RLock()

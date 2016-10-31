@@ -31,4 +31,10 @@ type Client interface {
 	// Errors:
 	// * Service not found.
 	FindService(handle string) (Service, error)
+
+	// UpdateService updates the service with the specified handle.
+	//
+	// Errors:
+	// * Service not found.
+	UpdateService(string, ServiceSpec) (Service, error)
 }

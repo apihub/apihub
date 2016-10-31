@@ -47,6 +47,16 @@ type FakeClient struct {
 		result1 apihub.Service
 		result2 error
 	}
+	UpdateServiceStub        func(string, apihub.ServiceSpec) (apihub.Service, error)
+	updateServiceMutex       sync.RWMutex
+	updateServiceArgsForCall []struct {
+		arg1 string
+		arg2 apihub.ServiceSpec
+	}
+	updateServiceReturns struct {
+		result1 apihub.Service
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -203,6 +213,41 @@ func (fake *FakeClient) FindServiceReturns(result1 apihub.Service, result2 error
 	}{result1, result2}
 }
 
+func (fake *FakeClient) UpdateService(arg1 string, arg2 apihub.ServiceSpec) (apihub.Service, error) {
+	fake.updateServiceMutex.Lock()
+	fake.updateServiceArgsForCall = append(fake.updateServiceArgsForCall, struct {
+		arg1 string
+		arg2 apihub.ServiceSpec
+	}{arg1, arg2})
+	fake.recordInvocation("UpdateService", []interface{}{arg1, arg2})
+	fake.updateServiceMutex.Unlock()
+	if fake.UpdateServiceStub != nil {
+		return fake.UpdateServiceStub(arg1, arg2)
+	} else {
+		return fake.updateServiceReturns.result1, fake.updateServiceReturns.result2
+	}
+}
+
+func (fake *FakeClient) UpdateServiceCallCount() int {
+	fake.updateServiceMutex.RLock()
+	defer fake.updateServiceMutex.RUnlock()
+	return len(fake.updateServiceArgsForCall)
+}
+
+func (fake *FakeClient) UpdateServiceArgsForCall(i int) (string, apihub.ServiceSpec) {
+	fake.updateServiceMutex.RLock()
+	defer fake.updateServiceMutex.RUnlock()
+	return fake.updateServiceArgsForCall[i].arg1, fake.updateServiceArgsForCall[i].arg2
+}
+
+func (fake *FakeClient) UpdateServiceReturns(result1 apihub.Service, result2 error) {
+	fake.UpdateServiceStub = nil
+	fake.updateServiceReturns = struct {
+		result1 apihub.Service
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -216,6 +261,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.servicesMutex.RUnlock()
 	fake.findServiceMutex.RLock()
 	defer fake.findServiceMutex.RUnlock()
+	fake.updateServiceMutex.RLock()
+	defer fake.updateServiceMutex.RUnlock()
 	return fake.invocations
 }
 
