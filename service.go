@@ -31,7 +31,7 @@ type Service interface {
 	RemoveBackend(be BackendInfo) error
 
 	// Backends returns all backends in the service.
-	Backends() []Backend
+	Backends() ([]Backend, error)
 
 	// Lookup returns the backend corresponding to the address specified.
 	//
@@ -41,7 +41,6 @@ type Service interface {
 
 	// Timeout waits for the duration before returning an error to the client.
 	SetTimeout(time.Duration)
-	Timeout() time.Duration
 }
 
 // ServiceInfo holds information about a service.
@@ -68,9 +67,8 @@ type Backend interface {
 
 // Backend holds information about a backend.
 type BackendInfo struct {
-	Name             string `json:"name"`
 	Address          string `json:"address"`
+	Disabled         bool   `json:"disabled"`
 	HeartBeatAddress string `json:"heart_beat_address"`
 	HeartBeatTimeout int    `json:"heart_beat_timeout"`
-	HeartBeatRetry   int    `json:"heart_beat_retry"`
 }

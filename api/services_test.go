@@ -59,10 +59,10 @@ var _ = Describe("Services", func() {
 				AcceptableCode: http.StatusCreated,
 				Method:         http.MethodPost,
 				Path:           "/services",
-				Body:           `{"handle":"my-handle", "backends":[{"name":"server-a", "address":"http://server-a"}]}`,
+				Body:           `{"handle":"my-handle", "backends":[{"address":"http://server-a"}]}`,
 			})
 
-			Expect(stringify(body)).To(Equal(`{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"name":"server-a","address":"http://server-a","heart_beat_address":"","heart_beat_timeout":0,"heart_beat_retry":0}]}`))
+			Expect(stringify(body)).To(Equal(`{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"address":"http://server-a","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}`))
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 			Expect(code).To(Equal(http.StatusCreated))
 			Expect(fakeStorage.UpsertServiceCallCount()).To(Equal(1))
@@ -107,7 +107,7 @@ var _ = Describe("Services", func() {
 					AcceptableCode: http.StatusBadRequest,
 					Method:         http.MethodPost,
 					Path:           "/services",
-					Body:           `{"handle":"my-handle", "backends":[{"name":"server-a", "address":"http://server-a"}]}`,
+					Body:           `{"handle":"my-handle", "backends":[{"address":"http://server-a"}]}`,
 				}
 				_, code, _, _ := httpClient.MakeRequest(reqArgs)
 				Expect(code).To(Equal(http.StatusCreated))
@@ -134,7 +134,7 @@ var _ = Describe("Services", func() {
 					AcceptableCode: http.StatusBadRequest,
 					Method:         http.MethodPost,
 					Path:           "/services",
-					Body:           `{"handle":"my-handle", "backends":[{"name":"server-a", "address":"http://server-a"}]}`,
+					Body:           `{"handle":"my-handle", "backends":[{ "address":"http://server-a"}]}`,
 				})
 
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
@@ -151,7 +151,6 @@ var _ = Describe("Services", func() {
 					Handle: "my-handle",
 					Backends: []apihub.BackendInfo{
 						apihub.BackendInfo{
-							Name:    "server-a",
 							Address: "http://server-a",
 						},
 					},
@@ -166,7 +165,7 @@ var _ = Describe("Services", func() {
 				Path:           "/services",
 			})
 
-			Expect(stringify(body)).To(Equal(`{"items":[{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"name":"server-a","address":"http://server-a","heart_beat_address":"","heart_beat_timeout":0,"heart_beat_retry":0}]}],"item_count":1}`))
+			Expect(stringify(body)).To(Equal(`{"items":[{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"address":"http://server-a","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}],"item_count":1}`))
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 			Expect(code).To(Equal(http.StatusOK))
 			Expect(fakeStorage.ServicesCallCount()).To(Equal(1))
@@ -234,7 +233,6 @@ var _ = Describe("Services", func() {
 				Handle: "my-handle",
 				Backends: []apihub.BackendInfo{
 					apihub.BackendInfo{
-						Name:    "server-a",
 						Address: "http://server-a",
 					},
 				},
@@ -248,7 +246,7 @@ var _ = Describe("Services", func() {
 				Path:           "/services/my-handle",
 			})
 
-			Expect(stringify(body)).To(Equal(`{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"name":"server-a","address":"http://server-a","heart_beat_address":"","heart_beat_timeout":0,"heart_beat_retry":0}]}`))
+			Expect(stringify(body)).To(Equal(`{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"address":"http://server-a","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}`))
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 			Expect(code).To(Equal(http.StatusOK))
 			Expect(fakeStorage.FindServiceByHandleCallCount()).To(Equal(1))

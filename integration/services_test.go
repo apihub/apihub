@@ -25,11 +25,9 @@ var _ = Describe("Service", func() {
 			Timeout:  10,
 			Backends: []apihub.BackendInfo{
 				apihub.BackendInfo{
-					Name:             "server-a",
 					Address:          "http://server-a",
 					HeartBeatAddress: "http://server-a/healthcheck",
 					HeartBeatTimeout: 3,
-					HeartBeatRetry:   2,
 				},
 			},
 		}
