@@ -52,20 +52,11 @@ type FakeService struct {
 	removeBackendReturns struct {
 		result1 error
 	}
-	BackendsStub        func() ([]apihub.Backend, error)
+	BackendsStub        func() ([]apihub.BackendInfo, error)
 	backendsMutex       sync.RWMutex
 	backendsArgsForCall []struct{}
 	backendsReturns     struct {
-		result1 []apihub.Backend
-		result2 error
-	}
-	LookupStub        func(address string) (apihub.Backend, error)
-	lookupMutex       sync.RWMutex
-	lookupArgsForCall []struct {
-		address string
-	}
-	lookupReturns struct {
-		result1 apihub.Backend
+		result1 []apihub.BackendInfo
 		result2 error
 	}
 	SetTimeoutStub        func(time.Duration)
@@ -252,7 +243,7 @@ func (fake *FakeService) RemoveBackendReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeService) Backends() ([]apihub.Backend, error) {
+func (fake *FakeService) Backends() ([]apihub.BackendInfo, error) {
 	fake.backendsMutex.Lock()
 	fake.backendsArgsForCall = append(fake.backendsArgsForCall, struct{}{})
 	fake.recordInvocation("Backends", []interface{}{})
@@ -270,44 +261,10 @@ func (fake *FakeService) BackendsCallCount() int {
 	return len(fake.backendsArgsForCall)
 }
 
-func (fake *FakeService) BackendsReturns(result1 []apihub.Backend, result2 error) {
+func (fake *FakeService) BackendsReturns(result1 []apihub.BackendInfo, result2 error) {
 	fake.BackendsStub = nil
 	fake.backendsReturns = struct {
-		result1 []apihub.Backend
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeService) Lookup(address string) (apihub.Backend, error) {
-	fake.lookupMutex.Lock()
-	fake.lookupArgsForCall = append(fake.lookupArgsForCall, struct {
-		address string
-	}{address})
-	fake.recordInvocation("Lookup", []interface{}{address})
-	fake.lookupMutex.Unlock()
-	if fake.LookupStub != nil {
-		return fake.LookupStub(address)
-	} else {
-		return fake.lookupReturns.result1, fake.lookupReturns.result2
-	}
-}
-
-func (fake *FakeService) LookupCallCount() int {
-	fake.lookupMutex.RLock()
-	defer fake.lookupMutex.RUnlock()
-	return len(fake.lookupArgsForCall)
-}
-
-func (fake *FakeService) LookupArgsForCall(i int) string {
-	fake.lookupMutex.RLock()
-	defer fake.lookupMutex.RUnlock()
-	return fake.lookupArgsForCall[i].address
-}
-
-func (fake *FakeService) LookupReturns(result1 apihub.Backend, result2 error) {
-	fake.LookupStub = nil
-	fake.lookupReturns = struct {
-		result1 apihub.Backend
+		result1 []apihub.BackendInfo
 		result2 error
 	}{result1, result2}
 }
@@ -353,8 +310,6 @@ func (fake *FakeService) Invocations() map[string][][]interface{} {
 	defer fake.removeBackendMutex.RUnlock()
 	fake.backendsMutex.RLock()
 	defer fake.backendsMutex.RUnlock()
-	fake.lookupMutex.RLock()
-	defer fake.lookupMutex.RUnlock()
 	fake.setTimeoutMutex.RLock()
 	defer fake.setTimeoutMutex.RUnlock()
 	return fake.invocations

@@ -3,7 +3,6 @@ package apihub
 import "time"
 
 //go:generate counterfeiter . Service
-//go:generate counterfeiter . Backend
 
 type Service interface {
 	// Handle returns the subdomain/host used to access a service.
@@ -31,13 +30,7 @@ type Service interface {
 	RemoveBackend(be BackendInfo) error
 
 	// Backends returns all backends in the service.
-	Backends() ([]Backend, error)
-
-	// Lookup returns the backend corresponding to the address specified.
-	//
-	// Errors:
-	// * Backend not found for given address.
-	Lookup(address string) (Backend, error)
+	Backends() ([]BackendInfo, error)
 
 	// Timeout waits for the duration before returning an error to the client.
 	SetTimeout(time.Duration)
@@ -50,17 +43,6 @@ type ServiceSpec struct {
 	Disabled bool          `json:"disabled"`
 	Timeout  int           `json:"timeout"`
 	Backends []BackendInfo `json:"backends,omitempty"`
-}
-
-type Backend interface {
-	// Returns information about a backend.
-	Info() BackendInfo
-
-	// Start starts receiving requests.
-	Start() error
-
-	// Stop stops receiving requests.
-	Stop() error
 }
 
 // Backend holds information about a backend.

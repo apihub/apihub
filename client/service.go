@@ -27,18 +27,13 @@ func (s *service) Info() (apihub.ServiceSpec, error) {
 	return s.conn.FindService(s.Handle())
 }
 
-func (s *service) Backends() ([]apihub.Backend, error) {
+func (s *service) Backends() ([]apihub.BackendInfo, error) {
 	info, err := s.conn.FindService(s.Handle())
 	if err != nil {
 		return nil, err
 	}
 
-	var backends []apihub.Backend
-	for _, backend := range info.Backends {
-		backends = append(backends, newBackend(backend))
-	}
-
-	return backends, nil
+	return info.Backends, nil
 }
 
 func (s *service) Start() error {
@@ -54,10 +49,6 @@ func (s *service) AddBackend(be apihub.BackendInfo) error {
 }
 
 func (s *service) RemoveBackend(be apihub.BackendInfo) error {
-	panic("not implemented")
-}
-
-func (s *service) Lookup(address string) (apihub.Backend, error) {
 	panic("not implemented")
 }
 

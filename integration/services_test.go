@@ -142,8 +142,7 @@ var _ = Describe("Service", func() {
 			Expect(err).NotTo(HaveOccurred())
 			backends, err := service.Backends()
 			Expect(err).NotTo(HaveOccurred())
-			info := backends[0].Info()
-			Expect(info.Address).To(Equal("http://server-b"))
+			Expect(backends[0].Address).To(Equal("http://server-b"))
 		})
 
 		Context("when service is not found", func() {
