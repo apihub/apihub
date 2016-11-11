@@ -2,6 +2,10 @@ package integration_test
 
 import (
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+
+	"code.cloudfoundry.org/lager/lagertest"
 
 	"github.com/apihub/apihub"
 	. "github.com/onsi/ginkgo"
@@ -10,14 +14,18 @@ import (
 
 var _ = Describe("Service", func() {
 	var (
-		client  *RunningApihub
-		address string
-		spec    apihub.ServiceSpec
+		client      *RunningApihub
+		addressAPI  string
+		portGateway string
+		spec        apihub.ServiceSpec
+		log         *lagertest.TestLogger
 	)
 
 	BeforeEach(func() {
-		address = fmt.Sprintf("/tmp/apihub_%d.sock",
+		addressAPI = fmt.Sprintf("/tmp/apihub_api_%d.sock",
 			GinkgoParallelNode())
+		portGateway = fmt.Sprintf(":%d", 9000+GinkgoParallelNode())
+		log = lagertest.NewTestLogger("services-test")
 
 		spec = apihub.ServiceSpec{
 			Handle:   "my-service",
@@ -34,7 +42,7 @@ var _ = Describe("Service", func() {
 	})
 
 	JustBeforeEach(func() {
-		client = startApihub("unix", address)
+		client = startApihub("unix", addressAPI, portGateway)
 	})
 
 	AfterEach(func() {

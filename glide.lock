@@ -1,5 +1,5 @@
-hash: a8e8776a85f90ffc98d53f69f3e5b5c2825ac4cf0b6babe6a6fd6e9c10d64e8f
-updated: 2016-10-26T18:31:12.619240934+01:00
+hash: a5be9cafd80afdbf06efcfab7eea566e7e4b3a1c6ac8ec3d35cbc80fc3a2a658
+updated: 2016-11-05T08:54:38.977287189Z
 imports:
 - name: code.cloudfoundry.org/lager
   version: b273f19621a28f627423f658e71e014f114dd53e
@@ -8,7 +8,7 @@ imports:
 - name: github.com/albertoleal/requests
   version: c59faf2a290abe61241b8a8c6dc2fb9db0b5ae81
 - name: github.com/golang/protobuf
-  version: 98fa357170587e470c5f27d3c3ea0947b71eb455
+  version: 2bc9827a78f95c6665b5fe0abd1fd66b496ae2d8
   subpackages:
   - proto
 - name: github.com/gorilla/context
@@ -16,7 +16,7 @@ imports:
 - name: github.com/gorilla/mux
   version: 757bef944d0f21880861c2dd9c871ca543023cba
 - name: github.com/onsi/ginkgo
-  version: a8ccd817611666211fdf6e6a752174a0db8374a8
+  version: c07a44f02cf4a895e331f4f473c0943ee116c668
   subpackages:
   - config
   - internal/codelocation
@@ -35,7 +35,7 @@ imports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: 7e2072f716a912a29b2dfa54398faf096a9909e3
+  version: ff4bc6b6f9f5affa66635cd04d31d2a7ee21ffd6
   subpackages:
   - format
   - gbytes
@@ -51,6 +51,8 @@ imports:
   - matchers/support/goraph/node
   - matchers/support/goraph/util
   - types
+- name: github.com/urfave/negroni
+  version: e0e50f7dc431c043cb33f91b09c3419d48b7cff5
 - name: golang.org/x/sys
   version: c200b10b5d5e122be351b67af224adc6128af5bf
   subpackages:

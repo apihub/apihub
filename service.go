@@ -1,8 +1,14 @@
 package apihub
 
-import "time"
+import (
+	"time"
+
+	"code.cloudfoundry.org/lager"
+)
 
 //go:generate counterfeiter . Service
+//go:generate counterfeiter . ServicePubisher
+//go:generate counterfeiter . ServiceSubscriber
 
 type Service interface {
 	// Handle returns the subdomain/host used to access a service.
@@ -34,6 +40,19 @@ type Service interface {
 
 	// Timeout waits for the duration before returning an error to the client.
 	SetTimeout(time.Duration)
+}
+
+type ServiceConfig struct {
+	ServiceSpec ServiceSpec `json:"service_spec"`
+	Time        time.Time   `json:"time"`
+}
+
+type ServicePubisher interface {
+	Publish(logger lager.Logger, config ServiceConfig) error
+}
+
+type ServiceSubscriber interface {
+	Subscribe(logger lager.Logger, config ServiceConfig) error
 }
 
 // ServiceInfo holds information about a service.

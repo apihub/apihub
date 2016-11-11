@@ -4,6 +4,7 @@ import:
 - package: code.cloudfoundry.org/lager
 - package: github.com/golang/protobuf
 - package: github.com/albertoleal/requests
+- package: github.com/urfave/negroni
 testImport:
 - package: github.com/onsi/ginkgo
   subpackages:

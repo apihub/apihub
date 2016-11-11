@@ -18,11 +18,11 @@ func main() {
 	flag.Parse()
 
 	// Configure log
-	log := lager.NewLogger("apihub")
-	log.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
+	logger := lager.NewLogger("apihub-api")
+	logger.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
 
 	// Configure and start server
 	store := storage.New()
-	server := api.New(log, *network, *address, store)
+	server := api.New(logger, *network, *address, store)
 	server.Start(true)
 }

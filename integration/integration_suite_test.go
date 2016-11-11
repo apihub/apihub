@@ -18,7 +18,8 @@ import (
 )
 
 var (
-	ApihubAPI string
+	ApihubAPI     string
+	ApihubGateway string
 )
 
 func TestIntegration(t *testing.T) {
@@ -31,6 +32,9 @@ func TestIntegration(t *testing.T) {
 		bins["api"], err = gexec.Build("github.com/apihub/apihub/cmd/api")
 		Expect(err).NotTo(HaveOccurred())
 
+		bins["gateway"], err = gexec.Build("github.com/apihub/apihub/cmd/gateway")
+		Expect(err).NotTo(HaveOccurred())
+
 		data, err := json.Marshal(bins)
 		Expect(err).NotTo(HaveOccurred())
 
@@ -40,39 +44,62 @@ func TestIntegration(t *testing.T) {
 		Expect(json.Unmarshal(data, &bins)).To(Succeed())
 
 		ApihubAPI = bins["api"]
+		ApihubGateway = bins["gateway"]
 	})
 
 	RunSpecs(t, "Integration Suite")
 }
 
-func startApihub(network string, address string) *RunningApihub {
-	args := []string{"--network", network, "--address", address}
+func startApihub(network string, addressAPI string, portGateway string) *RunningApihub {
+	os.Remove(addressAPI)
+	args := []string{"--network", network, "--address", addressAPI}
 
+	//FIXME: extract method
+	// Start Apihub api
 	buf := gbytes.NewBuffer()
 	cmd := exec.Command(ApihubAPI, args...)
-	session, err := gexec.Start(cmd, io.MultiWriter(buf, GinkgoWriter), GinkgoWriter)
+	apiSession, err := gexec.Start(cmd, io.MultiWriter(buf, GinkgoWriter), GinkgoWriter)
 	Expect(err).NotTo(HaveOccurred())
-	Eventually(session).Should(gbytes.Say("started"))
-	go func() { session.Wait() }()
+	Eventually(apiSession).Should(gbytes.Say("started"))
+
+	// Start Apihub Gateway
+	args = []string{"--port", portGateway}
+	buf = gbytes.NewBuffer()
+	cmd = exec.Command(ApihubGateway, args...)
+	gatewaySession, err := gexec.Start(cmd, io.MultiWriter(buf, GinkgoWriter), GinkgoWriter)
+	Expect(err).NotTo(HaveOccurred())
+	Eventually(gatewaySession).Should(gbytes.Say("starting"))
 
 	ah := &RunningApihub{
-		Network: network,
-		Address: address,
-		Client:  client.New(connection.New(network, address)),
-		Session: session,
+		Network:        network,
+		AddressAPI:     addressAPI,
+		AddressGateway: portGateway,
+		Client:         client.New(connection.New(network, addressAPI)),
+		APISession:     apiSession,
+		GatewaySession: gatewaySession,
 	}
 
 	return ah
 }
 
 type RunningApihub struct {
-	Network string
-	Address string
+	Network        string
+	AddressAPI     string
+	AddressGateway string
 	apihub.Client
-	Session *gexec.Session
+	APISession     *gexec.Session
+	GatewaySession *gexec.Session
 }
 
 func (r *RunningApihub) Stop() error {
-	Expect(os.Remove(r.Address)).To(Succeed())
-	return r.Session.Command.Process.Kill()
+	Expect(os.Remove(r.AddressAPI)).To(Succeed())
+	if err := r.APISession.Command.Process.Kill(); err != nil {
+		return err
+	}
+
+	if err := r.GatewaySession.Command.Process.Kill(); err != nil {
+		return err
+	}
+
+	return nil
 }

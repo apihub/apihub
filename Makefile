@@ -6,6 +6,7 @@ PROJECT := github.com/apihub/apihub
 
 all:
 		go build -o apihub-api ./cmd/api/
+		go build -o apihub-gateway ./cmd/gateway/
 
 ###### Help ###################################################################
 
