@@ -55,22 +55,24 @@ func New(log lager.Logger, listenNetwork, listenAddr string, storage apihub.Stor
 func (a *ApihubServer) Start(keep bool) error {
 	var err error
 
-	a.logger.Info("apihub-start-server", lager.Data{"listenAddr": a.listenAddr})
+	log := a.logger.Session("start")
+
+	log.Info("listening", lager.Data{"listenAddr": a.listenAddr})
 	a.Listener, err = net.Listen(a.listenNetwork, a.listenAddr)
 	if err != nil {
 		fmt.Println(err)
-		a.logger.Error("apihub-failed-starting-server", err)
+		log.Error("failed-to-start", err)
 		return err
 	}
 
 	if keep {
-		a.logger.Info("started")
+		log.Info("started")
 		a.server.Serve(a.Listener)
 		return nil
 	}
 
 	go a.server.Serve(a.Listener)
-	a.logger.Info("started")
+	log.Info("started")
 
 	return nil
 }
