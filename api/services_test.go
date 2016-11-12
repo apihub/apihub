@@ -55,12 +55,13 @@ var _ = Describe("Services", func() {
 		})
 
 		It("adds a new service", func() {
-			headers, code, body, _ := httpClient.MakeRequest(requests.Args{
+			headers, code, body, err := httpClient.MakeRequest(requests.Args{
 				AcceptableCode: http.StatusCreated,
 				Method:         http.MethodPost,
 				Path:           "/services",
 				Body:           `{"handle":"my-handle", "backends":[{"address":"http://server-a"}]}`,
 			})
+			Expect(err).NotTo(HaveOccurred())
 
 			Expect(stringify(body)).To(Equal(`{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"address":"http://server-a","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}`))
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
@@ -70,12 +71,13 @@ var _ = Describe("Services", func() {
 
 		Context("when body is invalid", func() {
 			It("returns an error and body is not json", func() {
-				headers, code, body, _ := httpClient.MakeRequest(requests.Args{
+				headers, code, body, err := httpClient.MakeRequest(requests.Args{
 					AcceptableCode: http.StatusBadRequest,
 					Method:         http.MethodPost,
 					Path:           "/services",
 					Body:           "not-a-json",
 				})
+				Expect(err).NotTo(HaveOccurred())
 
 				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":".*"}`))
 				Expect(fakeStorage.UpsertServiceCallCount()).To(Equal(0))
@@ -85,12 +87,13 @@ var _ = Describe("Services", func() {
 
 			It("returns an error when missing required fields", func() {
 				bdy := `{"missing":"handle"}`
-				headers, code, body, _ := httpClient.MakeRequest(requests.Args{
+				headers, code, body, err := httpClient.MakeRequest(requests.Args{
 					AcceptableCode: http.StatusBadRequest,
 					Method:         http.MethodPost,
 					Path:           "/services",
 					Body:           bdy,
 				})
+				Expect(err).NotTo(HaveOccurred())
 
 				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":"Handle and Backend cannot be empty."}`))
 				Expect(fakeStorage.UpsertServiceCallCount()).To(Equal(0))
@@ -109,13 +112,15 @@ var _ = Describe("Services", func() {
 					Path:           "/services",
 					Body:           `{"handle":"my-handle", "backends":[{"address":"http://server-a"}]}`,
 				}
-				_, code, _, _ := httpClient.MakeRequest(reqArgs)
+				_, code, _, err := httpClient.MakeRequest(reqArgs)
+				Expect(err).NotTo(HaveOccurred())
 				Expect(code).To(Equal(http.StatusCreated))
 			})
 
 			It("returns an error when handle is already in use", func() {
 				fakeStorage.FindServiceByHandleReturns(apihub.ServiceSpec{Handle: "my-handle"}, nil)
-				headers, code, body, _ := httpClient.MakeRequest(reqArgs)
+				headers, code, body, err := httpClient.MakeRequest(reqArgs)
+				Expect(err).NotTo(HaveOccurred())
 
 				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":"Handle already in use."}`))
 				Expect(fakeStorage.UpsertServiceCallCount()).To(Equal(1))
@@ -130,12 +135,13 @@ var _ = Describe("Services", func() {
 			})
 
 			It("returns an error", func() {
-				headers, code, body, _ := httpClient.MakeRequest(requests.Args{
+				headers, code, body, err := httpClient.MakeRequest(requests.Args{
 					AcceptableCode: http.StatusBadRequest,
 					Method:         http.MethodPost,
 					Path:           "/services",
 					Body:           `{"handle":"my-handle", "backends":[{ "address":"http://server-a"}]}`,
 				})
+				Expect(err).NotTo(HaveOccurred())
 
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
@@ -159,11 +165,12 @@ var _ = Describe("Services", func() {
 		})
 
 		It("lists all existing services", func() {
-			headers, code, body, _ := httpClient.MakeRequest(requests.Args{
+			headers, code, body, err := httpClient.MakeRequest(requests.Args{
 				AcceptableCode: http.StatusOK,
 				Method:         http.MethodGet,
 				Path:           "/services",
 			})
+			Expect(err).NotTo(HaveOccurred())
 
 			Expect(stringify(body)).To(Equal(`{"items":[{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"address":"http://server-a","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}],"item_count":1}`))
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
