@@ -1,22 +1,34 @@
-hash: a5be9cafd80afdbf06efcfab7eea566e7e4b3a1c6ac8ec3d35cbc80fc3a2a658
-updated: 2016-11-05T08:54:38.977287189Z
+hash: e1158f3715368593162cc5aa389ae78e66944bf2109b1d5a2b4584c3b6eff029
+updated: 2016-11-13T15:41:33.850438022Z
 imports:
 - name: code.cloudfoundry.org/lager
-  version: b273f19621a28f627423f658e71e014f114dd53e
+  version: 484d5ef6af6d82ff9df1b1ed27c8314aba26eb08
   subpackages:
   - lagertest
 - name: github.com/albertoleal/requests
   version: c59faf2a290abe61241b8a8c6dc2fb9db0b5ae81
+- name: github.com/braintree/manners
+  version: 82a8879fc5fd0381fa8b2d8033b19bf255252088
 - name: github.com/golang/protobuf
-  version: 2bc9827a78f95c6665b5fe0abd1fd66b496ae2d8
+  version: 4bd1920723d7b7c925de087aa32e2187708897f7
   subpackages:
   - proto
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
   version: 757bef944d0f21880861c2dd9c871ca543023cba
+- name: github.com/hashicorp/consul
+  version: df51fde7b071a3211fda039c4272b647254a568a
+  subpackages:
+  - api
+- name: github.com/hashicorp/go-cleanhttp
+  version: ad28ea4487f05916463e2423a55166280e8254b5
+- name: github.com/hashicorp/serf
+  version: f679d7594a349263f6118db40d87122d3a474e7d
+  subpackages:
+  - coordinate
 - name: github.com/onsi/ginkgo
-  version: c07a44f02cf4a895e331f4f473c0943ee116c668
+  version: 00054c0bb96fc880d4e0be1b90937fad438c5290
   subpackages:
   - config
   - internal/codelocation
@@ -51,12 +63,24 @@ imports:
   - matchers/support/goraph/node
   - matchers/support/goraph/util
   - types
+- name: github.com/tedsuo/ifrit
+  version: 6711154296c2b3fc5cd1932f0638c8ca0ce8a8a7
+  subpackages:
+  - ginkgomon
 - name: github.com/urfave/negroni
   version: e0e50f7dc431c043cb33f91b09c3419d48b7cff5
 - name: golang.org/x/sys
-  version: c200b10b5d5e122be351b67af224adc6128af5bf
+  version: b699b7032584f0953262cb2788a0ca19bb494703
   subpackages:
   - unix
-testImports:
 - name: gopkg.in/yaml.v2
   version: a5b47d31c556af34a302ce5d659e6fea44d90de0
+testImports:
+- name: code.cloudfoundry.org/cfhttp
+  version: 1d363866d79a7203ee22ee605a9ac6081b56c9a0
+  subpackages:
+  - unix_transport
+- name: code.cloudfoundry.org/consuladapter
+  version: 473918e8abd925632a6ebf2813ff80060ea49c9e
+  subpackages:
+  - consulrunner
