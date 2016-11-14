@@ -19,20 +19,20 @@ func NewPublisher(client consuladapter.Client) *Publisher {
 	}
 }
 
-func (p *Publisher) Publish(logger lager.Logger, config apihub.ServiceConfig) error {
+func (p *Publisher) Publish(logger lager.Logger, serviceSpec apihub.ServiceSpec) error {
 	log := logger.Session("publisher")
 	log.Debug("start")
 	defer log.Debug("end")
 
-	log.Info("publish", lager.Data{"config": config})
+	log.Info("publish", lager.Data{"serviceSpec": serviceSpec})
 
-	spec, err := json.Marshal(config.ServiceSpec)
+	spec, err := json.Marshal(serviceSpec)
 	if err != nil {
 		log.Error("failed-to-marshal-service-data", err)
 		return err
 	}
 
-	kvp := &api.KVPair{Key: config.ServiceSpec.Handle, Value: spec}
+	kvp := &api.KVPair{Key: serviceSpec.Handle, Value: spec}
 	_, err = p.client.KV().Put(kvp, nil)
 	return err
 }

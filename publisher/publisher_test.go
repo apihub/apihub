@@ -16,19 +16,17 @@ var _ = Describe("Publisher", func() {
 	var (
 		logger *lagertest.TestLogger
 		pub    *publisher.Publisher
-		config apihub.ServiceConfig
+		spec   apihub.ServiceSpec
 	)
 
 	BeforeEach(func() {
 		logger = lagertest.NewTestLogger("publisher-test")
 
-		config = apihub.ServiceConfig{
-			ServiceSpec: apihub.ServiceSpec{
-				Handle: "my-handle",
-				Backends: []apihub.BackendInfo{
-					apihub.BackendInfo{
-						Address: "http://server-a",
-					},
+		spec = apihub.ServiceSpec{
+			Handle: "my-handle",
+			Backends: []apihub.BackendInfo{
+				apihub.BackendInfo{
+					Address: "http://server-a",
 				},
 			},
 		}
@@ -38,13 +36,13 @@ var _ = Describe("Publisher", func() {
 
 	Describe("Publish", func() {
 		It("publishes a service", func() {
-			Expect(pub.Publish(logger, config)).To(Succeed())
+			Expect(pub.Publish(logger, spec)).To(Succeed())
 
-			kvp, _, err := consulClient.KV().Get(config.ServiceSpec.Handle, nil)
+			kvp, _, err := consulClient.KV().Get(spec.Handle, nil)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(kvp.Key).To(Equal("my-handle"))
 
-			spec, err := json.Marshal(config.ServiceSpec)
+			spec, err := json.Marshal(spec)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(kvp.Value).To(Equal(spec))
 		})

@@ -9,11 +9,11 @@ import (
 )
 
 type FakeServiceSubscriber struct {
-	SubscribeStub        func(logger lager.Logger, config apihub.ServiceConfig) error
+	SubscribeStub        func(logger lager.Logger, spec apihub.ServiceSpec) error
 	subscribeMutex       sync.RWMutex
 	subscribeArgsForCall []struct {
 		logger lager.Logger
-		config apihub.ServiceConfig
+		spec   apihub.ServiceSpec
 	}
 	subscribeReturns struct {
 		result1 error
@@ -22,16 +22,16 @@ type FakeServiceSubscriber struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeServiceSubscriber) Subscribe(logger lager.Logger, config apihub.ServiceConfig) error {
+func (fake *FakeServiceSubscriber) Subscribe(logger lager.Logger, spec apihub.ServiceSpec) error {
 	fake.subscribeMutex.Lock()
 	fake.subscribeArgsForCall = append(fake.subscribeArgsForCall, struct {
 		logger lager.Logger
-		config apihub.ServiceConfig
-	}{logger, config})
-	fake.recordInvocation("Subscribe", []interface{}{logger, config})
+		spec   apihub.ServiceSpec
+	}{logger, spec})
+	fake.recordInvocation("Subscribe", []interface{}{logger, spec})
 	fake.subscribeMutex.Unlock()
 	if fake.SubscribeStub != nil {
-		return fake.SubscribeStub(logger, config)
+		return fake.SubscribeStub(logger, spec)
 	} else {
 		return fake.subscribeReturns.result1
 	}
@@ -43,10 +43,10 @@ func (fake *FakeServiceSubscriber) SubscribeCallCount() int {
 	return len(fake.subscribeArgsForCall)
 }
 
-func (fake *FakeServiceSubscriber) SubscribeArgsForCall(i int) (lager.Logger, apihub.ServiceConfig) {
+func (fake *FakeServiceSubscriber) SubscribeArgsForCall(i int) (lager.Logger, apihub.ServiceSpec) {
 	fake.subscribeMutex.RLock()
 	defer fake.subscribeMutex.RUnlock()
-	return fake.subscribeArgsForCall[i].logger, fake.subscribeArgsForCall[i].config
+	return fake.subscribeArgsForCall[i].logger, fake.subscribeArgsForCall[i].spec
 }
 
 func (fake *FakeServiceSubscriber) SubscribeReturns(result1 error) {

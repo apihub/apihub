@@ -88,8 +88,8 @@ var _ = Describe("Services", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(fakeServicePublisher.PublishCallCount()).To(Equal(1))
-			_, config := fakeServicePublisher.PublishArgsForCall(0)
-			Expect(config.ServiceSpec).To(Equal(spec))
+			_, s := fakeServicePublisher.PublishArgsForCall(0)
+			Expect(spec).To(Equal(s))
 		})
 
 		Context("when publishing a service fails", func() {

@@ -42,17 +42,12 @@ type Service interface {
 	SetTimeout(time.Duration)
 }
 
-type ServiceConfig struct {
-	ServiceSpec ServiceSpec `json:"service_spec"`
-	Time        time.Time   `json:"time"`
-}
-
 type ServicePublisher interface {
-	Publish(logger lager.Logger, config ServiceConfig) error
+	Publish(logger lager.Logger, spec ServiceSpec) error
 }
 
 type ServiceSubscriber interface {
-	Subscribe(logger lager.Logger, config ServiceConfig) error
+	Subscribe(logger lager.Logger, spec ServiceSpec) error
 }
 
 // ServiceInfo holds information about a service.
