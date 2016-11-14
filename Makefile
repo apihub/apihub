@@ -16,6 +16,7 @@ help:
 		@echo '    docker-test ......................... runs tests in a container'
 		@echo '    go-generate ......................... runs go generate'
 		@echo '    go-vet .............................. runs go vet'
+		@echo '    setup ............................... sets up the dev environment'
 		@echo '    test ................................ runs tests locally'
 
 ###############################################################################
@@ -34,6 +35,9 @@ go-generate:
 
 go-vet:
 	go vet `go list ./... | grep -v vendor`
+
+setup: deps
+	go get github.com/hashicorp/consul
 
 test: go-vet
 	ginkgo -r -p -race -keepGoing .
