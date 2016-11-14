@@ -37,7 +37,9 @@ go-vet:
 	go vet `go list ./... | grep -v vendor`
 
 setup: deps
-	go get github.com/hashicorp/consul
+	cd vendor/github.com/hashicorp/consul \
+	; CONSUL_DEV=true make \
+	; mv bin/consul $(GOPATH)/bin
 
 test: go-vet
 	ginkgo -r -p -race -keepGoing .
