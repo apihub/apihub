@@ -2,6 +2,9 @@ package integration_test
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 
 	"code.cloudfoundry.org/lager/lagertest"
 
@@ -14,7 +17,7 @@ var _ = Describe("Service", func() {
 	var (
 		client      *RunningApihub
 		addressAPI  string
-		portGateway string
+		portGateway int
 		spec        apihub.ServiceSpec
 		logger      *lagertest.TestLogger
 	)
@@ -22,12 +25,12 @@ var _ = Describe("Service", func() {
 	BeforeEach(func() {
 		addressAPI = fmt.Sprintf("/tmp/apihub_api_%d.sock",
 			GinkgoParallelNode())
-		portGateway = fmt.Sprintf(":%d", 9000+GinkgoParallelNode())
+		portGateway = 9000 + GinkgoParallelNode()
 		logger = lagertest.NewTestLogger("services-test")
 
 		spec = apihub.ServiceSpec{
 			Handle:   "my-service",
-			Disabled: true,
+			Disabled: false,
 			Timeout:  10,
 			Backends: []apihub.BackendInfo{
 				apihub.BackendInfo{
@@ -52,6 +55,38 @@ var _ = Describe("Service", func() {
 			service, err := client.AddService(spec)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(service.Handle()).To(Equal("my-service"))
+		})
+
+		It("proxies the request to the service endpoint", func() {
+			done := make(chan struct{})
+
+			target := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+				rw.Write([]byte("Hello World."))
+				close(done)
+			}))
+			defer target.Close()
+
+			spec.Backends = []apihub.BackendInfo{
+				apihub.BackendInfo{
+					Address: "http://" + target.Listener.Addr().String(),
+				},
+			}
+
+			service, err := client.AddService(spec)
+			Expect(err).NotTo(HaveOccurred())
+
+			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://127.0.0.1:%d", portGateway), nil)
+			Expect(err).NotTo(HaveOccurred())
+			req.Host = fmt.Sprintf("%s.apihub.dev", service.Handle())
+
+			c := &http.Client{}
+			resp, err := c.Do(req)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(done).Should(BeClosed())
+			body, err := ioutil.ReadAll(resp.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(body)).To(Equal("Hello World."))
 		})
 
 		Context("when there's another service for given handle", func() {

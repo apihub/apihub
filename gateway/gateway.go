@@ -6,7 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/apihub/apihub"
 	"github.com/braintree/manners"
 
 	"code.cloudfoundry.org/lager"
@@ -15,17 +14,15 @@ import (
 type Gateway struct {
 	sync.RWMutex
 
-	server     *manners.GracefulServer
-	subscriber apihub.ServiceSubscriber
-	rpCreator  ReverseProxyCreator
-	Services   map[string]ReverseProxy
+	server    *manners.GracefulServer
+	rpCreator ReverseProxyCreator
+	Services  map[string]ReverseProxy
 }
 
-func New(port string, subscriber apihub.ServiceSubscriber, rpCreator ReverseProxyCreator) *Gateway {
+func New(port string, rpCreator ReverseProxyCreator) *Gateway {
 	gw := &Gateway{
-		subscriber: subscriber,
-		rpCreator:  rpCreator,
-		Services:   make(map[string]ReverseProxy, 0),
+		rpCreator: rpCreator,
+		Services:  make(map[string]ReverseProxy, 0),
 	}
 
 	gw.server = manners.NewWithServer(&http.Server{

@@ -39,8 +39,9 @@ func TestPublisher(t *testing.T) {
 }
 
 var _ = BeforeEach(func() {
-	var err error
-	consulRunner.Reset()
 	consulClient = consulRunner.NewClient()
-	Expect(err).NotTo(HaveOccurred())
+})
+
+var _ = AfterEach(func() {
+	Expect(consulRunner.Reset()).To(Succeed())
 })

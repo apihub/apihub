@@ -70,7 +70,8 @@ var _ = Describe("Services", func() {
 
 		It("publishes the service", func() {
 			spec := apihub.ServiceSpec{
-				Handle: "my-handle",
+				Handle:   "my-handle",
+				Disabled: false,
 				Backends: []apihub.BackendInfo{
 					apihub.BackendInfo{
 						Address: "http://server-a",
@@ -88,8 +89,34 @@ var _ = Describe("Services", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(fakeServicePublisher.PublishCallCount()).To(Equal(1))
-			_, s := fakeServicePublisher.PublishArgsForCall(0)
+			_, prefix, s := fakeServicePublisher.PublishArgsForCall(0)
 			Expect(spec).To(Equal(s))
+			Expect(prefix).To(Equal(apihub.SERVICES_PREFIX))
+		})
+
+		Context("when the service spec is disabled", func() {
+			It("does not publish the service", func() {
+				spec := apihub.ServiceSpec{
+					Handle:   "my-handle",
+					Disabled: true,
+					Backends: []apihub.BackendInfo{
+						apihub.BackendInfo{
+							Address: "http://server-a",
+						},
+					},
+				}
+				body, err := json.Marshal(spec)
+				Expect(err).NotTo(HaveOccurred())
+				_, _, _, err = httpClient.MakeRequest(requests.Args{
+					AcceptableCode: http.StatusCreated,
+					Method:         http.MethodPost,
+					Path:           "/services",
+					Body:           string(body),
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(fakeServicePublisher.PublishCallCount()).To(Equal(0))
+			})
 		})
 
 		Context("when publishing a service fails", func() {

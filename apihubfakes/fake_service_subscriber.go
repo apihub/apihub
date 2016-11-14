@@ -9,11 +9,13 @@ import (
 )
 
 type FakeServiceSubscriber struct {
-	SubscribeStub        func(logger lager.Logger, spec apihub.ServiceSpec) error
+	SubscribeStub        func(logger lager.Logger, prefix string, services chan apihub.ServiceSpec, stop <-chan struct{}) error
 	subscribeMutex       sync.RWMutex
 	subscribeArgsForCall []struct {
-		logger lager.Logger
-		spec   apihub.ServiceSpec
+		logger   lager.Logger
+		prefix   string
+		services chan apihub.ServiceSpec
+		stop     <-chan struct{}
 	}
 	subscribeReturns struct {
 		result1 error
@@ -22,16 +24,18 @@ type FakeServiceSubscriber struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeServiceSubscriber) Subscribe(logger lager.Logger, spec apihub.ServiceSpec) error {
+func (fake *FakeServiceSubscriber) Subscribe(logger lager.Logger, prefix string, services chan apihub.ServiceSpec, stop <-chan struct{}) error {
 	fake.subscribeMutex.Lock()
 	fake.subscribeArgsForCall = append(fake.subscribeArgsForCall, struct {
-		logger lager.Logger
-		spec   apihub.ServiceSpec
-	}{logger, spec})
-	fake.recordInvocation("Subscribe", []interface{}{logger, spec})
+		logger   lager.Logger
+		prefix   string
+		services chan apihub.ServiceSpec
+		stop     <-chan struct{}
+	}{logger, prefix, services, stop})
+	fake.recordInvocation("Subscribe", []interface{}{logger, prefix, services, stop})
 	fake.subscribeMutex.Unlock()
 	if fake.SubscribeStub != nil {
-		return fake.SubscribeStub(logger, spec)
+		return fake.SubscribeStub(logger, prefix, services, stop)
 	} else {
 		return fake.subscribeReturns.result1
 	}
@@ -43,10 +47,10 @@ func (fake *FakeServiceSubscriber) SubscribeCallCount() int {
 	return len(fake.subscribeArgsForCall)
 }
 
-func (fake *FakeServiceSubscriber) SubscribeArgsForCall(i int) (lager.Logger, apihub.ServiceSpec) {
+func (fake *FakeServiceSubscriber) SubscribeArgsForCall(i int) (lager.Logger, string, chan apihub.ServiceSpec, <-chan struct{}) {
 	fake.subscribeMutex.RLock()
 	defer fake.subscribeMutex.RUnlock()
-	return fake.subscribeArgsForCall[i].logger, fake.subscribeArgsForCall[i].spec
+	return fake.subscribeArgsForCall[i].logger, fake.subscribeArgsForCall[i].prefix, fake.subscribeArgsForCall[i].services, fake.subscribeArgsForCall[i].stop
 }
 
 func (fake *FakeServiceSubscriber) SubscribeReturns(result1 error) {

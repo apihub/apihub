@@ -2,10 +2,11 @@ package publisher_test
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"code.cloudfoundry.org/lager/lagertest"
 	"github.com/apihub/apihub"
-	"github.com/apihub/apihub/publisher"
+	"github.com/apihub/apihub/api/publisher"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -36,11 +37,12 @@ var _ = Describe("Publisher", func() {
 
 	Describe("Publish", func() {
 		It("publishes a service", func() {
-			Expect(pub.Publish(logger, spec)).To(Succeed())
+			Expect(pub.Publish(logger, apihub.SERVICES_PREFIX, spec)).To(Succeed())
 
-			kvp, _, err := consulClient.KV().Get(spec.Handle, nil)
+			key := fmt.Sprintf("%smy-handle", apihub.SERVICES_PREFIX)
+			kvp, _, err := consulClient.KV().Get(key, nil)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(kvp.Key).To(Equal("my-handle"))
+			Expect(kvp).NotTo(BeNil())
 
 			spec, err := json.Marshal(spec)
 			Expect(err).NotTo(HaveOccurred())

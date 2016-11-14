@@ -2,6 +2,7 @@ package integration_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
 
@@ -69,18 +70,22 @@ func TestIntegration(t *testing.T) {
 	RunSpecs(t, "Integration Suite")
 }
 
-func startApihub(network string, addressAPI string, portGateway string) *RunningApihub {
+var _ = AfterEach(func() {
+	Expect(consulRunner.Reset()).To(Succeed())
+})
+
+func startApihub(network string, addressAPI string, portGateway int) *RunningApihub {
 	os.Remove(addressAPI)
 	args := []string{"--network", network, "--address", addressAPI, "--consul-server", consulRunner.URL()}
 
 	// Start Apihub Api
 	apiSession := runner(exec.Command(ApihubAPI, args...))
-	Eventually(apiSession).Should(gbytes.Say("started"))
+	Eventually(apiSession).Should(gbytes.Say("apihub-api.start.started"))
 
 	// Start Apihub Gateway
-	args = []string{"--port", portGateway}
+	args = []string{"--consul-server", consulRunner.URL(), "--port", fmt.Sprintf(":%d", portGateway)}
 	gatewaySession := runner(exec.Command(ApihubGateway, args...))
-	Eventually(gatewaySession).Should(gbytes.Say("starting"))
+	Eventually(gatewaySession).Should(gbytes.Say("apihub-gateway.start.starting"))
 
 	ah := &RunningApihub{
 		Network:        network,
@@ -103,7 +108,7 @@ func runner(cmd *exec.Cmd) *gexec.Session {
 type RunningApihub struct {
 	Network        string
 	AddressAPI     string
-	AddressGateway string
+	AddressGateway int
 	apihub.Client
 	APISession     *gexec.Session
 	GatewaySession *gexec.Session

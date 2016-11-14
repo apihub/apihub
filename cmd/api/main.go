@@ -8,14 +8,14 @@ import (
 	"code.cloudfoundry.org/consuladapter"
 	"code.cloudfoundry.org/lager"
 	"github.com/apihub/apihub/api"
-	"github.com/apihub/apihub/publisher"
+	"github.com/apihub/apihub/api/publisher"
 	"github.com/apihub/apihub/storage"
 )
 
 var (
 	network         = flag.String("network", "unix", "Either `tcp` or `unix`")
 	address         = flag.String("address", "/tmp/apihub.sock", "Port for `tcp` or filepath for `unix`")
-	consulServerURL = flag.String("consul-server", "http://127.0.0.1:9999", "consul server url")
+	consulServerURL = flag.String("consul-server", "http://127.0.0.1:8500", "consul server url")
 )
 
 func main() {

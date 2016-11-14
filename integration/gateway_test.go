@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 
 	"code.cloudfoundry.org/lager/lagertest"
-	"github.com/apihub/apihub/apihubfakes"
 	"github.com/apihub/apihub/gateway"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -17,7 +16,6 @@ var _ = Describe("Gateway", func() {
 		port                string
 		gw                  *gateway.Gateway
 		logger              *lagertest.TestLogger
-		fakeSubscriber      *apihubfakes.FakeServiceSubscriber
 		reverseProxyCreator gateway.ReverseProxyCreator
 		spec                gateway.ReverseProxySpec
 	)
@@ -25,11 +23,9 @@ var _ = Describe("Gateway", func() {
 	BeforeEach(func() {
 		logger = lagertest.NewTestLogger("gateway")
 		port = fmt.Sprintf(":909%d", GinkgoParallelNode())
-		//FIXME: remove fake
-		fakeSubscriber = new(apihubfakes.FakeServiceSubscriber)
 		reverseProxyCreator = gateway.NewReverseProxyCreator()
 
-		gw = gateway.New(port, fakeSubscriber, reverseProxyCreator)
+		gw = gateway.New(port, reverseProxyCreator)
 
 		spec = gateway.ReverseProxySpec{
 			Handle:   "my-handle",

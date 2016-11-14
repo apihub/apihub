@@ -6,6 +6,8 @@ import (
 	"code.cloudfoundry.org/lager"
 )
 
+const SERVICES_PREFIX string = "services_"
+
 //go:generate counterfeiter . Service
 //go:generate counterfeiter . ServicePublisher
 //go:generate counterfeiter . ServiceSubscriber
@@ -43,11 +45,11 @@ type Service interface {
 }
 
 type ServicePublisher interface {
-	Publish(logger lager.Logger, spec ServiceSpec) error
+	Publish(logger lager.Logger, prefix string, spec ServiceSpec) error
 }
 
 type ServiceSubscriber interface {
-	Subscribe(logger lager.Logger, spec ServiceSpec) error
+	Subscribe(logger lager.Logger, prefix string, services chan ServiceSpec, stop <-chan struct{}) error
 }
 
 // ServiceInfo holds information about a service.

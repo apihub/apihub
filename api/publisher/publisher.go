@@ -2,6 +2,7 @@ package publisher
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"code.cloudfoundry.org/consuladapter"
 	"code.cloudfoundry.org/lager"
@@ -19,8 +20,8 @@ func NewPublisher(client consuladapter.Client) *Publisher {
 	}
 }
 
-func (p *Publisher) Publish(logger lager.Logger, serviceSpec apihub.ServiceSpec) error {
-	log := logger.Session("publisher")
+func (p *Publisher) Publish(logger lager.Logger, prefix string, serviceSpec apihub.ServiceSpec) error {
+	log := logger.Session("publisher-publish")
 	log.Debug("start")
 	defer log.Debug("end")
 
@@ -32,7 +33,7 @@ func (p *Publisher) Publish(logger lager.Logger, serviceSpec apihub.ServiceSpec)
 		return err
 	}
 
-	kvp := &api.KVPair{Key: serviceSpec.Handle, Value: spec}
+	kvp := &api.KVPair{Key: fmt.Sprintf("%s%s", apihub.SERVICES_PREFIX, serviceSpec.Handle), Value: spec}
 	_, err = p.client.KV().Put(kvp, nil)
 	return err
 }

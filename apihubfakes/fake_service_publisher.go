@@ -9,10 +9,11 @@ import (
 )
 
 type FakeServicePublisher struct {
-	PublishStub        func(logger lager.Logger, spec apihub.ServiceSpec) error
+	PublishStub        func(logger lager.Logger, prefix string, spec apihub.ServiceSpec) error
 	publishMutex       sync.RWMutex
 	publishArgsForCall []struct {
 		logger lager.Logger
+		prefix string
 		spec   apihub.ServiceSpec
 	}
 	publishReturns struct {
@@ -22,16 +23,17 @@ type FakeServicePublisher struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeServicePublisher) Publish(logger lager.Logger, spec apihub.ServiceSpec) error {
+func (fake *FakeServicePublisher) Publish(logger lager.Logger, prefix string, spec apihub.ServiceSpec) error {
 	fake.publishMutex.Lock()
 	fake.publishArgsForCall = append(fake.publishArgsForCall, struct {
 		logger lager.Logger
+		prefix string
 		spec   apihub.ServiceSpec
-	}{logger, spec})
-	fake.recordInvocation("Publish", []interface{}{logger, spec})
+	}{logger, prefix, spec})
+	fake.recordInvocation("Publish", []interface{}{logger, prefix, spec})
 	fake.publishMutex.Unlock()
 	if fake.PublishStub != nil {
-		return fake.PublishStub(logger, spec)
+		return fake.PublishStub(logger, prefix, spec)
 	} else {
 		return fake.publishReturns.result1
 	}
@@ -43,10 +45,10 @@ func (fake *FakeServicePublisher) PublishCallCount() int {
 	return len(fake.publishArgsForCall)
 }
 
-func (fake *FakeServicePublisher) PublishArgsForCall(i int) (lager.Logger, apihub.ServiceSpec) {
+func (fake *FakeServicePublisher) PublishArgsForCall(i int) (lager.Logger, string, apihub.ServiceSpec) {
 	fake.publishMutex.RLock()
 	defer fake.publishMutex.RUnlock()
-	return fake.publishArgsForCall[i].logger, fake.publishArgsForCall[i].spec
+	return fake.publishArgsForCall[i].logger, fake.publishArgsForCall[i].prefix, fake.publishArgsForCall[i].spec
 }
 
 func (fake *FakeServicePublisher) PublishReturns(result1 error) {
