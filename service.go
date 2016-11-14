@@ -7,7 +7,7 @@ import (
 )
 
 //go:generate counterfeiter . Service
-//go:generate counterfeiter . ServicePubisher
+//go:generate counterfeiter . ServicePublisher
 //go:generate counterfeiter . ServiceSubscriber
 
 type Service interface {
@@ -47,7 +47,7 @@ type ServiceConfig struct {
 	Time        time.Time   `json:"time"`
 }
 
-type ServicePubisher interface {
+type ServicePublisher interface {
 	Publish(logger lager.Logger, config ServiceConfig) error
 }
 

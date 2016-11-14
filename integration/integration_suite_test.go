@@ -2,9 +2,11 @@ package integration_test
 
 import (
 	"encoding/json"
-	"io"
 	"os"
 	"os/exec"
+
+	"code.cloudfoundry.org/consuladapter"
+	"code.cloudfoundry.org/consuladapter/consulrunner"
 
 	"github.com/apihub/apihub"
 	"github.com/apihub/apihub/client"
@@ -20,6 +22,8 @@ import (
 var (
 	ApihubAPI     string
 	ApihubGateway string
+	consulRunner  *consulrunner.ClusterRunner
+	consulClient  consuladapter.Client
 )
 
 func TestIntegration(t *testing.T) {
@@ -38,6 +42,15 @@ func TestIntegration(t *testing.T) {
 		data, err := json.Marshal(bins)
 		Expect(err).NotTo(HaveOccurred())
 
+		consulRunner = consulrunner.NewClusterRunner(
+			9101+GinkgoParallelNode()*consulrunner.PortOffsetLength,
+			1,
+			"http",
+		)
+
+		consulRunner.Start()
+		consulRunner.WaitUntilReady()
+
 		return data
 	}, func(data []byte) {
 		bins := make(map[string]string)
@@ -47,26 +60,30 @@ func TestIntegration(t *testing.T) {
 		ApihubGateway = bins["gateway"]
 	})
 
+	SynchronizedAfterSuite(func() {
+	}, func() {
+		gexec.CleanupBuildArtifacts()
+		consulRunner.Stop()
+	})
+
 	RunSpecs(t, "Integration Suite")
 }
 
 func startApihub(network string, addressAPI string, portGateway string) *RunningApihub {
 	os.Remove(addressAPI)
-	args := []string{"--network", network, "--address", addressAPI}
+	args := []string{"--network", network, "--address", addressAPI, "--consul-server", consulRunner.URL()}
 
 	//FIXME: extract method
 	// Start Apihub api
-	buf := gbytes.NewBuffer()
 	cmd := exec.Command(ApihubAPI, args...)
-	apiSession, err := gexec.Start(cmd, io.MultiWriter(buf, GinkgoWriter), GinkgoWriter)
+	apiSession, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
 	Expect(err).NotTo(HaveOccurred())
 	Eventually(apiSession).Should(gbytes.Say("started"))
 
 	// Start Apihub Gateway
 	args = []string{"--port", portGateway}
-	buf = gbytes.NewBuffer()
 	cmd = exec.Command(ApihubGateway, args...)
-	gatewaySession, err := gexec.Start(cmd, io.MultiWriter(buf, GinkgoWriter), GinkgoWriter)
+	gatewaySession, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
 	Expect(err).NotTo(HaveOccurred())
 	Eventually(gatewaySession).Should(gbytes.Say("starting"))
 

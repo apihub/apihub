@@ -1,6 +1,7 @@
 package api_test
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -20,9 +21,10 @@ import (
 
 var _ = Describe("Services", func() {
 	var (
-		fakeStorage *apihubfakes.FakeStorage
-		tmpDir      string
-		log         *lagertest.TestLogger
+		fakeStorage          *apihubfakes.FakeStorage
+		fakeServicePublisher *apihubfakes.FakeServicePublisher
+		tmpDir               string
+		log                  *lagertest.TestLogger
 
 		apihubServer *api.ApihubServer
 		server       *httptest.Server
@@ -32,11 +34,12 @@ var _ = Describe("Services", func() {
 	BeforeEach(func() {
 		var err error
 		fakeStorage = new(apihubfakes.FakeStorage)
+		fakeServicePublisher = new(apihubfakes.FakeServicePublisher)
 		log = lagertest.NewTestLogger("apihub-services-test")
 		tmpDir, err = ioutil.TempDir(os.TempDir(), "apihub-server-services-test")
 		socketPath := path.Join(tmpDir, fmt.Sprintf("apihub_%d.sock", GinkgoParallelNode()))
 
-		apihubServer = api.New(log, "unix", socketPath, fakeStorage)
+		apihubServer = api.New(log, "unix", socketPath, fakeStorage, fakeServicePublisher)
 		Expect(err).NotTo(HaveOccurred())
 
 		server = httptest.NewServer(apihubServer.Handler())
@@ -67,6 +70,60 @@ var _ = Describe("Services", func() {
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 			Expect(code).To(Equal(http.StatusCreated))
 			Expect(fakeStorage.UpsertServiceCallCount()).To(Equal(1))
+		})
+
+		It("publishes the service", func() {
+			spec := apihub.ServiceSpec{
+				Handle: "my-handle",
+				Backends: []apihub.BackendInfo{
+					apihub.BackendInfo{
+						Address: "http://server-a",
+					},
+				},
+			}
+			body, err := json.Marshal(spec)
+			Expect(err).NotTo(HaveOccurred())
+			_, _, _, err = httpClient.MakeRequest(requests.Args{
+				AcceptableCode: http.StatusCreated,
+				Method:         http.MethodPost,
+				Path:           "/services",
+				Body:           string(body),
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(fakeServicePublisher.PublishCallCount()).To(Equal(1))
+			_, config := fakeServicePublisher.PublishArgsForCall(0)
+			Expect(config.ServiceSpec).To(Equal(spec))
+		})
+
+		Context("when publishing a service fails", func() {
+			BeforeEach(func() {
+				fakeServicePublisher.PublishReturns(errors.New("failed to publish service"))
+			})
+
+			It("returns an error", func() {
+				_, _, body, err := httpClient.MakeRequest(requests.Args{
+					AcceptableCode: http.StatusBadRequest,
+					Method:         http.MethodPost,
+					Path:           "/services",
+					Body:           `{"handle":"my-handle", "backends":[{"address":"http://server-a"}]}`,
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(stringify(body)).To(Equal(`{"error":"bad_request","error_description":"failed to publish service: 'failed to publish service'"}`))
+			})
+
+			It("removes the service from the storage", func() {
+				_, _, _, err := httpClient.MakeRequest(requests.Args{
+					AcceptableCode: http.StatusBadRequest,
+					Method:         http.MethodPost,
+					Path:           "/services",
+					Body:           `{"handle":"my-handle", "backends":[{"address":"http://server-a"}]}`,
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(fakeStorage.RemoveServiceCallCount()).To(Equal(1))
+				handle := fakeStorage.RemoveServiceArgsForCall(0)
+				Expect(handle).To(Equal("my-handle"))
+			})
 		})
 
 		Context("when body is invalid", func() {
@@ -107,18 +164,20 @@ var _ = Describe("Services", func() {
 
 			BeforeEach(func() {
 				reqArgs = requests.Args{
-					AcceptableCode: http.StatusBadRequest,
+					AcceptableCode: http.StatusCreated,
 					Method:         http.MethodPost,
 					Path:           "/services",
 					Body:           `{"handle":"my-handle", "backends":[{"address":"http://server-a"}]}`,
 				}
 				_, code, _, err := httpClient.MakeRequest(reqArgs)
-				Expect(err).NotTo(HaveOccurred())
 				Expect(code).To(Equal(http.StatusCreated))
+				Expect(err).NotTo(HaveOccurred())
 			})
 
 			It("returns an error when handle is already in use", func() {
 				fakeStorage.FindServiceByHandleReturns(apihub.ServiceSpec{Handle: "my-handle"}, nil)
+
+				reqArgs.AcceptableCode = http.StatusBadRequest
 				headers, code, body, err := httpClient.MakeRequest(reqArgs)
 				Expect(err).NotTo(HaveOccurred())
 
@@ -131,7 +190,7 @@ var _ = Describe("Services", func() {
 
 		Context("when storing a service fails", func() {
 			BeforeEach(func() {
-				fakeStorage.UpsertServiceReturns(errors.New("failed to store service."))
+				fakeStorage.UpsertServiceReturns(errors.New("failed to store service"))
 			})
 
 			It("returns an error", func() {
@@ -145,7 +204,7 @@ var _ = Describe("Services", func() {
 
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
-				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":"Failed to add new service."}`))
+				Expect(stringify(body)).To(Equal(`{"error":"bad_request","error_description":"failed to add service: 'failed to store service'"}`))
 			})
 		})
 	})

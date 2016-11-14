@@ -14,20 +14,22 @@ type ApihubServer struct {
 	net.Listener
 	logger lager.Logger
 
-	listenAddr    string
-	listenNetwork string
-	router        *Router
-	server        *http.Server
-	storage       apihub.Storage
+	listenAddr       string
+	listenNetwork    string
+	router           *Router
+	server           *http.Server
+	storage          apihub.Storage
+	servicePublisher apihub.ServicePublisher
 }
 
-func New(log lager.Logger, listenNetwork, listenAddr string, storage apihub.Storage) *ApihubServer {
+func New(log lager.Logger, listenNetwork, listenAddr string, storage apihub.Storage, servicePublisher apihub.ServicePublisher) *ApihubServer {
 	s := &ApihubServer{
-		logger:        log,
-		listenAddr:    listenAddr,
-		listenNetwork: listenNetwork,
-		router:        NewRouter(),
-		storage:       storage,
+		logger:           log,
+		listenAddr:       listenAddr,
+		listenNetwork:    listenNetwork,
+		router:           NewRouter(),
+		storage:          storage,
+		servicePublisher: servicePublisher,
 	}
 
 	var handlers = map[Route]http.HandlerFunc{

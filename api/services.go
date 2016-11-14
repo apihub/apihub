@@ -3,7 +3,9 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"time"
 
 	"code.cloudfoundry.org/lager"
 
@@ -34,9 +36,26 @@ func (s *ApihubServer) addService(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//FIXME: there's a race here.
+
 	if err := s.storage.UpsertService(spec); err != nil {
 		log.Error("failed-to-store-service", err)
-		s.handleError(rw, errors.New("Failed to add new service."))
+		s.handleError(rw, fmt.Errorf("failed to add service: '%s'", err))
+		return
+	}
+
+	config := apihub.ServiceConfig{
+		ServiceSpec: spec,
+		Time:        time.Now(),
+	}
+	if err := s.servicePublisher.Publish(log, config); err != nil {
+		log.Error("failed-to-publish-service", err)
+		// If it fails to clean up the state it's ok to just log that
+		if cleanErr := s.storage.RemoveService(spec.Handle); cleanErr != nil {
+			log.Error("failed-to-remove-service", cleanErr)
+		}
+
+		s.handleError(rw, fmt.Errorf("failed to publish service: '%s'", err))
 		return
 	}
 

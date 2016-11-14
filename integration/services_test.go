@@ -2,8 +2,6 @@ package integration_test
 
 import (
 	"fmt"
-	"net/http"
-	"net/http/httptest"
 
 	"code.cloudfoundry.org/lager/lagertest"
 
@@ -18,14 +16,14 @@ var _ = Describe("Service", func() {
 		addressAPI  string
 		portGateway string
 		spec        apihub.ServiceSpec
-		log         *lagertest.TestLogger
+		logger      *lagertest.TestLogger
 	)
 
 	BeforeEach(func() {
 		addressAPI = fmt.Sprintf("/tmp/apihub_api_%d.sock",
 			GinkgoParallelNode())
 		portGateway = fmt.Sprintf(":%d", 9000+GinkgoParallelNode())
-		log = lagertest.NewTestLogger("services-test")
+		logger = lagertest.NewTestLogger("services-test")
 
 		spec = apihub.ServiceSpec{
 			Handle:   "my-service",

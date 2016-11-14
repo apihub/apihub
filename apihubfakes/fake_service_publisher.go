@@ -8,7 +8,7 @@ import (
 	"github.com/apihub/apihub"
 )
 
-type FakeServicePubisher struct {
+type FakeServicePublisher struct {
 	PublishStub        func(logger lager.Logger, config apihub.ServiceConfig) error
 	publishMutex       sync.RWMutex
 	publishArgsForCall []struct {
@@ -22,7 +22,7 @@ type FakeServicePubisher struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeServicePubisher) Publish(logger lager.Logger, config apihub.ServiceConfig) error {
+func (fake *FakeServicePublisher) Publish(logger lager.Logger, config apihub.ServiceConfig) error {
 	fake.publishMutex.Lock()
 	fake.publishArgsForCall = append(fake.publishArgsForCall, struct {
 		logger lager.Logger
@@ -37,26 +37,26 @@ func (fake *FakeServicePubisher) Publish(logger lager.Logger, config apihub.Serv
 	}
 }
 
-func (fake *FakeServicePubisher) PublishCallCount() int {
+func (fake *FakeServicePublisher) PublishCallCount() int {
 	fake.publishMutex.RLock()
 	defer fake.publishMutex.RUnlock()
 	return len(fake.publishArgsForCall)
 }
 
-func (fake *FakeServicePubisher) PublishArgsForCall(i int) (lager.Logger, apihub.ServiceConfig) {
+func (fake *FakeServicePublisher) PublishArgsForCall(i int) (lager.Logger, apihub.ServiceConfig) {
 	fake.publishMutex.RLock()
 	defer fake.publishMutex.RUnlock()
 	return fake.publishArgsForCall[i].logger, fake.publishArgsForCall[i].config
 }
 
-func (fake *FakeServicePubisher) PublishReturns(result1 error) {
+func (fake *FakeServicePublisher) PublishReturns(result1 error) {
 	fake.PublishStub = nil
 	fake.publishReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeServicePubisher) Invocations() map[string][][]interface{} {
+func (fake *FakeServicePublisher) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.publishMutex.RLock()
@@ -64,7 +64,7 @@ func (fake *FakeServicePubisher) Invocations() map[string][][]interface{} {
 	return fake.invocations
 }
 
-func (fake *FakeServicePubisher) recordInvocation(key string, args []interface{}) {
+func (fake *FakeServicePublisher) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {
@@ -76,4 +76,4 @@ func (fake *FakeServicePubisher) recordInvocation(key string, args []interface{}
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ apihub.ServicePubisher = new(FakeServicePubisher)
+var _ apihub.ServicePublisher = new(FakeServicePublisher)
