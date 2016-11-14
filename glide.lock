@@ -1,6 +1,14 @@
 hash: e1158f3715368593162cc5aa389ae78e66944bf2109b1d5a2b4584c3b6eff029
-updated: 2016-11-13T15:41:33.850438022Z
+updated: 2016-11-14T09:40:40.099422863Z
 imports:
+- name: code.cloudfoundry.org/cfhttp
+  version: 1d363866d79a7203ee22ee605a9ac6081b56c9a0
+  subpackages:
+  - unix_transport
+- name: code.cloudfoundry.org/consuladapter
+  version: 473918e8abd925632a6ebf2813ff80060ea49c9e
+  subpackages:
+  - consulrunner
 - name: code.cloudfoundry.org/lager
   version: 484d5ef6af6d82ff9df1b1ed27c8314aba26eb08
   subpackages:
@@ -75,12 +83,4 @@ imports:
   - unix
 - name: gopkg.in/yaml.v2
   version: a5b47d31c556af34a302ce5d659e6fea44d90de0
-testImports:
-- name: code.cloudfoundry.org/cfhttp
-  version: 1d363866d79a7203ee22ee605a9ac6081b56c9a0
-  subpackages:
-  - unix_transport
-- name: code.cloudfoundry.org/consuladapter
-  version: 473918e8abd925632a6ebf2813ff80060ea49c9e
-  subpackages:
-  - consulrunner
+testImports: []
