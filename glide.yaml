@@ -6,6 +6,7 @@ import:
 - package: github.com/albertoleal/requests
 - package: github.com/urfave/negroni
 - package: github.com/hashicorp/consul
+  version: v0.7.1
 - package: github.com/tedsuo/ifrit
 testImport:
 - package: github.com/onsi/ginkgo

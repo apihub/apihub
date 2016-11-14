@@ -1,5 +1,5 @@
-hash: e1158f3715368593162cc5aa389ae78e66944bf2109b1d5a2b4584c3b6eff029
-updated: 2016-11-14T09:40:40.099422863Z
+hash: 053992f63828a25839b8cc25c5e05fa0ef90d05d903edfcf0d77cbdf288b6ec1
+updated: 2016-11-14T10:37:37.377048748Z
 imports:
 - name: code.cloudfoundry.org/cfhttp
   version: 1d363866d79a7203ee22ee605a9ac6081b56c9a0
@@ -26,7 +26,7 @@ imports:
 - name: github.com/gorilla/mux
   version: 757bef944d0f21880861c2dd9c871ca543023cba
 - name: github.com/hashicorp/consul
-  version: df51fde7b071a3211fda039c4272b647254a568a
+  version: a9455cd4fc2809570ff1855c37d6ffc2449bd42f
   subpackages:
   - api
 - name: github.com/hashicorp/go-cleanhttp
