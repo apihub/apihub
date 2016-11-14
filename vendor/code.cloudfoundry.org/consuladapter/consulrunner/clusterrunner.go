@@ -63,10 +63,10 @@ func (cr *ClusterRunner) ConsulVersion() string {
 	session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
 	Expect(err).NotTo(HaveOccurred())
 	Eventually(session).Should(gexec.Exit(0))
-	Expect(session.Out).To(gbytes.Say("Consul v"))
+	Expect(session.Out).To(gbytes.Say("Consul "))
 	lines := strings.Split(string(session.Out.Contents()), "\n")
 	versionLine := lines[0]
-	return strings.TrimPrefix(versionLine, "Consul v")
+	return strings.TrimPrefix(versionLine, "Consul ")
 }
 
 func (cr *ClusterRunner) HasPerformanceFlag() bool {
