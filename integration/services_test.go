@@ -186,6 +186,54 @@ var _ = Describe("Service", func() {
 			Expect(backends[0].Address).To(Equal("http://server-b"))
 		})
 
+		Context("when the service is updated to be enabled", func() {
+			BeforeEach(func() {
+				spec.Disabled = true
+			})
+
+			fireRequest := func(portGateway int, handle string) *http.Response {
+				req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://127.0.0.1:%d", portGateway), nil)
+				Expect(err).NotTo(HaveOccurred())
+				req.Host = fmt.Sprintf("%s.apihub.dev", handle)
+
+				c := &http.Client{}
+				resp, err := c.Do(req)
+				Expect(err).NotTo(HaveOccurred())
+
+				return resp
+			}
+
+			It("proxies the request to the service endpoint", func() {
+				done := make(chan struct{})
+
+				target := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+					rw.Write([]byte("Hello World!"))
+					close(done)
+				}))
+				defer target.Close()
+
+				resp := fireRequest(portGateway, spec.Handle)
+				Expect(resp.StatusCode).To(Equal(http.StatusNotFound))
+
+				spec.Disabled = false
+				spec.Backends = []apihub.BackendInfo{
+					apihub.BackendInfo{
+						Address: "http://" + target.Listener.Addr().String(),
+					},
+				}
+				_, err := client.UpdateService(spec.Handle, spec)
+				Expect(err).NotTo(HaveOccurred())
+
+				resp = fireRequest(portGateway, spec.Handle)
+				Expect(resp.StatusCode).To(Equal(http.StatusOK))
+
+				Eventually(done).Should(BeClosed())
+				body, err := ioutil.ReadAll(resp.Body)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(string(body)).To(Equal("Hello World!"))
+			})
+		})
+
 		Context("when service is not found", func() {
 			It("returns an error", func() {
 				_, err := client.UpdateService("invalid-handle", spec)

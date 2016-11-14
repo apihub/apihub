@@ -80,6 +80,7 @@ func (gw *Gateway) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	handle := extractSubdomainFromRequest(req)
 	if reverseProxy, ok := gw.Services[handle]; ok {
 		reverseProxy.ServeHTTP(rw, req)
+		return
 	}
 
 	pageNotFound(rw)

@@ -148,6 +148,13 @@ func (s *ApihubServer) updateService(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !service.Disabled {
+		if err := s.servicePublisher.Publish(log, apihub.SERVICES_PREFIX, service); err != nil {
+			log.Error("failed-to-publish-service", err)
+			return
+		}
+	}
+
 	log.Info("service-updated", lager.Data{"serviceSpec": service})
 	s.writeResponse(rw, response{
 		StatusCode: http.StatusOK,

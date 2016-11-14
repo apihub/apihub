@@ -237,11 +237,12 @@ var _ = Describe("Services", func() {
 			})
 
 			It("returns an error", func() {
-				headers, code, body, _ := httpClient.MakeRequest(requests.Args{
+				headers, code, body, err := httpClient.MakeRequest(requests.Args{
 					AcceptableCode: http.StatusBadRequest,
 					Method:         http.MethodGet,
 					Path:           "/services",
 				})
+				Expect(err).NotTo(HaveOccurred())
 
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
@@ -256,11 +257,12 @@ var _ = Describe("Services", func() {
 		})
 
 		It("removes a service by handle", func() {
-			headers, code, body, _ := httpClient.MakeRequest(requests.Args{
+			headers, code, body, err := httpClient.MakeRequest(requests.Args{
 				AcceptableCode: http.StatusNoContent,
 				Method:         http.MethodDelete,
 				Path:           "/services/my-handle",
 			})
+			Expect(err).NotTo(HaveOccurred())
 
 			Expect(stringify(body)).To(Equal(""))
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
@@ -274,11 +276,12 @@ var _ = Describe("Services", func() {
 			})
 
 			It("returns an error", func() {
-				headers, code, body, _ := httpClient.MakeRequest(requests.Args{
+				headers, code, body, err := httpClient.MakeRequest(requests.Args{
 					AcceptableCode: http.StatusBadRequest,
 					Method:         http.MethodDelete,
 					Path:           "/services/my-bad-handle",
 				})
+				Expect(err).NotTo(HaveOccurred())
 
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
@@ -300,11 +303,12 @@ var _ = Describe("Services", func() {
 		})
 
 		It("finds a service", func() {
-			headers, code, body, _ := httpClient.MakeRequest(requests.Args{
+			headers, code, body, err := httpClient.MakeRequest(requests.Args{
 				AcceptableCode: http.StatusOK,
 				Method:         http.MethodGet,
 				Path:           "/services/my-handle",
 			})
+			Expect(err).NotTo(HaveOccurred())
 
 			Expect(stringify(body)).To(Equal(`{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"address":"http://server-a","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}`))
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
@@ -318,11 +322,12 @@ var _ = Describe("Services", func() {
 			})
 
 			It("returns an error", func() {
-				headers, code, body, _ := httpClient.MakeRequest(requests.Args{
+				headers, code, body, err := httpClient.MakeRequest(requests.Args{
 					AcceptableCode: http.StatusBadRequest,
 					Method:         http.MethodGet,
 					Path:           "/services/invalid-handle",
 				})
+				Expect(err).NotTo(HaveOccurred())
 
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
@@ -334,7 +339,8 @@ var _ = Describe("Services", func() {
 	Describe("updateService", func() {
 		BeforeEach(func() {
 			fakeStorage.FindServiceByHandleReturns(apihub.ServiceSpec{
-				Handle: "my-handle",
+				Handle:   "my-handle",
+				Disabled: true,
 				Backends: []apihub.BackendInfo{
 					apihub.BackendInfo{
 						Address: "http://server-a",
@@ -344,18 +350,52 @@ var _ = Describe("Services", func() {
 		})
 
 		It("updates a service", func() {
-			headers, code, body, _ := httpClient.MakeRequest(requests.Args{
+			headers, code, body, err := httpClient.MakeRequest(requests.Args{
 				AcceptableCode: http.StatusOK,
 				Method:         http.MethodPut,
 				Path:           "/services/my-handle",
 				Body:           `{"handle":"my-handle", "backends":[{"address":"http://another-server-b"}]}`,
 			})
+			Expect(err).NotTo(HaveOccurred())
 
-			Expect(stringify(body)).To(Equal(`{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"address":"http://another-server-b","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}`))
+			Expect(stringify(body)).To(Equal(`{"handle":"my-handle","disabled":true,"timeout":0,"backends":[{"address":"http://another-server-b","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}`))
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 			Expect(code).To(Equal(http.StatusOK))
 			Expect(fakeStorage.FindServiceByHandleCallCount()).To(Equal(1))
 			Expect(fakeStorage.UpdateServiceCallCount()).To(Equal(1))
+		})
+
+		Context("when changing the service to be enabled", func() {
+			var spec apihub.ServiceSpec
+
+			BeforeEach(func() {
+				spec = apihub.ServiceSpec{
+					Handle:   "my-handle",
+					Disabled: false,
+					Backends: []apihub.BackendInfo{
+						apihub.BackendInfo{
+							Address: "http://server-a",
+						},
+					},
+				}
+
+				fakeStorage.FindServiceByHandleReturns(spec, nil)
+			})
+
+			It("publishes the service", func() {
+				_, _, _, err := httpClient.MakeRequest(requests.Args{
+					AcceptableCode: http.StatusOK,
+					Method:         http.MethodPut,
+					Path:           "/services/my-handle",
+					Body:           `{"handle":"my-handle", "backends":[{"address":"http://another-server-b"}]}`,
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(fakeServicePublisher.PublishCallCount()).To(Equal(1))
+				_, prefix, s := fakeServicePublisher.PublishArgsForCall(0)
+				Expect(s).To(Equal(spec))
+				Expect(prefix).To(Equal(apihub.SERVICES_PREFIX))
+			})
 		})
 
 		Context("when finding a service fails", func() {
@@ -364,12 +404,13 @@ var _ = Describe("Services", func() {
 			})
 
 			It("returns an error", func() {
-				headers, code, body, _ := httpClient.MakeRequest(requests.Args{
+				headers, code, body, err := httpClient.MakeRequest(requests.Args{
 					AcceptableCode: http.StatusBadRequest,
 					Method:         http.MethodPut,
 					Path:           "/services/my-handle",
 					Body:           "{}",
 				})
+				Expect(err).NotTo(HaveOccurred())
 
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
@@ -379,12 +420,13 @@ var _ = Describe("Services", func() {
 
 		Context("when body is invalid", func() {
 			It("returns an error", func() {
-				headers, code, body, _ := httpClient.MakeRequest(requests.Args{
+				headers, code, body, err := httpClient.MakeRequest(requests.Args{
 					AcceptableCode: http.StatusBadRequest,
 					Method:         http.MethodPut,
 					Path:           "/services/my-handle",
 					Body:           "not-a-json",
 				})
+				Expect(err).NotTo(HaveOccurred())
 
 				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":".*"}`))
 				Expect(fakeStorage.UpdateServiceCallCount()).To(Equal(0))
@@ -399,12 +441,13 @@ var _ = Describe("Services", func() {
 			})
 
 			It("returns an error", func() {
-				headers, code, body, _ := httpClient.MakeRequest(requests.Args{
+				headers, code, body, err := httpClient.MakeRequest(requests.Args{
 					AcceptableCode: http.StatusBadRequest,
 					Method:         http.MethodPut,
 					Path:           "/services/my-handle",
 					Body:           "{}",
 				})
+				Expect(err).NotTo(HaveOccurred())
 
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
