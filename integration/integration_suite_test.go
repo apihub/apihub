@@ -73,18 +73,13 @@ func startApihub(network string, addressAPI string, portGateway string) *Running
 	os.Remove(addressAPI)
 	args := []string{"--network", network, "--address", addressAPI, "--consul-server", consulRunner.URL()}
 
-	//FIXME: extract method
-	// Start Apihub api
-	cmd := exec.Command(ApihubAPI, args...)
-	apiSession, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
-	Expect(err).NotTo(HaveOccurred())
+	// Start Apihub Api
+	apiSession := runner(exec.Command(ApihubAPI, args...))
 	Eventually(apiSession).Should(gbytes.Say("started"))
 
 	// Start Apihub Gateway
 	args = []string{"--port", portGateway}
-	cmd = exec.Command(ApihubGateway, args...)
-	gatewaySession, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
-	Expect(err).NotTo(HaveOccurred())
+	gatewaySession := runner(exec.Command(ApihubGateway, args...))
 	Eventually(gatewaySession).Should(gbytes.Say("starting"))
 
 	ah := &RunningApihub{
@@ -97,6 +92,12 @@ func startApihub(network string, addressAPI string, portGateway string) *Running
 	}
 
 	return ah
+}
+
+func runner(cmd *exec.Cmd) *gexec.Session {
+	session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
+	Expect(err).NotTo(HaveOccurred())
+	return session
 }
 
 type RunningApihub struct {
