@@ -69,7 +69,6 @@ var _ = Describe("Gateway", func() {
 	})
 
 	Describe("AddService", func() {
-
 		It("adds a new service", func() {
 			Expect(gw.Services[spec.Handle]).To(BeNil())
 
@@ -111,6 +110,14 @@ var _ = Describe("Gateway", func() {
 			Expect(err).NotTo(HaveOccurred())
 			gw.ServeHTTP(rw, req)
 			Expect(fakeReverseProxy.ServeHTTPCallCount()).To(Equal(1))
+		})
+
+		It("returns page not found when service is not found", func() {
+			rw := httptest.NewRecorder()
+			req, err := http.NewRequest(http.MethodGet, "http://not-found.example.com/ping", nil)
+			Expect(err).NotTo(HaveOccurred())
+			gw.ServeHTTP(rw, req)
+			Expect(rw.Body.String()).To(MatchRegexp(`{"error":"not_found","error_description":"The requested resource could not be found but may be available again in the future."}`))
 		})
 	})
 })

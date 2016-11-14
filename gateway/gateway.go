@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"sync"
@@ -80,6 +81,8 @@ func (gw *Gateway) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if reverseProxy, ok := gw.Services[handle]; ok {
 		reverseProxy.ServeHTTP(rw, req)
 	}
+
+	pageNotFound(rw)
 }
 
 func extractSubdomainFromRequest(r *http.Request) string {
@@ -94,4 +97,10 @@ func extractSubdomainFromRequest(r *http.Request) string {
 		subdomain = host_parts[0]
 	}
 	return subdomain
+}
+
+func pageNotFound(rw http.ResponseWriter) {
+	rw.WriteHeader(http.StatusNotFound)
+	rw.Header().Set("Content-Type", "application/json")
+	fmt.Fprintln(rw, `{"error":"not_found","error_description":"The requested resource could not be found but may be available again in the future."}`)
 }
