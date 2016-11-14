@@ -20,16 +20,18 @@ import (
 
 var _ = Describe("Apihub Server", func() {
 	var (
-		tmpDir       string
-		log          *lagertest.TestLogger
-		storage      apihub.Storage
-		apihubServer *api.ApihubServer
-		apihubClient apihub.Client
+		tmpDir               string
+		log                  *lagertest.TestLogger
+		fakeStorage          *apihubfakes.FakeStorage
+		fakeServicePublisher *apihubfakes.FakeServicePublisher
+		apihubServer         *api.ApihubServer
+		apihubClient         apihub.Client
 	)
 
 	BeforeEach(func() {
 		log = lagertest.NewTestLogger("apihub-test")
-		storage = new(apihubfakes.FakeStorage)
+		fakeStorage = new(apihubfakes.FakeStorage)
+		fakeServicePublisher = new(apihubfakes.FakeServicePublisher)
 	})
 
 	AfterEach(func() {
@@ -43,7 +45,7 @@ var _ = Describe("Apihub Server", func() {
 			var err error
 			tmpDir, err = ioutil.TempDir(os.TempDir(), "apihub-server-test")
 			socketPath := path.Join(tmpDir, "apihub.sock")
-			apihubServer = api.New(log, "unix", socketPath, storage)
+			apihubServer = api.New(log, "unix", socketPath, fakeStorage, fakeServicePublisher)
 			Expect(err).NotTo(HaveOccurred())
 
 			err = apihubServer.Start(false)
@@ -59,7 +61,7 @@ var _ = Describe("Apihub Server", func() {
 			var err error
 			port := fmt.Sprintf(":%d", 8000+config.GinkgoConfig.ParallelNode)
 
-			apihubServer = api.New(log, "tcp", port, storage)
+			apihubServer = api.New(log, "tcp", port, fakeStorage, fakeServicePublisher)
 
 			err = apihubServer.Start(false)
 			Expect(err).NotTo(HaveOccurred())

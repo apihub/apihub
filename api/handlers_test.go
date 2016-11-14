@@ -17,20 +17,22 @@ import (
 
 var _ = Describe("When a client connects", func() {
 	var (
-		storage      apihub.Storage
-		apihubClient apihub.Client
-		apihubServer *api.ApihubServer
-		err          error
-		log          *lagertest.TestLogger
-		tmpDir       string
+		fakeStorage          *apihubfakes.FakeStorage
+		fakeServicePublisher *apihubfakes.FakeServicePublisher
+		apihubClient         apihub.Client
+		apihubServer         *api.ApihubServer
+		err                  error
+		log                  *lagertest.TestLogger
+		tmpDir               string
 	)
 
 	BeforeEach(func() {
-		storage = new(apihubfakes.FakeStorage)
+		fakeStorage = new(apihubfakes.FakeStorage)
+		fakeServicePublisher = new(apihubfakes.FakeServicePublisher)
 		log = lagertest.NewTestLogger("apihub-test")
 		tmpDir, err = ioutil.TempDir(os.TempDir(), "apihub-server-test")
 		socketPath := path.Join(tmpDir, "apihub.sock")
-		apihubServer = api.New(log, "unix", socketPath, storage)
+		apihubServer = api.New(log, "unix", socketPath, fakeStorage, fakeServicePublisher)
 		Expect(err).NotTo(HaveOccurred())
 
 		Expect(apihubServer.Start(false)).NotTo(HaveOccurred())
