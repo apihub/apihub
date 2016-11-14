@@ -8,12 +8,20 @@ import (
 )
 
 type FakeStorage struct {
-	UpsertServiceStub        func(apihub.ServiceSpec) error
-	upsertServiceMutex       sync.RWMutex
-	upsertServiceArgsForCall []struct {
+	AddServiceStub        func(apihub.ServiceSpec) error
+	addServiceMutex       sync.RWMutex
+	addServiceArgsForCall []struct {
 		arg1 apihub.ServiceSpec
 	}
-	upsertServiceReturns struct {
+	addServiceReturns struct {
+		result1 error
+	}
+	UpdateServiceStub        func(apihub.ServiceSpec) error
+	updateServiceMutex       sync.RWMutex
+	updateServiceArgsForCall []struct {
+		arg1 apihub.ServiceSpec
+	}
+	updateServiceReturns struct {
 		result1 error
 	}
 	FindServiceByHandleStub        func(string) (apihub.ServiceSpec, error)
@@ -44,35 +52,68 @@ type FakeStorage struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeStorage) UpsertService(arg1 apihub.ServiceSpec) error {
-	fake.upsertServiceMutex.Lock()
-	fake.upsertServiceArgsForCall = append(fake.upsertServiceArgsForCall, struct {
+func (fake *FakeStorage) AddService(arg1 apihub.ServiceSpec) error {
+	fake.addServiceMutex.Lock()
+	fake.addServiceArgsForCall = append(fake.addServiceArgsForCall, struct {
 		arg1 apihub.ServiceSpec
 	}{arg1})
-	fake.recordInvocation("UpsertService", []interface{}{arg1})
-	fake.upsertServiceMutex.Unlock()
-	if fake.UpsertServiceStub != nil {
-		return fake.UpsertServiceStub(arg1)
+	fake.recordInvocation("AddService", []interface{}{arg1})
+	fake.addServiceMutex.Unlock()
+	if fake.AddServiceStub != nil {
+		return fake.AddServiceStub(arg1)
 	} else {
-		return fake.upsertServiceReturns.result1
+		return fake.addServiceReturns.result1
 	}
 }
 
-func (fake *FakeStorage) UpsertServiceCallCount() int {
-	fake.upsertServiceMutex.RLock()
-	defer fake.upsertServiceMutex.RUnlock()
-	return len(fake.upsertServiceArgsForCall)
+func (fake *FakeStorage) AddServiceCallCount() int {
+	fake.addServiceMutex.RLock()
+	defer fake.addServiceMutex.RUnlock()
+	return len(fake.addServiceArgsForCall)
 }
 
-func (fake *FakeStorage) UpsertServiceArgsForCall(i int) apihub.ServiceSpec {
-	fake.upsertServiceMutex.RLock()
-	defer fake.upsertServiceMutex.RUnlock()
-	return fake.upsertServiceArgsForCall[i].arg1
+func (fake *FakeStorage) AddServiceArgsForCall(i int) apihub.ServiceSpec {
+	fake.addServiceMutex.RLock()
+	defer fake.addServiceMutex.RUnlock()
+	return fake.addServiceArgsForCall[i].arg1
 }
 
-func (fake *FakeStorage) UpsertServiceReturns(result1 error) {
-	fake.UpsertServiceStub = nil
-	fake.upsertServiceReturns = struct {
+func (fake *FakeStorage) AddServiceReturns(result1 error) {
+	fake.AddServiceStub = nil
+	fake.addServiceReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeStorage) UpdateService(arg1 apihub.ServiceSpec) error {
+	fake.updateServiceMutex.Lock()
+	fake.updateServiceArgsForCall = append(fake.updateServiceArgsForCall, struct {
+		arg1 apihub.ServiceSpec
+	}{arg1})
+	fake.recordInvocation("UpdateService", []interface{}{arg1})
+	fake.updateServiceMutex.Unlock()
+	if fake.UpdateServiceStub != nil {
+		return fake.UpdateServiceStub(arg1)
+	} else {
+		return fake.updateServiceReturns.result1
+	}
+}
+
+func (fake *FakeStorage) UpdateServiceCallCount() int {
+	fake.updateServiceMutex.RLock()
+	defer fake.updateServiceMutex.RUnlock()
+	return len(fake.updateServiceArgsForCall)
+}
+
+func (fake *FakeStorage) UpdateServiceArgsForCall(i int) apihub.ServiceSpec {
+	fake.updateServiceMutex.RLock()
+	defer fake.updateServiceMutex.RUnlock()
+	return fake.updateServiceArgsForCall[i].arg1
+}
+
+func (fake *FakeStorage) UpdateServiceReturns(result1 error) {
+	fake.UpdateServiceStub = nil
+	fake.updateServiceReturns = struct {
 		result1 error
 	}{result1}
 }
@@ -173,8 +214,10 @@ func (fake *FakeStorage) RemoveServiceReturns(result1 error) {
 func (fake *FakeStorage) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.upsertServiceMutex.RLock()
-	defer fake.upsertServiceMutex.RUnlock()
+	fake.addServiceMutex.RLock()
+	defer fake.addServiceMutex.RUnlock()
+	fake.updateServiceMutex.RLock()
+	defer fake.updateServiceMutex.RUnlock()
 	fake.findServiceByHandleMutex.RLock()
 	defer fake.findServiceByHandleMutex.RUnlock()
 	fake.servicesMutex.RLock()

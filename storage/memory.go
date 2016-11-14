@@ -19,9 +19,25 @@ func New() *Memory {
 	}
 }
 
-func (m *Memory) UpsertService(s apihub.ServiceSpec) error {
+func (m *Memory) AddService(s apihub.ServiceSpec) error {
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
+
+	if _, ok := m.services[s.Handle]; ok {
+		return errors.New("handle already in use")
+	}
+
+	m.services[s.Handle] = s
+	return nil
+}
+
+func (m *Memory) UpdateService(s apihub.ServiceSpec) error {
+	m.mtx.Lock()
+	defer m.mtx.Unlock()
+
+	if _, ok := m.services[s.Handle]; !ok {
+		return errors.New("service not found")
+	}
 
 	m.services[s.Handle] = s
 	return nil

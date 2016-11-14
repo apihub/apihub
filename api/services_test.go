@@ -53,10 +53,6 @@ var _ = Describe("Services", func() {
 	})
 
 	Describe("addService", func() {
-		BeforeEach(func() {
-			fakeStorage.FindServiceByHandleReturns(apihub.ServiceSpec{}, errors.New("service not found"))
-		})
-
 		It("adds a new service", func() {
 			headers, code, body, err := httpClient.MakeRequest(requests.Args{
 				AcceptableCode: http.StatusCreated,
@@ -69,7 +65,7 @@ var _ = Describe("Services", func() {
 			Expect(stringify(body)).To(Equal(`{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"address":"http://server-a","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}`))
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 			Expect(code).To(Equal(http.StatusCreated))
-			Expect(fakeStorage.UpsertServiceCallCount()).To(Equal(1))
+			Expect(fakeStorage.AddServiceCallCount()).To(Equal(1))
 		})
 
 		It("publishes the service", func() {
@@ -137,7 +133,7 @@ var _ = Describe("Services", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":".*"}`))
-				Expect(fakeStorage.UpsertServiceCallCount()).To(Equal(0))
+				Expect(fakeStorage.AddServiceCallCount()).To(Equal(0))
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
 			})
@@ -153,36 +149,7 @@ var _ = Describe("Services", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":"Handle and Backend cannot be empty."}`))
-				Expect(fakeStorage.UpsertServiceCallCount()).To(Equal(0))
-				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
-				Expect(code).To(Equal(http.StatusBadRequest))
-			})
-		})
-
-		Context("when checking if there is another service for the same handle", func() {
-			var reqArgs requests.Args
-
-			BeforeEach(func() {
-				reqArgs = requests.Args{
-					AcceptableCode: http.StatusCreated,
-					Method:         http.MethodPost,
-					Path:           "/services",
-					Body:           `{"handle":"my-handle", "backends":[{"address":"http://server-a"}]}`,
-				}
-				_, code, _, err := httpClient.MakeRequest(reqArgs)
-				Expect(code).To(Equal(http.StatusCreated))
-				Expect(err).NotTo(HaveOccurred())
-			})
-
-			It("returns an error when handle is already in use", func() {
-				fakeStorage.FindServiceByHandleReturns(apihub.ServiceSpec{Handle: "my-handle"}, nil)
-
-				reqArgs.AcceptableCode = http.StatusBadRequest
-				headers, code, body, err := httpClient.MakeRequest(reqArgs)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":"Handle already in use."}`))
-				Expect(fakeStorage.UpsertServiceCallCount()).To(Equal(1))
+				Expect(fakeStorage.AddServiceCallCount()).To(Equal(0))
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
 			})
@@ -190,7 +157,7 @@ var _ = Describe("Services", func() {
 
 		Context("when storing a service fails", func() {
 			BeforeEach(func() {
-				fakeStorage.UpsertServiceReturns(errors.New("failed to store service"))
+				fakeStorage.AddServiceReturns(errors.New("handle already in use"))
 			})
 
 			It("returns an error", func() {
@@ -204,7 +171,7 @@ var _ = Describe("Services", func() {
 
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
-				Expect(stringify(body)).To(Equal(`{"error":"bad_request","error_description":"failed to add service: 'failed to store service'"}`))
+				Expect(stringify(body)).To(Equal(`{"error":"bad_request","error_description":"failed to add service: 'handle already in use'"}`))
 			})
 		})
 	})
@@ -361,7 +328,7 @@ var _ = Describe("Services", func() {
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 			Expect(code).To(Equal(http.StatusOK))
 			Expect(fakeStorage.FindServiceByHandleCallCount()).To(Equal(1))
-			Expect(fakeStorage.UpsertServiceCallCount()).To(Equal(1))
+			Expect(fakeStorage.UpdateServiceCallCount()).To(Equal(1))
 		})
 
 		Context("when finding a service fails", func() {
@@ -393,7 +360,7 @@ var _ = Describe("Services", func() {
 				})
 
 				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":".*"}`))
-				Expect(fakeStorage.UpsertServiceCallCount()).To(Equal(0))
+				Expect(fakeStorage.UpdateServiceCallCount()).To(Equal(0))
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
 			})
@@ -401,7 +368,7 @@ var _ = Describe("Services", func() {
 
 		Context("when storing a service fails", func() {
 			BeforeEach(func() {
-				fakeStorage.UpsertServiceReturns(errors.New("failed to store service."))
+				fakeStorage.UpdateServiceReturns(errors.New("failed to store service."))
 			})
 
 			It("returns an error", func() {

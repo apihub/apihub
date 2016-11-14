@@ -19,15 +19,38 @@ var _ = Describe("Memory", func() {
 		spec = apihub.ServiceSpec{Handle: "my-handle"}
 	})
 
-	Describe("UpsertService", func() {
+	Describe("AddService", func() {
 		It("adds a service", func() {
-			Expect(store.UpsertService(spec)).To(Succeed())
+			Expect(store.AddService(spec)).To(Succeed())
+		})
+
+		Context("when the service already exists for given handle", func() {
+			BeforeEach(func() {
+				Expect(store.AddService(spec)).To(Succeed())
+			})
+
+			It("returns an error", func() {
+				Expect(store.AddService(spec)).To(MatchError("handle already in use"))
+			})
+		})
+	})
+
+	Describe("UpdateService", func() {
+		It("updates a service", func() {
+			Expect(store.AddService(spec)).To(Succeed())
+			Expect(store.UpdateService(spec)).To(Succeed())
+		})
+
+		Context("when service does not exits", func() {
+			It("returns an error", func() {
+				Expect(store.UpdateService(spec)).To(MatchError("service not found"))
+			})
 		})
 	})
 
 	Describe("FindServiceByHandle", func() {
 		BeforeEach(func() {
-			Expect(store.UpsertService(spec)).To(Succeed())
+			Expect(store.AddService(spec)).To(Succeed())
 		})
 
 		It("finds a service", func() {
@@ -46,7 +69,7 @@ var _ = Describe("Memory", func() {
 
 	Describe("Services", func() {
 		BeforeEach(func() {
-			Expect(store.UpsertService(spec)).To(Succeed())
+			Expect(store.AddService(spec)).To(Succeed())
 		})
 
 		It("lists all services", func() {
@@ -58,7 +81,7 @@ var _ = Describe("Memory", func() {
 
 	Describe("RemoveService", func() {
 		BeforeEach(func() {
-			Expect(store.UpsertService(spec)).To(Succeed())
+			Expect(store.AddService(spec)).To(Succeed())
 		})
 
 		It("removes service by handle", func() {

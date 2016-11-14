@@ -29,16 +29,7 @@ func (s *ApihubServer) addService(rw http.ResponseWriter, r *http.Request) {
 		s.handleError(rw, errors.New("Handle and Backend cannot be empty."))
 		return
 	}
-	_, err := s.storage.FindServiceByHandle(spec.Handle)
-	if err == nil {
-		log.Error("failed-to-find-service", err, lager.Data{"handle": spec.Handle})
-		s.handleError(rw, errors.New("Handle already in use."))
-		return
-	}
-
-	//FIXME: there's a race here.
-
-	if err := s.storage.UpsertService(spec); err != nil {
+	if err := s.storage.AddService(spec); err != nil {
 		log.Error("failed-to-store-service", err)
 		s.handleError(rw, fmt.Errorf("failed to add service: '%s'", err))
 		return
@@ -154,7 +145,7 @@ func (s *ApihubServer) updateService(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	service.Handle = handle
-	if err := s.storage.UpsertService(service); err != nil {
+	if err := s.storage.UpdateService(service); err != nil {
 		log.Error("failed-to-store-service", err)
 		s.handleError(rw, errors.New("Failed to update service."))
 		return

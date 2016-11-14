@@ -63,7 +63,7 @@ var _ = Describe("Service", func() {
 
 			It("returns an error message with bad request", func() {
 				_, err := client.AddService(spec)
-				Expect(err).To(MatchError(ContainSubstring("Handle already in use.")))
+				Expect(err).To(MatchError(ContainSubstring("handle already in use")))
 			})
 		})
 	})
