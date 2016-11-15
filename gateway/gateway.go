@@ -69,8 +69,20 @@ func (gw *Gateway) AddService(logger lager.Logger, spec ReverseProxySpec) error 
 	return nil
 }
 
-func (gw *Gateway) RemoveService(handle string) error {
-	panic("not implemented")
+func (gw *Gateway) RemoveService(logger lager.Logger, handle string) error {
+	log := logger.Session("remove-service")
+	log.Info("start", lager.Data{"handle": handle})
+	defer log.Info("end")
+
+	if _, ok := gw.Services[handle]; !ok {
+		return fmt.Errorf("service not found: '%s'", handle)
+	}
+
+	gw.Lock()
+	delete(gw.Services, handle)
+	gw.Unlock()
+	log.Info("service-removed")
+	return nil
 }
 
 func (gw *Gateway) ServeHTTP(rw http.ResponseWriter, req *http.Request) {

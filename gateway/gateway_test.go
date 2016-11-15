@@ -91,6 +91,25 @@ var _ = Describe("Gateway", func() {
 		})
 	})
 
+	Describe("RemoveService", func() {
+		BeforeEach(func() {
+			Expect(gw.Services[spec.Handle]).To(BeNil())
+			Expect(gw.AddService(logger, spec)).To(Succeed())
+			Expect(gw.Services[spec.Handle]).NotTo(BeNil())
+		})
+
+		It("removes an existing service", func() {
+			Expect(gw.RemoveService(logger, spec.Handle)).To(Succeed())
+			Expect(gw.Services[spec.Handle]).To(BeNil())
+		})
+
+		Context("when service is not found", func() {
+			It("returns an error", func() {
+				Expect(gw.RemoveService(logger, "not-found")).To(HaveOccurred())
+			})
+		})
+	})
+
 	Describe("ServeHTTP", func() {
 		var spec gateway.ReverseProxySpec
 

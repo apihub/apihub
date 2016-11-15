@@ -29,7 +29,7 @@ var _ = Describe("Gateway", func() {
 
 		spec = gateway.ReverseProxySpec{
 			Handle:   "my-handle",
-			Backends: []string{},
+			Backends: []string{"http://server-a"},
 		}
 	})
 
@@ -52,6 +52,19 @@ var _ = Describe("Gateway", func() {
 			gw.ServeHTTP(rw, req)
 
 			Expect(rw.Body.String()).To(Equal("Hello World."))
+		})
+	})
+
+	Describe("RemoveService", func() {
+		It("removes a service", func() {
+			Expect(gw.AddService(logger, spec)).To(Succeed())
+			Expect(gw.RemoveService(logger, spec.Handle)).To(Succeed())
+		})
+
+		Context("when service is not found", func() {
+			It("returns an error", func() {
+				Expect(gw.RemoveService(logger, "invalid-handle")).To(MatchError(ContainSubstring("service not found: 'invalid-handle'")))
+			})
 		})
 	})
 })

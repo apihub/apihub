@@ -66,7 +66,6 @@ func director(logger lager.Logger, spec ReverseProxySpec) func(req *http.Request
 	defer log.Info("end")
 
 	return func(req *http.Request) {
-		//FIXME: Need to improve this.
 		backend, err := url.Parse(spec.Backends[0])
 		if err != nil {
 			log.Error("failed-to-parse-backend", err)
