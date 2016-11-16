@@ -96,6 +96,10 @@ func (s *ApihubServer) removeService(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := s.servicePublisher.Unpublish(log, apihub.SERVICES_PREFIX, handle); err != nil {
+		log.Error("failed-to-unpublish-service", err)
+	}
+
 	s.writeResponse(rw, response{
 		StatusCode: http.StatusNoContent,
 	})

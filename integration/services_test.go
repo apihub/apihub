@@ -133,6 +133,47 @@ var _ = Describe("Service", func() {
 			Expect(len(services)).To(Equal(0))
 		})
 
+		fireRequest := func(portGateway int, handle string) *http.Response {
+			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://127.0.0.1:%d", portGateway), nil)
+			Expect(err).NotTo(HaveOccurred())
+			req.Host = fmt.Sprintf("%s.apihub.dev", handle)
+
+			c := &http.Client{}
+			resp, err := c.Do(req)
+			Expect(err).NotTo(HaveOccurred())
+
+			return resp
+		}
+
+		It("unpublishes the service", func() {
+			target := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+				rw.Write([]byte("Hello World!"))
+			}))
+			defer target.Close()
+
+			spec.Backends = []apihub.BackendInfo{
+				apihub.BackendInfo{
+					Address: "http://" + target.Listener.Addr().String(),
+				},
+			}
+			_, err := client.UpdateService(spec.Handle, spec)
+			Expect(err).NotTo(HaveOccurred())
+
+			// Check if service is up and running
+			resp := fireRequest(portGateway, spec.Handle)
+			Eventually(resp.StatusCode, "10s").Should(Equal(http.StatusOK))
+			body, err := ioutil.ReadAll(resp.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(body)).To(Equal("Hello World!"))
+
+			// Remove service
+			err = client.RemoveService(spec.Handle)
+			Expect(err).NotTo(HaveOccurred())
+
+			resp = fireRequest(portGateway, spec.Handle)
+			Eventually(resp.StatusCode, "10s").Should(Equal(http.StatusNotFound))
+		})
+
 		Context("when service is not found", func() {
 			It("returns an error", func() {
 				err := client.RemoveService("invalid-handle")
@@ -263,7 +304,7 @@ var _ = Describe("Service", func() {
 
 				// Check if service is up and running
 				resp := fireRequest(portGateway, spec.Handle)
-				Eventually(resp.StatusCode, "5s").Should(Equal(http.StatusOK))
+				Eventually(resp.StatusCode, "10s").Should(Equal(http.StatusOK))
 				body, err := ioutil.ReadAll(resp.Body)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(string(body)).To(Equal("Hello World!"))
@@ -274,7 +315,7 @@ var _ = Describe("Service", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				resp = fireRequest(portGateway, spec.Handle)
-				Eventually(resp.StatusCode, "5s").Should(Equal(http.StatusNotFound))
+				Eventually(resp.StatusCode, "10s").Should(Equal(http.StatusNotFound))
 			})
 		})
 

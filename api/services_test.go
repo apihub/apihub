@@ -270,6 +270,20 @@ var _ = Describe("Services", func() {
 			Expect(fakeStorage.RemoveServiceCallCount()).To(Equal(1))
 		})
 
+		It("unpublishes the service", func() {
+			_, _, _, err := httpClient.MakeRequest(requests.Args{
+				AcceptableCode: http.StatusNoContent,
+				Method:         http.MethodDelete,
+				Path:           "/services/my-handle",
+			})
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(fakeServicePublisher.UnpublishCallCount()).To(Equal(1))
+			_, prefix, handle := fakeServicePublisher.UnpublishArgsForCall(0)
+			Expect(prefix).To(Equal(apihub.SERVICES_PREFIX))
+			Expect(handle).To(Equal("my-handle"))
+		})
+
 		Context("when removing a service fails", func() {
 			BeforeEach(func() {
 				fakeStorage.RemoveServiceReturns(errors.New("service not found"))
