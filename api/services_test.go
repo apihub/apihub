@@ -363,6 +363,10 @@ var _ = Describe("Services", func() {
 			Expect(code).To(Equal(http.StatusOK))
 			Expect(fakeStorage.FindServiceByHandleCallCount()).To(Equal(1))
 			Expect(fakeStorage.UpdateServiceCallCount()).To(Equal(1))
+			Expect(fakeServicePublisher.UnpublishCallCount()).To(Equal(1))
+			_, prefix, s := fakeServicePublisher.UnpublishArgsForCall(0)
+			Expect(prefix).To(Equal(apihub.SERVICES_PREFIX))
+			Expect(s).To(Equal("my-handle"))
 		})
 
 		Context("when changing the service to be enabled", func() {
@@ -393,8 +397,8 @@ var _ = Describe("Services", func() {
 
 				Expect(fakeServicePublisher.PublishCallCount()).To(Equal(1))
 				_, prefix, s := fakeServicePublisher.PublishArgsForCall(0)
-				Expect(s).To(Equal(spec))
 				Expect(prefix).To(Equal(apihub.SERVICES_PREFIX))
+				Expect(s).To(Equal(spec))
 			})
 		})
 

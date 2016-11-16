@@ -19,6 +19,16 @@ type FakeServicePublisher struct {
 	publishReturns struct {
 		result1 error
 	}
+	UnpublishStub        func(logger lager.Logger, prefix string, handle string) error
+	unpublishMutex       sync.RWMutex
+	unpublishArgsForCall []struct {
+		logger lager.Logger
+		prefix string
+		handle string
+	}
+	unpublishReturns struct {
+		result1 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -58,11 +68,48 @@ func (fake *FakeServicePublisher) PublishReturns(result1 error) {
 	}{result1}
 }
 
+func (fake *FakeServicePublisher) Unpublish(logger lager.Logger, prefix string, handle string) error {
+	fake.unpublishMutex.Lock()
+	fake.unpublishArgsForCall = append(fake.unpublishArgsForCall, struct {
+		logger lager.Logger
+		prefix string
+		handle string
+	}{logger, prefix, handle})
+	fake.recordInvocation("Unpublish", []interface{}{logger, prefix, handle})
+	fake.unpublishMutex.Unlock()
+	if fake.UnpublishStub != nil {
+		return fake.UnpublishStub(logger, prefix, handle)
+	} else {
+		return fake.unpublishReturns.result1
+	}
+}
+
+func (fake *FakeServicePublisher) UnpublishCallCount() int {
+	fake.unpublishMutex.RLock()
+	defer fake.unpublishMutex.RUnlock()
+	return len(fake.unpublishArgsForCall)
+}
+
+func (fake *FakeServicePublisher) UnpublishArgsForCall(i int) (lager.Logger, string, string) {
+	fake.unpublishMutex.RLock()
+	defer fake.unpublishMutex.RUnlock()
+	return fake.unpublishArgsForCall[i].logger, fake.unpublishArgsForCall[i].prefix, fake.unpublishArgsForCall[i].handle
+}
+
+func (fake *FakeServicePublisher) UnpublishReturns(result1 error) {
+	fake.UnpublishStub = nil
+	fake.unpublishReturns = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeServicePublisher) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.publishMutex.RLock()
 	defer fake.publishMutex.RUnlock()
+	fake.unpublishMutex.RLock()
+	defer fake.unpublishMutex.RUnlock()
 	return fake.invocations
 }
 

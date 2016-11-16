@@ -43,19 +43,27 @@ func main() {
 
 	go func() {
 		logger.Debug("waiting-for-services")
-		select {
-		case spec := <-servicesCh:
-			var backends []string
-			for _, be := range spec.Backends {
-				backends = append(backends, be.Address)
-			}
+		for {
+			select {
+			case spec := <-servicesCh:
+				var backends []string
+				for _, be := range spec.Backends {
+					backends = append(backends, be.Address)
+				}
 
-			proxySpec := gateway.ReverseProxySpec{
-				Handle:      spec.Handle,
-				Backends:    backends,
-				DialTimeout: time.Duration(spec.Timeout),
+				proxySpec := gateway.ReverseProxySpec{
+					Handle:      spec.Handle,
+					Backends:    backends,
+					DialTimeout: time.Duration(spec.Timeout),
+				}
+				if spec.Disabled {
+					gw.RemoveService(logger, spec.Handle)
+					logger.Info("service-removed ", lager.Data{"handle": spec.Handle})
+				} else {
+					gw.AddService(logger, proxySpec)
+					logger.Info("service-added", lager.Data{"spec": proxySpec})
+				}
 			}
-			gw.AddService(logger, proxySpec)
 		}
 	}()
 

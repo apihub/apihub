@@ -39,7 +39,7 @@ var _ = Describe("Publisher", func() {
 		It("publishes a service", func() {
 			Expect(pub.Publish(logger, apihub.SERVICES_PREFIX, spec)).To(Succeed())
 
-			key := fmt.Sprintf("%smy-handle", apihub.SERVICES_PREFIX)
+			key := fmt.Sprintf("%s%s", apihub.SERVICES_PREFIX, spec.Handle)
 			kvp, _, err := consulClient.KV().Get(key, nil)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(kvp).NotTo(BeNil())
@@ -47,6 +47,24 @@ var _ = Describe("Publisher", func() {
 			spec, err := json.Marshal(spec)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(kvp.Value).To(Equal(spec))
+		})
+	})
+
+	Describe("Unpublish", func() {
+		It("unpublishes a service", func() {
+			Expect(pub.Publish(logger, apihub.SERVICES_PREFIX, spec)).To(Succeed())
+			Expect(pub.Unpublish(logger, apihub.SERVICES_PREFIX, spec.Handle)).To(Succeed())
+
+			key := fmt.Sprintf("%s%s", apihub.SERVICES_PREFIX, spec.Handle)
+			kvp, _, err := consulClient.KV().Get(key, nil)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(kvp).To(BeNil())
+		})
+
+		Context("when service is not found", func() {
+			It("does not return an error", func() {
+				Expect(pub.Unpublish(logger, apihub.SERVICES_PREFIX, "not-found-key")).To(Succeed())
+			})
 		})
 	})
 })

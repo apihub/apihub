@@ -51,13 +51,8 @@ func (s *Subscriber) Subscribe(logger lager.Logger, prefix string, servicesCh ch
 			queryOpts.WaitIndex = queryMeta.LastIndex
 			if kvPairs != nil {
 				newKeys := newKeySet(kvPairs)
-				diffKeys := diff(keys, newKeys)
-				for _, kv := range diffKeys {
-					var spec apihub.ServiceSpec
-					if err := json.Unmarshal(kv.Value, &spec); err != nil {
-						log.Error("failed-to-parse-spec", err, lager.Data{"key": kv.Key})
-						continue
-					}
+				specs := diff(logger, keys, newKeys)
+				for _, spec := range specs {
 					servicesCh <- spec
 				}
 
@@ -84,14 +79,28 @@ func newKeySet(pairs api.KVPairs) keySet {
 	return set
 }
 
-func diff(currentSet keySet, newSet keySet) []*api.KVPair {
-	var missing []*api.KVPair
+func diff(logger lager.Logger, currentSet keySet, newSet keySet) []apihub.ServiceSpec {
+	var (
+		specs []apihub.ServiceSpec
+		spec  apihub.ServiceSpec
+	)
+
 	for key, new := range newSet {
 		current, ok := currentSet[key]
+
+		// In case nothing has changed
+		if ok && current.ModifyIndex == new.ModifyIndex {
+			continue
+		}
+
+		// In case it's a service to be added/updated
 		if !ok || current.ModifyIndex != new.ModifyIndex {
-			missing = append(missing, new)
+			if err := json.Unmarshal(new.Value, &spec); err != nil {
+				continue
+			}
+			specs = append(specs, spec)
 		}
 	}
 
-	return missing
+	return specs
 }

@@ -148,11 +148,18 @@ func (s *ApihubServer) updateService(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !service.Disabled {
+	if service.Disabled {
+		if err := s.servicePublisher.Unpublish(log, apihub.SERVICES_PREFIX, service.Handle); err != nil {
+			log.Error("failed-to-unpublish-service", err)
+			return
+		}
+		log.Info("service-unpublished")
+	} else {
 		if err := s.servicePublisher.Publish(log, apihub.SERVICES_PREFIX, service); err != nil {
 			log.Error("failed-to-publish-service", err)
 			return
 		}
+		log.Info("service-published")
 	}
 
 	log.Info("service-updated", lager.Data{"serviceSpec": service})

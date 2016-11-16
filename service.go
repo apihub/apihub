@@ -46,10 +46,11 @@ type Service interface {
 
 type ServicePublisher interface {
 	Publish(logger lager.Logger, prefix string, spec ServiceSpec) error
+	Unpublish(logger lager.Logger, prefix string, handle string) error
 }
 
 type ServiceSubscriber interface {
-	Subscribe(logger lager.Logger, prefix string, services chan ServiceSpec, stop <-chan struct{}) error
+	Subscribe(logger lager.Logger, prefix string, servicesCh chan ServiceSpec, stop <-chan struct{}) error
 }
 
 // ServiceInfo holds information about a service.
