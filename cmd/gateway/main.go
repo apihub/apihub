@@ -3,15 +3,15 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/url"
 	"os"
 	"time"
 
+	"code.cloudfoundry.org/lager"
 	"github.com/apihub/apihub"
 	"github.com/apihub/apihub/gateway"
 	"github.com/apihub/apihub/gateway/subscriber"
-
-	"code.cloudfoundry.org/consuladapter"
-	"code.cloudfoundry.org/lager"
+	consulapi "github.com/hashicorp/consul/api"
 )
 
 var (
@@ -30,11 +30,22 @@ func main() {
 	reverseProxyCreator := gateway.NewReverseProxyCreator()
 	gw := gateway.New(*port, reverseProxyCreator)
 
-	consulClient, err := consuladapter.NewClientFromUrl(*consulServerURL)
+	consulURL, err := url.Parse(*consulServerURL)
+	if err != nil {
+		panic(fmt.Sprintf("Error parsing Consul URL: %s", err))
+	}
+	consulClient, err := consulapi.NewClient(&consulapi.Config{
+		Address: consulURL.Host,
+		Scheme:  consulURL.Scheme,
+	})
 	if err != nil {
 		panic(fmt.Sprintf("Error connecting to Consul agent: %s", err))
 	}
 
+	// FIXME: extract this to another method
+	// FIXME: another channel to remove services
+	// FIXME: handle signal to stop gateway
+	// FIXME: add test that shutdown one consul server
 	servicesCh := make(chan apihub.ServiceSpec)
 	stopCh := make(chan struct{})
 

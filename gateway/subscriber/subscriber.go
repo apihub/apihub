@@ -4,17 +4,16 @@ import (
 	"encoding/json"
 	"time"
 
-	"code.cloudfoundry.org/consuladapter"
 	"code.cloudfoundry.org/lager"
 	"github.com/apihub/apihub"
 	"github.com/hashicorp/consul/api"
 )
 
 type Subscriber struct {
-	client consuladapter.Client
+	client *api.Client
 }
 
-func NewSubscriber(client consuladapter.Client) *Subscriber {
+func NewSubscriber(client *api.Client) *Subscriber {
 	return &Subscriber{
 		client: client,
 	}

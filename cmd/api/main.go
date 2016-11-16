@@ -3,13 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/url"
 	"os"
 
-	"code.cloudfoundry.org/consuladapter"
 	"code.cloudfoundry.org/lager"
 	"github.com/apihub/apihub/api"
 	"github.com/apihub/apihub/api/publisher"
 	"github.com/apihub/apihub/storage"
+	consulapi "github.com/hashicorp/consul/api"
 )
 
 var (
@@ -21,13 +22,22 @@ var (
 func main() {
 	flag.Parse()
 
+	// FIXME: handle signal to stop gateway
+
 	// Configure log
 	logger := lager.NewLogger("apihub-api")
 	logger.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
 
 	// Configure and start server
 	store := storage.New()
-	consulClient, err := consuladapter.NewClientFromUrl(*consulServerURL)
+	consulURL, err := url.Parse(*consulServerURL)
+	if err != nil {
+		panic(fmt.Sprintf("Error parsing Consul URL: %s", err))
+	}
+	consulClient, err := consulapi.NewClient(&consulapi.Config{
+		Address: consulURL.Host,
+		Scheme:  consulURL.Scheme,
+	})
 	if err != nil {
 		panic(fmt.Sprintf("Error connecting to Consul agent: %s", err))
 	}

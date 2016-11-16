@@ -4,17 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"code.cloudfoundry.org/consuladapter"
 	"code.cloudfoundry.org/lager"
 	"github.com/apihub/apihub"
 	"github.com/hashicorp/consul/api"
 )
 
 type Publisher struct {
-	client consuladapter.Client
+	client *api.Client
 }
 
-func NewPublisher(client consuladapter.Client) *Publisher {
+func NewPublisher(client *api.Client) *Publisher {
 	return &Publisher{
 		client: client,
 	}

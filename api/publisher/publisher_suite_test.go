@@ -1,8 +1,8 @@
 package publisher_test
 
 import (
-	"code.cloudfoundry.org/consuladapter"
 	"code.cloudfoundry.org/consuladapter/consulrunner"
+	consulapi "github.com/hashicorp/consul/api"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -11,37 +11,36 @@ import (
 
 var (
 	consulRunner *consulrunner.ClusterRunner
-	consulClient consuladapter.Client
+	consulClient *consulapi.Client
 )
 
-func TestPublisher(t *testing.T) {
-	RegisterFailHandler(Fail)
+var _ = BeforeSuite(func() {
+	consulRunner = consulrunner.NewClusterRunner(
+		9001+GinkgoParallelNode()*consulrunner.PortOffsetLength,
+		1,
+		"http",
+	)
 
-	SynchronizedBeforeSuite(func() []byte {
-		consulRunner = consulrunner.NewClusterRunner(
-			9001+GinkgoParallelNode()*consulrunner.PortOffsetLength,
-			1,
-			"http",
-		)
+	consulRunner.Start()
+	consulRunner.WaitUntilReady()
+})
 
-		consulRunner.Start()
-		consulRunner.WaitUntilReady()
-		return nil
-	}, func(_ []byte) {
-	})
-
-	SynchronizedAfterSuite(func() {
-	}, func() {
-		consulRunner.Stop()
-	})
-
-	RunSpecs(t, "Publisher Suite")
-}
+var _ = AfterSuite(func() {
+	consulRunner.Stop()
+})
 
 var _ = BeforeEach(func() {
-	consulClient = consulRunner.NewClient()
+	var err error
+	Expect(consulRunner.Reset()).To(Succeed())
+	consulClient, err = consulapi.NewClient(&consulapi.Config{Address: string(consulRunner.Address())})
+	Expect(err).NotTo(HaveOccurred())
 })
 
 var _ = AfterEach(func() {
 	Expect(consulRunner.Reset()).To(Succeed())
 })
+
+func TestPublisher(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Publisher Suite")
+}

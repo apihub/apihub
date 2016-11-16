@@ -1,12 +1,11 @@
 package integration_test
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
+	"time"
 
-	"code.cloudfoundry.org/consuladapter"
 	"code.cloudfoundry.org/consuladapter/consulrunner"
 
 	"github.com/apihub/apihub"
@@ -24,55 +23,40 @@ var (
 	ApihubAPI     string
 	ApihubGateway string
 	consulRunner  *consulrunner.ClusterRunner
-	consulClient  consuladapter.Client
 )
+
+var _ = BeforeSuite(func() {
+	var err error
+	consulRunner = consulrunner.NewClusterRunner(
+		9201+GinkgoParallelNode()*consulrunner.PortOffsetLength,
+		1,
+		"http",
+	)
+
+	consulRunner.Start()
+	consulRunner.WaitUntilReady()
+
+	ApihubAPI, err = gexec.Build("github.com/apihub/apihub/cmd/api")
+	Expect(err).NotTo(HaveOccurred())
+
+	ApihubGateway, err = gexec.Build("github.com/apihub/apihub/cmd/gateway")
+	Expect(err).NotTo(HaveOccurred())
+})
+
+var _ = AfterSuite(func() {
+	gexec.CleanupBuildArtifacts()
+	consulRunner.Stop()
+})
+
+var _ = BeforeEach(func() {
+	Expect(consulRunner.Reset()).To(Succeed())
+})
 
 func TestIntegration(t *testing.T) {
 	RegisterFailHandler(Fail)
-
-	SynchronizedBeforeSuite(func() []byte {
-		var err error
-		bins := make(map[string]string)
-
-		bins["api"], err = gexec.Build("github.com/apihub/apihub/cmd/api")
-		Expect(err).NotTo(HaveOccurred())
-
-		bins["gateway"], err = gexec.Build("github.com/apihub/apihub/cmd/gateway")
-		Expect(err).NotTo(HaveOccurred())
-
-		data, err := json.Marshal(bins)
-		Expect(err).NotTo(HaveOccurred())
-
-		consulRunner = consulrunner.NewClusterRunner(
-			9101+GinkgoParallelNode()*consulrunner.PortOffsetLength,
-			1,
-			"http",
-		)
-
-		consulRunner.Start()
-		consulRunner.WaitUntilReady()
-
-		return data
-	}, func(data []byte) {
-		bins := make(map[string]string)
-		Expect(json.Unmarshal(data, &bins)).To(Succeed())
-
-		ApihubAPI = bins["api"]
-		ApihubGateway = bins["gateway"]
-	})
-
-	SynchronizedAfterSuite(func() {
-	}, func() {
-		gexec.CleanupBuildArtifacts()
-		consulRunner.Stop()
-	})
-
+	SetDefaultEventuallyTimeout(time.Second * 10)
 	RunSpecs(t, "Integration Suite")
 }
-
-var _ = AfterEach(func() {
-	Expect(consulRunner.Reset()).To(Succeed())
-})
 
 func startApihub(network string, addressAPI string, portGateway int) *RunningApihub {
 	os.Remove(addressAPI)
