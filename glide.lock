@@ -1,26 +1,18 @@
-hash: 053992f63828a25839b8cc25c5e05fa0ef90d05d903edfcf0d77cbdf288b6ec1
-updated: 2016-11-14T10:37:37.377048748Z
+hash: 5d79ac3f4970e6570bacd8e7af3e45b7d0a0666d342ea583f01343f026b6ecc3
+updated: 2016-11-18T12:06:37.84043739Z
 imports:
 - name: code.cloudfoundry.org/cfhttp
   version: 1d363866d79a7203ee22ee605a9ac6081b56c9a0
-  subpackages:
-  - unix_transport
 - name: code.cloudfoundry.org/consuladapter
   version: 473918e8abd925632a6ebf2813ff80060ea49c9e
-  subpackages:
-  - consulrunner
 - name: code.cloudfoundry.org/lager
   version: 484d5ef6af6d82ff9df1b1ed27c8314aba26eb08
-  subpackages:
-  - lagertest
 - name: github.com/albertoleal/requests
   version: c59faf2a290abe61241b8a8c6dc2fb9db0b5ae81
 - name: github.com/braintree/manners
   version: 82a8879fc5fd0381fa8b2d8033b19bf255252088
 - name: github.com/golang/protobuf
-  version: 4bd1920723d7b7c925de087aa32e2187708897f7
-  subpackages:
-  - proto
+  version: 8ee79997227bf9b34611aee7946ae64735e6fd93
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
@@ -38,49 +30,13 @@ imports:
 - name: github.com/onsi/ginkgo
   version: 00054c0bb96fc880d4e0be1b90937fad438c5290
   subpackages:
-  - config
-  - internal/codelocation
-  - internal/containernode
-  - internal/failer
-  - internal/leafnodes
-  - internal/remote
-  - internal/spec
-  - internal/specrunner
-  - internal/suite
-  - internal/testingtproxy
-  - internal/writer
-  - reporters
-  - reporters/stenographer
-  - reporters/stenographer/support/go-colorable
-  - reporters/stenographer/support/go-isatty
-  - types
+  - ginkgo
 - name: github.com/onsi/gomega
-  version: ff4bc6b6f9f5affa66635cd04d31d2a7ee21ffd6
-  subpackages:
-  - format
-  - gbytes
-  - gexec
-  - ghttp
-  - internal/assertion
-  - internal/asyncassertion
-  - internal/oraclematcher
-  - internal/testingtsupport
-  - matchers
-  - matchers/support/goraph/bipartitegraph
-  - matchers/support/goraph/edge
-  - matchers/support/goraph/node
-  - matchers/support/goraph/util
-  - types
+  version: 2b6ed62707a2f5fdf1ba9cd856cdeec6bfff6b61
 - name: github.com/tedsuo/ifrit
   version: 6711154296c2b3fc5cd1932f0638c8ca0ce8a8a7
-  subpackages:
-  - ginkgomon
 - name: github.com/urfave/negroni
   version: e0e50f7dc431c043cb33f91b09c3419d48b7cff5
-- name: golang.org/x/sys
-  version: b699b7032584f0953262cb2788a0ca19bb494703
-  subpackages:
-  - unix
 - name: gopkg.in/yaml.v2
   version: a5b47d31c556af34a302ce5d659e6fea44d90de0
-testImports: []
+devImports: []

@@ -10,7 +10,6 @@ type KV interface {
 	Put(p *api.KVPair, q *api.WriteOptions) (*api.WriteMeta, error)
 	Release(p *api.KVPair, q *api.WriteOptions) (bool, *api.WriteMeta, error)
 	DeleteTree(prefix string, w *api.WriteOptions) (*api.WriteMeta, error)
-	Delete(key string, w *api.WriteOptions) (*api.WriteMeta, error)
 }
 
 type keyValue struct {
@@ -39,8 +38,4 @@ func (kv *keyValue) Release(p *api.KVPair, q *api.WriteOptions) (bool, *api.Writ
 
 func (kv *keyValue) DeleteTree(prefix string, w *api.WriteOptions) (*api.WriteMeta, error) {
 	return kv.keyValue.DeleteTree(prefix, w)
-}
-
-func (kv *keyValue) Delete(key string, w *api.WriteOptions) (*api.WriteMeta, error) {
-	return kv.keyValue.Delete(key, w)
 }

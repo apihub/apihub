@@ -8,8 +8,10 @@ import:
 - package: github.com/hashicorp/consul
   version: v0.7.1
 - package: github.com/tedsuo/ifrit
-testImport:
+- package: code.cloudfoundry.org/consuladapter
 - package: github.com/onsi/ginkgo
   subpackages:
-  - config
+  - ginkgo
 - package: github.com/onsi/gomega
+- package: code.cloudfoundry.org/cfhttp
+- package: gopkg.in/yaml.v2
