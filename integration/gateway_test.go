@@ -56,9 +56,40 @@ var _ = Describe("Gateway", func() {
 	})
 
 	Describe("RemoveService", func() {
-		It("removes a service", func() {
+		var backendServer *httptest.Server
+
+		BeforeEach(func() {
+			backendServer = httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+				rw.Write([]byte("Hello World."))
+			}))
+			spec.Backends = []string{fmt.Sprintf("http://%s", backendServer.Listener.Addr().String())}
 			Expect(gw.AddService(logger, spec)).To(Succeed())
+		})
+
+		AfterEach(func() {
+			backendServer.Close()
+		})
+
+		It("removes a service", func() {
 			Expect(gw.RemoveService(logger, spec.Handle)).To(Succeed())
+		})
+
+		It("stops proxying requests to the service", func() {
+			req, err := http.NewRequest(http.MethodGet, "http://my-handle.apihub.dev", nil)
+			Expect(err).NotTo(HaveOccurred())
+
+			var rw *httptest.ResponseRecorder
+			rw = httptest.NewRecorder()
+			gw.ServeHTTP(rw, req)
+			Expect(rw.Code).To(Equal(http.StatusOK))
+
+			Expect(gw.RemoveService(logger, spec.Handle)).To(Succeed())
+
+			Eventually(func() int {
+				rw = httptest.NewRecorder()
+				gw.ServeHTTP(rw, req)
+				return rw.Code
+			}).Should(Equal(http.StatusNotFound))
 		})
 
 		Context("when service is not found", func() {
