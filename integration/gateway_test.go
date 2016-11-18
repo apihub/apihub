@@ -34,6 +34,10 @@ var _ = Describe("Gateway", func() {
 	})
 
 	Describe("AddService", func() {
+		It("adds a service", func() {
+			Expect(gw.AddService(logger, spec)).To(Succeed())
+		})
+
 		It("proxies the request to the service backend", func() {
 			backendServer := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 				rw.Write([]byte("Hello World."))
