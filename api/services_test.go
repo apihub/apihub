@@ -62,7 +62,7 @@ var _ = Describe("Services", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(stringify(body)).To(Equal(`{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"address":"http://server-a","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}`))
+			Expect(string(body)).To(ContainSubstring(`{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"address":"http://server-a","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}`))
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 			Expect(code).To(Equal(http.StatusCreated))
 			Expect(fakeStorage.AddServiceCallCount()).To(Equal(1))
@@ -132,7 +132,7 @@ var _ = Describe("Services", func() {
 					Body:           `{"handle":"my-handle", "backends":[{"address":"http://server-a"}]}`,
 				})
 				Expect(err).NotTo(HaveOccurred())
-				Expect(stringify(body)).To(Equal(`{"error":"bad_request","error_description":"failed to publish service: 'failed to publish service'"}`))
+				Expect(string(body)).To(ContainSubstring(`{"error":"bad_request","error_description":"failed to publish service: 'failed to publish service'"}`))
 			})
 
 			It("removes the service from the storage", func() {
@@ -159,7 +159,7 @@ var _ = Describe("Services", func() {
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":".*"}`))
+				Expect(string(body)).To(MatchRegexp(`{"error":"bad_request","error_description":".*"}`))
 				Expect(fakeStorage.AddServiceCallCount()).To(Equal(0))
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
@@ -175,7 +175,7 @@ var _ = Describe("Services", func() {
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":"Handle and Backend cannot be empty."}`))
+				Expect(string(body)).To(ContainSubstring(`{"error":"bad_request","error_description":"Handle and Backend cannot be empty."}`))
 				Expect(fakeStorage.AddServiceCallCount()).To(Equal(0))
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
@@ -198,7 +198,7 @@ var _ = Describe("Services", func() {
 
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
-				Expect(stringify(body)).To(Equal(`{"error":"bad_request","error_description":"failed to add service: 'handle already in use'"}`))
+				Expect(string(body)).To(ContainSubstring(`{"error":"bad_request","error_description":"failed to add service: 'handle already in use'"}`))
 			})
 		})
 	})
@@ -225,7 +225,7 @@ var _ = Describe("Services", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(stringify(body)).To(Equal(`{"items":[{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"address":"http://server-a","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}],"item_count":1}`))
+			Expect(string(body)).To(ContainSubstring(`{"items":[{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"address":"http://server-a","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}],"item_count":1}`))
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 			Expect(code).To(Equal(http.StatusOK))
 			Expect(fakeStorage.ServicesCallCount()).To(Equal(1))
@@ -246,7 +246,7 @@ var _ = Describe("Services", func() {
 
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
-				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":"Failed to retrieve service list."}`))
+				Expect(string(body)).To(ContainSubstring(`{"error":"bad_request","error_description":"Failed to retrieve service list."}`))
 			})
 		})
 	})
@@ -264,7 +264,7 @@ var _ = Describe("Services", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(stringify(body)).To(Equal(""))
+			Expect(string(body)).To(BeEmpty())
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 			Expect(code).To(Equal(http.StatusNoContent))
 			Expect(fakeStorage.RemoveServiceCallCount()).To(Equal(1))
@@ -299,7 +299,7 @@ var _ = Describe("Services", func() {
 
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
-				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":"Failed to remove service."}`))
+				Expect(string(body)).To(ContainSubstring(`{"error":"bad_request","error_description":"Failed to remove service."}`))
 			})
 		})
 	})
@@ -324,7 +324,7 @@ var _ = Describe("Services", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(stringify(body)).To(Equal(`{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"address":"http://server-a","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}`))
+			Expect(string(body)).To(ContainSubstring(`{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"address":"http://server-a","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}`))
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 			Expect(code).To(Equal(http.StatusOK))
 			Expect(fakeStorage.FindServiceByHandleCallCount()).To(Equal(1))
@@ -345,7 +345,7 @@ var _ = Describe("Services", func() {
 
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
-				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":"Failed to find service."}`))
+				Expect(string(body)).To(ContainSubstring(`{"error":"bad_request","error_description":"Failed to find service."}`))
 			})
 		})
 	})
@@ -372,7 +372,7 @@ var _ = Describe("Services", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(stringify(body)).To(Equal(`{"handle":"my-handle","disabled":true,"timeout":0,"backends":[{"address":"http://another-server-b","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}`))
+			Expect(string(body)).To(ContainSubstring(`{"handle":"my-handle","disabled":true,"timeout":0,"backends":[{"address":"http://another-server-b","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}`))
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 			Expect(code).To(Equal(http.StatusOK))
 			Expect(fakeStorage.FindServiceByHandleCallCount()).To(Equal(1))
@@ -432,7 +432,7 @@ var _ = Describe("Services", func() {
 
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
-				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":"Failed to find service."}`))
+				Expect(string(body)).To(ContainSubstring(`{"error":"bad_request","error_description":"Failed to find service."}`))
 			})
 		})
 
@@ -446,7 +446,7 @@ var _ = Describe("Services", func() {
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":".*"}`))
+				Expect(string(body)).To(MatchRegexp(`{"error":"bad_request","error_description":".*"}`))
 				Expect(fakeStorage.UpdateServiceCallCount()).To(Equal(0))
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
@@ -469,7 +469,7 @@ var _ = Describe("Services", func() {
 
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
-				Expect(stringify(body)).To(MatchRegexp(`{"error":"bad_request","error_description":"Failed to update service."}`))
+				Expect(string(body)).To(ContainSubstring(`{"error":"bad_request","error_description":"Failed to update service."}`))
 			})
 		})
 	})

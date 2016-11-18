@@ -11,7 +11,6 @@ import (
 type Router struct {
 	r        *mux.Router
 	notFound http.Handler
-	sub      map[string]*mux.Router
 }
 
 type RouterArguments struct {
@@ -23,8 +22,7 @@ type RouterArguments struct {
 
 func NewRouter() *Router {
 	return &Router{
-		r:   mux.NewRouter(),
-		sub: make(map[string]*mux.Router),
+		r: mux.NewRouter(),
 	}
 }
 
@@ -37,26 +35,8 @@ func (router *Router) NotFoundHandler(h http.Handler) {
 	router.r.NotFoundHandler = h
 }
 
-func (router *Router) AddSubrouter(pathPrefix string) *mux.Router {
-	s := mux.NewRouter()
-	s.NotFoundHandler = router.notFound
-	router.sub[pathPrefix] = s
-	return s
-}
-
-func (router *Router) Subrouter(pathPrefix string) *mux.Router {
-	return router.sub[pathPrefix]
-}
-
 func (router *Router) AddHandler(args RouterArguments) {
-	var r *mux.Router
-
-	if sub, ok := router.sub[args.PathPrefix]; ok {
-		r = sub
-	} else {
-		r = router.r
-	}
-
+	r := router.r
 	var prefix, path string
 	if args.PathPrefix != "" {
 		prefix = fmt.Sprintf("/%s", strings.Trim(args.PathPrefix, "/"))
