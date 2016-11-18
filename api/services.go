@@ -37,7 +37,6 @@ func (s *ApihubServer) addService(rw http.ResponseWriter, r *http.Request) {
 	if !spec.Disabled {
 		if err := s.servicePublisher.Publish(log, apihub.SERVICES_PREFIX, spec); err != nil {
 			log.Error("failed-to-publish-service", err)
-			// If it fails to clean up the state it's ok to just log that
 			if cleanErr := s.storage.RemoveService(spec.Handle); cleanErr != nil {
 				log.Error("failed-to-remove-service", cleanErr)
 			}
@@ -47,7 +46,7 @@ func (s *ApihubServer) addService(rw http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	log.Info("service-added", lager.Data{"serviceSpec": spec})
+	log.Info("service-added", lager.Data{"service": spec})
 	s.writeResponse(rw, response{
 		StatusCode: http.StatusCreated,
 		Body:       spec,
@@ -100,6 +99,7 @@ func (s *ApihubServer) removeService(rw http.ResponseWriter, r *http.Request) {
 		log.Error("failed-to-unpublish-service", err)
 	}
 
+	log.Info("service-removed", lager.Data{"handle": handle})
 	s.writeResponse(rw, response{
 		StatusCode: http.StatusNoContent,
 	})
@@ -119,6 +119,7 @@ func (s *ApihubServer) findService(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Debug("service-found", lager.Data{"service": service})
 	s.writeResponse(rw, response{
 		StatusCode: http.StatusOK,
 		Body:       service,
@@ -155,18 +156,14 @@ func (s *ApihubServer) updateService(rw http.ResponseWriter, r *http.Request) {
 	if service.Disabled {
 		if err := s.servicePublisher.Unpublish(log, apihub.SERVICES_PREFIX, service.Handle); err != nil {
 			log.Error("failed-to-unpublish-service", err)
-			return
 		}
-		log.Info("service-unpublished")
 	} else {
 		if err := s.servicePublisher.Publish(log, apihub.SERVICES_PREFIX, service); err != nil {
 			log.Error("failed-to-publish-service", err)
-			return
 		}
-		log.Info("service-published")
 	}
 
-	log.Info("service-updated", lager.Data{"serviceSpec": service})
+	log.Info("service-updated", lager.Data{"service": service})
 	s.writeResponse(rw, response{
 		StatusCode: http.StatusOK,
 		Body:       service,
