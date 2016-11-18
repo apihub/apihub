@@ -5,7 +5,7 @@ type Client interface {
 	// Ping pings the ApiHub server.
 	//
 	// Errors:
-	// * InternalError - indicates the ApiHub server is in a bad state.
+	// * Error - indicates the ApiHub API server is in a bad state.
 	Ping() error
 
 	// AddService adds a new service.
