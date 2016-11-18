@@ -52,7 +52,7 @@ var _ = Describe("Service", func() {
 		Expect(client.Stop()).To(Succeed())
 	})
 
-	fireRequest := func(portGateway int, handle string) *http.Response {
+	sendRequest := func(portGateway int, handle string) *http.Response {
 		req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://127.0.0.1:%d", portGateway), nil)
 		Expect(err).NotTo(HaveOccurred())
 		req.Host = fmt.Sprintf("%s.apihub.dev", handle)
@@ -74,7 +74,7 @@ var _ = Describe("Service", func() {
 		It("proxies the request to the service endpoint", func() {
 			service, err := client.AddService(spec)
 			Expect(err).NotTo(HaveOccurred())
-			resp := fireRequest(portGateway, service.Handle())
+			resp := sendRequest(portGateway, service.Handle())
 			body, err := ioutil.ReadAll(resp.Body)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(body)).To(Equal("Hello World!"))
@@ -124,7 +124,7 @@ var _ = Describe("Service", func() {
 
 		It("unpublishes the service", func() {
 			// Check if service is up and running
-			resp := fireRequest(portGateway, spec.Handle)
+			resp := sendRequest(portGateway, spec.Handle)
 			Eventually(resp.StatusCode).Should(Equal(http.StatusOK))
 			body, err := ioutil.ReadAll(resp.Body)
 			Expect(err).NotTo(HaveOccurred())
@@ -134,7 +134,7 @@ var _ = Describe("Service", func() {
 			err = client.RemoveService(spec.Handle)
 			Expect(err).NotTo(HaveOccurred())
 
-			resp = fireRequest(portGateway, spec.Handle)
+			resp = sendRequest(portGateway, spec.Handle)
 			Eventually(resp.StatusCode).Should(Equal(http.StatusNotFound))
 		})
 
@@ -172,7 +172,7 @@ var _ = Describe("Service", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
-		It("update an existing service by handle", func() {
+		It("updates an existing service by handle", func() {
 			spec.Backends = []apihub.BackendInfo{
 				apihub.BackendInfo{
 					Address:          "http://server-b",
@@ -196,15 +196,17 @@ var _ = Describe("Service", func() {
 				spec.Disabled = true
 			})
 
-			It("proxies the request to the service endpoint", func() {
-				resp := fireRequest(portGateway, spec.Handle)
+			JustBeforeEach(func() {
+				resp := sendRequest(portGateway, spec.Handle)
 				Expect(resp.StatusCode).To(Equal(http.StatusNotFound))
+			})
 
+			It("proxies the request to the service endpoint", func() {
 				spec.Disabled = false
 				_, err := client.UpdateService(spec.Handle, spec)
 				Expect(err).NotTo(HaveOccurred())
 
-				resp = fireRequest(portGateway, spec.Handle)
+				resp := sendRequest(portGateway, spec.Handle)
 				Expect(resp.StatusCode).To(Equal(http.StatusOK))
 				body, err := ioutil.ReadAll(resp.Body)
 				Expect(err).NotTo(HaveOccurred())
@@ -213,20 +215,21 @@ var _ = Describe("Service", func() {
 		})
 
 		Context("when the service is disabled", func() {
-			It("stops proxing the request to the service endpoint", func() {
+			JustBeforeEach(func() {
 				// Check if service is up and running
-				resp := fireRequest(portGateway, spec.Handle)
+				resp := sendRequest(portGateway, spec.Handle)
 				Eventually(resp.StatusCode).Should(Equal(http.StatusOK))
 				body, err := ioutil.ReadAll(resp.Body)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(string(body)).To(Equal("Hello World!"))
+			})
 
-				// Disable service
+			It("stops proxing the request to the service endpoint", func() {
 				spec.Disabled = true
-				_, err = client.UpdateService(spec.Handle, spec)
+				_, err := client.UpdateService(spec.Handle, spec)
 				Expect(err).NotTo(HaveOccurred())
 
-				resp = fireRequest(portGateway, spec.Handle)
+				resp := sendRequest(portGateway, spec.Handle)
 				Eventually(resp.StatusCode).Should(Equal(http.StatusNotFound))
 			})
 		})
