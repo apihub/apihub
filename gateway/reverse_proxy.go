@@ -25,7 +25,7 @@ type ReverseProxyCreator interface {
 }
 
 type ReverseProxy interface {
-	http.Handler
+	ServeHTTP(http.ResponseWriter, *http.Request)
 }
 
 type ReverseProxySpec struct {
