@@ -20,7 +20,6 @@ var _ = Describe("Service", func() {
 	)
 
 	BeforeEach(func() {
-		var err error
 		fakeConnection = new(connectionfakes.FakeConnection)
 		cli = client.New(fakeConnection)
 
@@ -37,6 +36,10 @@ var _ = Describe("Service", func() {
 				},
 			},
 		}
+	})
+
+	JustBeforeEach(func() {
+		var err error
 		fakeConnection.AddServiceReturns(spec, nil)
 
 		service, err = cli.AddService(spec)
@@ -119,4 +122,28 @@ var _ = Describe("Service", func() {
 		})
 	})
 
+	Describe("Stop", func() {
+		BeforeEach(func() {
+			spec.Disabled = false
+		})
+
+		It("disables the service to stop receiving requests", func() {
+			Expect(service.Stop()).To(Succeed())
+			Expect(fakeConnection.UpdateServiceCallCount()).To(Equal(1))
+			handle, serviceSpec := fakeConnection.UpdateServiceArgsForCall(0)
+			Expect(handle).To(Equal(spec.Handle))
+			Expect(spec.Disabled).To(BeFalse())
+			Expect(serviceSpec.Disabled).To(BeTrue())
+		})
+
+		Context("when fails to disable", func() {
+			BeforeEach(func() {
+				fakeConnection.UpdateServiceReturns(apihub.ServiceSpec{}, errors.New("failed to update"))
+			})
+
+			It("returns an error", func() {
+				Expect(service.Stop()).To(MatchError(ContainSubstring("failed to update")))
+			})
+		})
+	})
 })

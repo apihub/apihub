@@ -44,7 +44,12 @@ func (s *service) Start() error {
 	return err
 }
 
-func (s *service) Stop(kill bool) error {
+func (s *service) Stop() error {
+	spec := apihub.ServiceSpec{
+		Disabled: true,
+	}
+	_, err := s.conn.UpdateService(s.Handle(), spec)
+	return err
 	panic("not implemented")
 }
 

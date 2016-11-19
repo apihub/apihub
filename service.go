@@ -20,13 +20,7 @@ type Service interface {
 	Start() error
 
 	// Stop stops proxying the requests.
-	//
-	// If kill is false, Apihub stops proxying the requests to one of the backends
-	// registered.
-	//
-	// If kill is true, Apihub stops proxing the requests and remove the service
-	// from the service pool.
-	Stop(kill bool) error
+	Stop() error
 
 	// Info returns information about a service.
 	Info() (ServiceSpec, error)

@@ -21,12 +21,10 @@ type FakeService struct {
 	startReturns     struct {
 		result1 error
 	}
-	StopStub        func(kill bool) error
+	StopStub        func() error
 	stopMutex       sync.RWMutex
-	stopArgsForCall []struct {
-		kill bool
-	}
-	stopReturns struct {
+	stopArgsForCall []struct{}
+	stopReturns     struct {
 		result1 error
 	}
 	InfoStub        func() (apihub.ServiceSpec, error)
@@ -118,15 +116,13 @@ func (fake *FakeService) StartReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeService) Stop(kill bool) error {
+func (fake *FakeService) Stop() error {
 	fake.stopMutex.Lock()
-	fake.stopArgsForCall = append(fake.stopArgsForCall, struct {
-		kill bool
-	}{kill})
-	fake.recordInvocation("Stop", []interface{}{kill})
+	fake.stopArgsForCall = append(fake.stopArgsForCall, struct{}{})
+	fake.recordInvocation("Stop", []interface{}{})
 	fake.stopMutex.Unlock()
 	if fake.StopStub != nil {
-		return fake.StopStub(kill)
+		return fake.StopStub()
 	} else {
 		return fake.stopReturns.result1
 	}
@@ -136,12 +132,6 @@ func (fake *FakeService) StopCallCount() int {
 	fake.stopMutex.RLock()
 	defer fake.stopMutex.RUnlock()
 	return len(fake.stopArgsForCall)
-}
-
-func (fake *FakeService) StopArgsForCall(i int) bool {
-	fake.stopMutex.RLock()
-	defer fake.stopMutex.RUnlock()
-	return fake.stopArgsForCall[i].kill
 }
 
 func (fake *FakeService) StopReturns(result1 error) {
