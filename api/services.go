@@ -29,7 +29,7 @@ func (s *ApihubServer) addService(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := s.storage.AddService(spec); err != nil {
-		log.Error("failed-to-store-service", err)
+		log.Error("failed-to-store-service", err, lager.Data{"spec": spec})
 		s.handleError(rw, fmt.Errorf("failed to add service: '%s'", err))
 		return
 	}

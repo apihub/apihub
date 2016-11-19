@@ -9,13 +9,14 @@ import (
 	"code.cloudfoundry.org/lager/lagertest"
 
 	"github.com/apihub/apihub"
+	"github.com/apihub/apihub/integration/test_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Service", func() {
 	var (
-		client      *RunningApihub
+		client      *test_helpers.RunningApihub
 		addressAPI  string
 		portGateway int
 		spec        apihub.ServiceSpec
@@ -37,14 +38,14 @@ var _ = Describe("Service", func() {
 			Host: fmt.Sprintf("my-service-%d.apihub.dev", GinkgoParallelNode()),
 			Backends: []apihub.BackendInfo{
 				apihub.BackendInfo{
-					Address: "http://" + testServer.Listener.Addr().String(),
+					Address: fmt.Sprintf("http://%s", testServer.Listener.Addr().String()),
 				},
 			},
 		}
 	})
 
 	JustBeforeEach(func() {
-		client = startApihub("unix", addressAPI, portGateway)
+		client = test_helpers.StartApihub(ApihubAPIBin, ApihubGatewayBin, "unix", addressAPI, portGateway, consulRunner.URL())
 	})
 
 	AfterEach(func() {
