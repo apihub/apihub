@@ -23,7 +23,7 @@ var _ = Describe("Subscriber", func() {
 		logger = lagertest.NewTestLogger("subscriber-test")
 
 		spec = apihub.ServiceSpec{
-			Handle: "my-handle",
+			Host: "my-host",
 			Backends: []apihub.BackendInfo{
 				apihub.BackendInfo{
 					Address: "http://server-a",
@@ -63,7 +63,7 @@ var _ = Describe("Subscriber", func() {
 			}()
 
 			anotherSpec := apihub.ServiceSpec{
-				Handle: "my-second-handle",
+				Host: "my-second-host",
 			}
 			Expect(pub.Publish(logger, apihub.SERVICES_PREFIX, anotherSpec)).To(Succeed())
 			Eventually(servicesCh).Should(Receive(Equal(anotherSpec)))
@@ -80,11 +80,11 @@ var _ = Describe("Subscriber", func() {
 			Expect(pub.Publish(logger, apihub.SERVICES_PREFIX, spec)).To(Succeed())
 			Eventually(servicesCh).Should(Receive(Equal(spec)))
 
-			spec.Handle = "another-handle"
+			spec.Host = "another-host"
 			Expect(pub.Publish(logger, apihub.SERVICES_PREFIX, spec)).To(Succeed())
 
 			service := <-servicesCh
-			Expect(service.Handle).To(Equal("another-handle"))
+			Expect(service.Host).To(Equal("another-host"))
 
 			Consistently(stop).ShouldNot(BeClosed())
 			close(stop)
@@ -113,7 +113,7 @@ var _ = Describe("Subscriber", func() {
 				consulRunner.WaitUntilReady()
 
 				spec := apihub.ServiceSpec{
-					Handle: "my-retry",
+					Host: "my-retry",
 				}
 				Expect(pub.Publish(logger, apihub.SERVICES_PREFIX, spec)).To(Succeed())
 				Eventually(servicesCh).Should(Receive(Equal(spec)))

@@ -25,7 +25,7 @@ var _ = Describe("Service", func() {
 		cli = client.New(fakeConnection)
 
 		spec = apihub.ServiceSpec{
-			Handle:   "my-handle",
+			Host:     "my-host.apihub.dev",
 			Disabled: true,
 			Timeout:  10,
 			Backends: []apihub.BackendInfo{
@@ -47,9 +47,9 @@ var _ = Describe("Service", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	Describe("Handle", func() {
-		It("returns service's handle", func() {
-			Expect(service.Handle()).To(Equal("my-handle"))
+	Describe("Host", func() {
+		It("returns service's host", func() {
+			Expect(service.Host()).To(Equal("my-host.apihub.dev"))
 		})
 	})
 
@@ -61,7 +61,7 @@ var _ = Describe("Service", func() {
 		It("returns service's info", func() {
 			info, err := service.Info()
 			Expect(err).NotTo(HaveOccurred())
-			Expect(info.Handle).To(Equal(spec.Handle))
+			Expect(info.Host).To(Equal(spec.Host))
 			Expect(info.Disabled).To(Equal(spec.Disabled))
 			Expect(info.Timeout).To(Equal(spec.Timeout))
 			Expect(info.Backends).To(ConsistOf(spec.Backends))
@@ -83,8 +83,8 @@ var _ = Describe("Service", func() {
 		It("enables the service to start receiving requests", func() {
 			Expect(service.Start()).To(Succeed())
 			Expect(fakeConnection.UpdateServiceCallCount()).To(Equal(1))
-			handle, serviceSpec := fakeConnection.UpdateServiceArgsForCall(0)
-			Expect(handle).To(Equal(spec.Handle))
+			host, serviceSpec := fakeConnection.UpdateServiceArgsForCall(0)
+			Expect(host).To(Equal(spec.Host))
 			Expect(spec.Disabled).To(BeTrue())
 			Expect(serviceSpec.Disabled).To(BeFalse())
 		})
@@ -108,8 +108,8 @@ var _ = Describe("Service", func() {
 		It("disables the service to stop receiving requests", func() {
 			Expect(service.Stop()).To(Succeed())
 			Expect(fakeConnection.UpdateServiceCallCount()).To(Equal(1))
-			handle, serviceSpec := fakeConnection.UpdateServiceArgsForCall(0)
-			Expect(handle).To(Equal(spec.Handle))
+			host, serviceSpec := fakeConnection.UpdateServiceArgsForCall(0)
+			Expect(host).To(Equal(spec.Host))
 			Expect(spec.Disabled).To(BeFalse())
 			Expect(serviceSpec.Disabled).To(BeTrue())
 		})
@@ -130,8 +130,8 @@ var _ = Describe("Service", func() {
 			duration := time.Second * 10
 			Expect(service.SetTimeout(duration)).To(Succeed())
 			Expect(fakeConnection.UpdateServiceCallCount()).To(Equal(1))
-			handle, serviceSpec := fakeConnection.UpdateServiceArgsForCall(0)
-			Expect(handle).To(Equal(spec.Handle))
+			host, serviceSpec := fakeConnection.UpdateServiceArgsForCall(0)
+			Expect(host).To(Equal(spec.Host))
 			Expect(serviceSpec.Timeout).To(Equal(duration))
 		})
 

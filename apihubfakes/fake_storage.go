@@ -24,12 +24,12 @@ type FakeStorage struct {
 	updateServiceReturns struct {
 		result1 error
 	}
-	FindServiceByHandleStub        func(string) (apihub.ServiceSpec, error)
-	findServiceByHandleMutex       sync.RWMutex
-	findServiceByHandleArgsForCall []struct {
+	FindServiceByHostStub        func(string) (apihub.ServiceSpec, error)
+	findServiceByHostMutex       sync.RWMutex
+	findServiceByHostArgsForCall []struct {
 		arg1 string
 	}
-	findServiceByHandleReturns struct {
+	findServiceByHostReturns struct {
 		result1 apihub.ServiceSpec
 		result2 error
 	}
@@ -118,35 +118,35 @@ func (fake *FakeStorage) UpdateServiceReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeStorage) FindServiceByHandle(arg1 string) (apihub.ServiceSpec, error) {
-	fake.findServiceByHandleMutex.Lock()
-	fake.findServiceByHandleArgsForCall = append(fake.findServiceByHandleArgsForCall, struct {
+func (fake *FakeStorage) FindServiceByHost(arg1 string) (apihub.ServiceSpec, error) {
+	fake.findServiceByHostMutex.Lock()
+	fake.findServiceByHostArgsForCall = append(fake.findServiceByHostArgsForCall, struct {
 		arg1 string
 	}{arg1})
-	fake.recordInvocation("FindServiceByHandle", []interface{}{arg1})
-	fake.findServiceByHandleMutex.Unlock()
-	if fake.FindServiceByHandleStub != nil {
-		return fake.FindServiceByHandleStub(arg1)
+	fake.recordInvocation("FindServiceByHost", []interface{}{arg1})
+	fake.findServiceByHostMutex.Unlock()
+	if fake.FindServiceByHostStub != nil {
+		return fake.FindServiceByHostStub(arg1)
 	} else {
-		return fake.findServiceByHandleReturns.result1, fake.findServiceByHandleReturns.result2
+		return fake.findServiceByHostReturns.result1, fake.findServiceByHostReturns.result2
 	}
 }
 
-func (fake *FakeStorage) FindServiceByHandleCallCount() int {
-	fake.findServiceByHandleMutex.RLock()
-	defer fake.findServiceByHandleMutex.RUnlock()
-	return len(fake.findServiceByHandleArgsForCall)
+func (fake *FakeStorage) FindServiceByHostCallCount() int {
+	fake.findServiceByHostMutex.RLock()
+	defer fake.findServiceByHostMutex.RUnlock()
+	return len(fake.findServiceByHostArgsForCall)
 }
 
-func (fake *FakeStorage) FindServiceByHandleArgsForCall(i int) string {
-	fake.findServiceByHandleMutex.RLock()
-	defer fake.findServiceByHandleMutex.RUnlock()
-	return fake.findServiceByHandleArgsForCall[i].arg1
+func (fake *FakeStorage) FindServiceByHostArgsForCall(i int) string {
+	fake.findServiceByHostMutex.RLock()
+	defer fake.findServiceByHostMutex.RUnlock()
+	return fake.findServiceByHostArgsForCall[i].arg1
 }
 
-func (fake *FakeStorage) FindServiceByHandleReturns(result1 apihub.ServiceSpec, result2 error) {
-	fake.FindServiceByHandleStub = nil
-	fake.findServiceByHandleReturns = struct {
+func (fake *FakeStorage) FindServiceByHostReturns(result1 apihub.ServiceSpec, result2 error) {
+	fake.FindServiceByHostStub = nil
+	fake.findServiceByHostReturns = struct {
 		result1 apihub.ServiceSpec
 		result2 error
 	}{result1, result2}
@@ -218,8 +218,8 @@ func (fake *FakeStorage) Invocations() map[string][][]interface{} {
 	defer fake.addServiceMutex.RUnlock()
 	fake.updateServiceMutex.RLock()
 	defer fake.updateServiceMutex.RUnlock()
-	fake.findServiceByHandleMutex.RLock()
-	defer fake.findServiceByHandleMutex.RUnlock()
+	fake.findServiceByHostMutex.RLock()
+	defer fake.findServiceByHostMutex.RUnlock()
 	fake.servicesMutex.RLock()
 	defer fake.servicesMutex.RUnlock()
 	fake.removeServiceMutex.RLock()

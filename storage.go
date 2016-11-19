@@ -6,7 +6,7 @@ package apihub
 type Storage interface {
 	AddService(ServiceSpec) error
 	UpdateService(ServiceSpec) error
-	FindServiceByHandle(string) (ServiceSpec, error)
+	FindServiceByHost(string) (ServiceSpec, error)
 	Services() ([]ServiceSpec, error)
 	RemoveService(string) error
 }

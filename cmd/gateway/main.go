@@ -59,13 +59,13 @@ func main() {
 				}
 
 				proxySpec := gateway.ReverseProxySpec{
-					Handle:   spec.Handle,
+					Host:   spec.Host,
 					Backends: backends,
 					Timeout:  time.Duration(spec.Timeout),
 				}
 				if spec.Disabled {
-					gw.RemoveService(logger, spec.Handle)
-					logger.Info("service-removed ", lager.Data{"handle": spec.Handle})
+					gw.RemoveService(logger, spec.Host)
+					logger.Info("service-removed ", lager.Data{"host": spec.Host})
 				} else {
 					gw.AddService(logger, proxySpec)
 					logger.Info("service-added", lager.Data{"spec": proxySpec})

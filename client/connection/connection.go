@@ -69,13 +69,13 @@ func (c *connection) Services() ([]apihub.ServiceSpec, error) {
 	return specs.Items, nil
 }
 
-func (c *connection) RemoveService(handle string) error {
-	params := map[string]string{"handle": handle}
+func (c *connection) RemoveService(host string) error {
+	params := map[string]string{"host": host}
 	return c.do(api.RemoveService, params, nil, &struct{}{})
 }
 
-func (c *connection) FindService(handle string) (apihub.ServiceSpec, error) {
-	params := map[string]string{"handle": handle}
+func (c *connection) FindService(host string) (apihub.ServiceSpec, error) {
+	params := map[string]string{"host": host}
 
 	var spec apihub.ServiceSpec
 	if err := c.do(api.FindService, params, nil, &spec); err != nil {
@@ -85,8 +85,8 @@ func (c *connection) FindService(handle string) (apihub.ServiceSpec, error) {
 	return spec, nil
 }
 
-func (c *connection) UpdateService(handle string, spec apihub.ServiceSpec) (apihub.ServiceSpec, error) {
-	params := map[string]string{"handle": handle}
+func (c *connection) UpdateService(host string, spec apihub.ServiceSpec) (apihub.ServiceSpec, error) {
+	params := map[string]string{"host": host}
 
 	var updatedSpec apihub.ServiceSpec
 	if err := c.do(api.UpdateService, params, spec, &updatedSpec); err != nil {
@@ -96,7 +96,7 @@ func (c *connection) UpdateService(handle string, spec apihub.ServiceSpec) (apih
 	return updatedSpec, nil
 }
 
-func (c *connection) handleError(body io.ReadCloser) error {
+func (c *connection) hostError(body io.ReadCloser) error {
 	var err apihub.ErrorResponse
 	if err := json.NewDecoder(body).Decode(&err); err != nil {
 		return errors.New("request failed")
@@ -116,7 +116,7 @@ func (c *connection) do(route api.Route, params Params, body interface{}, res in
 	}
 
 	if response.StatusCode < http.StatusOK || response.StatusCode > 299 {
-		return c.handleError(response.Body)
+		return c.hostError(response.Body)
 	}
 
 	if response.StatusCode != http.StatusNoContent && response.Body != nil {

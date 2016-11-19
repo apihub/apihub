@@ -23,10 +23,10 @@ type FakeClient struct {
 		result1 apihub.Service
 		result2 error
 	}
-	RemoveServiceStub        func(handle string) error
+	RemoveServiceStub        func(host string) error
 	removeServiceMutex       sync.RWMutex
 	removeServiceArgsForCall []struct {
-		handle string
+		host string
 	}
 	removeServiceReturns struct {
 		result1 error
@@ -38,10 +38,10 @@ type FakeClient struct {
 		result1 []apihub.Service
 		result2 error
 	}
-	FindServiceStub        func(handle string) (apihub.Service, error)
+	FindServiceStub        func(host string) (apihub.Service, error)
 	findServiceMutex       sync.RWMutex
 	findServiceArgsForCall []struct {
-		handle string
+		host string
 	}
 	findServiceReturns struct {
 		result1 apihub.Service
@@ -120,15 +120,15 @@ func (fake *FakeClient) AddServiceReturns(result1 apihub.Service, result2 error)
 	}{result1, result2}
 }
 
-func (fake *FakeClient) RemoveService(handle string) error {
+func (fake *FakeClient) RemoveService(host string) error {
 	fake.removeServiceMutex.Lock()
 	fake.removeServiceArgsForCall = append(fake.removeServiceArgsForCall, struct {
-		handle string
-	}{handle})
-	fake.recordInvocation("RemoveService", []interface{}{handle})
+		host string
+	}{host})
+	fake.recordInvocation("RemoveService", []interface{}{host})
 	fake.removeServiceMutex.Unlock()
 	if fake.RemoveServiceStub != nil {
-		return fake.RemoveServiceStub(handle)
+		return fake.RemoveServiceStub(host)
 	} else {
 		return fake.removeServiceReturns.result1
 	}
@@ -143,7 +143,7 @@ func (fake *FakeClient) RemoveServiceCallCount() int {
 func (fake *FakeClient) RemoveServiceArgsForCall(i int) string {
 	fake.removeServiceMutex.RLock()
 	defer fake.removeServiceMutex.RUnlock()
-	return fake.removeServiceArgsForCall[i].handle
+	return fake.removeServiceArgsForCall[i].host
 }
 
 func (fake *FakeClient) RemoveServiceReturns(result1 error) {
@@ -179,15 +179,15 @@ func (fake *FakeClient) ServicesReturns(result1 []apihub.Service, result2 error)
 	}{result1, result2}
 }
 
-func (fake *FakeClient) FindService(handle string) (apihub.Service, error) {
+func (fake *FakeClient) FindService(host string) (apihub.Service, error) {
 	fake.findServiceMutex.Lock()
 	fake.findServiceArgsForCall = append(fake.findServiceArgsForCall, struct {
-		handle string
-	}{handle})
-	fake.recordInvocation("FindService", []interface{}{handle})
+		host string
+	}{host})
+	fake.recordInvocation("FindService", []interface{}{host})
 	fake.findServiceMutex.Unlock()
 	if fake.FindServiceStub != nil {
-		return fake.FindServiceStub(handle)
+		return fake.FindServiceStub(host)
 	} else {
 		return fake.findServiceReturns.result1, fake.findServiceReturns.result2
 	}
@@ -202,7 +202,7 @@ func (fake *FakeClient) FindServiceCallCount() int {
 func (fake *FakeClient) FindServiceArgsForCall(i int) string {
 	fake.findServiceMutex.RLock()
 	defer fake.findServiceMutex.RUnlock()
-	return fake.findServiceArgsForCall[i].handle
+	return fake.findServiceArgsForCall[i].host
 }
 
 func (fake *FakeClient) FindServiceReturns(result1 apihub.Service, result2 error) {

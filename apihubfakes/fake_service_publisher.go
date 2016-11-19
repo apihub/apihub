@@ -19,12 +19,12 @@ type FakeServicePublisher struct {
 	publishReturns struct {
 		result1 error
 	}
-	UnpublishStub        func(logger lager.Logger, prefix string, handle string) error
+	UnpublishStub        func(logger lager.Logger, prefix string, host string) error
 	unpublishMutex       sync.RWMutex
 	unpublishArgsForCall []struct {
 		logger lager.Logger
 		prefix string
-		handle string
+		host   string
 	}
 	unpublishReturns struct {
 		result1 error
@@ -68,17 +68,17 @@ func (fake *FakeServicePublisher) PublishReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeServicePublisher) Unpublish(logger lager.Logger, prefix string, handle string) error {
+func (fake *FakeServicePublisher) Unpublish(logger lager.Logger, prefix string, host string) error {
 	fake.unpublishMutex.Lock()
 	fake.unpublishArgsForCall = append(fake.unpublishArgsForCall, struct {
 		logger lager.Logger
 		prefix string
-		handle string
-	}{logger, prefix, handle})
-	fake.recordInvocation("Unpublish", []interface{}{logger, prefix, handle})
+		host   string
+	}{logger, prefix, host})
+	fake.recordInvocation("Unpublish", []interface{}{logger, prefix, host})
 	fake.unpublishMutex.Unlock()
 	if fake.UnpublishStub != nil {
-		return fake.UnpublishStub(logger, prefix, handle)
+		return fake.UnpublishStub(logger, prefix, host)
 	} else {
 		return fake.unpublishReturns.result1
 	}
@@ -93,7 +93,7 @@ func (fake *FakeServicePublisher) UnpublishCallCount() int {
 func (fake *FakeServicePublisher) UnpublishArgsForCall(i int) (lager.Logger, string, string) {
 	fake.unpublishMutex.RLock()
 	defer fake.unpublishMutex.RUnlock()
-	return fake.unpublishArgsForCall[i].logger, fake.unpublishArgsForCall[i].prefix, fake.unpublishArgsForCall[i].handle
+	return fake.unpublishArgsForCall[i].logger, fake.unpublishArgsForCall[i].prefix, fake.unpublishArgsForCall[i].host
 }
 
 func (fake *FakeServicePublisher) UnpublishReturns(result1 error) {

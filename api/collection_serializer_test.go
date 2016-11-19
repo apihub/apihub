@@ -15,7 +15,7 @@ var _ = Describe("CollectionSerializer", func() {
 
 	BeforeEach(func() {
 		specs = []*apihub.ServiceSpec{
-			&apihub.ServiceSpec{Handle: "my-handle"},
+			&apihub.ServiceSpec{Host: "my-host.apihub.dev"},
 		}
 	})
 

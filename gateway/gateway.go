@@ -3,7 +3,6 @@ package gateway
 import (
 	"fmt"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -63,34 +62,32 @@ func (gw *Gateway) AddService(logger lager.Logger, spec ReverseProxySpec) error 
 	}
 
 	gw.Lock()
-	gw.Services[spec.Handle] = reverseProxy
+	gw.Services[spec.Host] = reverseProxy
 	gw.Unlock()
 
 	log.Info("service-added", lager.Data{"spec": spec})
 	return nil
 }
 
-func (gw *Gateway) RemoveService(logger lager.Logger, handle string) error {
+func (gw *Gateway) RemoveService(logger lager.Logger, host string) error {
 	log := logger.Session("remove-service")
-	log.Debug("start", lager.Data{"handle": handle})
+	log.Debug("start", lager.Data{"host": host})
 	defer log.Debug("end")
 
-	if _, ok := gw.Services[handle]; !ok {
-		return fmt.Errorf("service not found: '%s'", handle)
+	if _, ok := gw.Services[host]; !ok {
+		return fmt.Errorf("service not found: '%s'", host)
 	}
 
 	gw.Lock()
-	delete(gw.Services, handle)
+	delete(gw.Services, host)
 	gw.Unlock()
 	log.Info("service-removed")
 	return nil
 }
 
 func (gw *Gateway) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	handle := extractSubdomainFromRequest(req)
 	gw.RLock()
-
-	if reverseProxy, ok := gw.Services[handle]; ok {
+	if reverseProxy, ok := gw.Services[req.Host]; ok {
 		gw.RUnlock()
 		reverseProxy.ServeHTTP(rw, req)
 		return
@@ -99,20 +96,6 @@ func (gw *Gateway) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	pageNotFound(rw)
-}
-
-func extractSubdomainFromRequest(r *http.Request) string {
-	host := strings.TrimSpace(r.Host)
-	if i := strings.Index(host, ":"); i >= 0 {
-		host = host[:i]
-	}
-
-	var subdomain string
-	host_parts := strings.Split(host, ".")
-	if len(host_parts) > 2 {
-		subdomain = host_parts[0]
-	}
-	return subdomain
 }
 
 func pageNotFound(rw http.ResponseWriter) {

@@ -29,11 +29,11 @@ var _ = Describe("ReverseProxyCreator", func() {
 		}))
 
 		spec = gateway.ReverseProxySpec{
-			Handle:   "my-handle",
+			Host:     "my-host",
 			Backends: []string{fmt.Sprintf("http://%s", backendServer.Listener.Addr().String())},
 		}
 
-		logger = lagertest.NewTestLogger("handler-provider")
+		logger = lagertest.NewTestLogger("hostr-provider")
 		creator = gateway.NewReverseProxyCreator()
 	})
 
@@ -46,7 +46,7 @@ var _ = Describe("ReverseProxyCreator", func() {
 			reverseProxy, err := creator.Create(logger, spec)
 			Expect(err).NotTo(HaveOccurred())
 
-			req, err := http.NewRequest(http.MethodGet, "http://my-handle.apihub.dev?foo=bar&bar=foo", nil)
+			req, err := http.NewRequest(http.MethodGet, "http://my-host.apihub.dev?foo=bar&bar=foo", nil)
 			Expect(err).NotTo(HaveOccurred())
 
 			rw := httptest.NewRecorder()
@@ -61,7 +61,7 @@ var _ = Describe("ReverseProxyCreator", func() {
 
 			BeforeEach(func() {
 				badSpec = gateway.ReverseProxySpec{
-					Handle:   "my-handle",
+					Host:     "my-host",
 					Backends: []string{},
 				}
 			})

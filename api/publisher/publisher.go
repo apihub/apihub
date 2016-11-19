@@ -32,21 +32,21 @@ func (p *Publisher) Publish(logger lager.Logger, prefix string, serviceSpec apih
 		return err
 	}
 
-	kvp := &api.KVPair{Key: fmt.Sprintf("%s%s", apihub.SERVICES_PREFIX, serviceSpec.Handle), Value: spec}
+	kvp := &api.KVPair{Key: fmt.Sprintf("%s%s", apihub.SERVICES_PREFIX, serviceSpec.Host), Value: spec}
 	_, err = p.client.KV().Put(kvp, nil)
 	log.Info("published")
 	return err
 }
 
-func (p *Publisher) Unpublish(logger lager.Logger, prefix string, handle string) error {
+func (p *Publisher) Unpublish(logger lager.Logger, prefix string, host string) error {
 	log := logger.Session("publisher-unpublish")
 	log.Debug("start")
 	defer log.Debug("end")
 
-	log.Info("unpublish", lager.Data{"handle": handle})
+	log.Info("unpublish", lager.Data{"host": host})
 
 	spec := apihub.ServiceSpec{
-		Handle:   handle,
+		Host:   host,
 		Disabled: true,
 	}
 	serviceSpec, err := json.Marshal(spec)
@@ -54,7 +54,7 @@ func (p *Publisher) Unpublish(logger lager.Logger, prefix string, handle string)
 		log.Error("failed-to-marshal-service-data", err)
 		return err
 	}
-	key := fmt.Sprintf("%s%s", apihub.SERVICES_PREFIX, spec.Handle)
+	key := fmt.Sprintf("%s%s", apihub.SERVICES_PREFIX, spec.Host)
 	kvp := &api.KVPair{Key: key, Value: serviceSpec}
 	_, err = p.client.KV().Put(kvp, nil)
 	if err != nil {

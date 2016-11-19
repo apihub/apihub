@@ -16,7 +16,7 @@ var _ = Describe("Memory", func() {
 
 	BeforeEach(func() {
 		store = storage.New()
-		spec = apihub.ServiceSpec{Handle: "my-handle"}
+		spec = apihub.ServiceSpec{Host: "my-host"}
 	})
 
 	Describe("AddService", func() {
@@ -24,13 +24,13 @@ var _ = Describe("Memory", func() {
 			Expect(store.AddService(spec)).To(Succeed())
 		})
 
-		Context("when the service already exists for given handle", func() {
+		Context("when the service already exists for given host", func() {
 			BeforeEach(func() {
 				Expect(store.AddService(spec)).To(Succeed())
 			})
 
 			It("returns an error", func() {
-				Expect(store.AddService(spec)).To(MatchError("handle already in use"))
+				Expect(store.AddService(spec)).To(MatchError("host already in use"))
 			})
 		})
 	})
@@ -48,20 +48,20 @@ var _ = Describe("Memory", func() {
 		})
 	})
 
-	Describe("FindServiceByHandle", func() {
+	Describe("FindServiceByHost", func() {
 		BeforeEach(func() {
 			Expect(store.AddService(spec)).To(Succeed())
 		})
 
 		It("finds a service", func() {
-			found, err := store.FindServiceByHandle("my-handle")
+			found, err := store.FindServiceByHost("my-host")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(found).To(Equal(spec))
 		})
 
 		Context("when service is not found", func() {
 			It("returns an error", func() {
-				_, err := store.FindServiceByHandle("invalid-handle")
+				_, err := store.FindServiceByHost("invalid-host")
 				Expect(err).To(MatchError(ContainSubstring("service not found")))
 			})
 		})
@@ -84,13 +84,13 @@ var _ = Describe("Memory", func() {
 			Expect(store.AddService(spec)).To(Succeed())
 		})
 
-		It("removes service by handle", func() {
-			Expect(store.RemoveService(spec.Handle)).NotTo(HaveOccurred())
+		It("removes service by host", func() {
+			Expect(store.RemoveService(spec.Host)).NotTo(HaveOccurred())
 		})
 
 		Context("when service is not found", func() {
 			It("returns an error", func() {
-				Expect(store.RemoveService("invalid-handle")).To(MatchError(ContainSubstring("service not found")))
+				Expect(store.RemoveService("invalid-host")).To(MatchError(ContainSubstring("service not found")))
 			})
 		})
 	})

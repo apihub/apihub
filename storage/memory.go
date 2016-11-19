@@ -23,11 +23,11 @@ func (m *Memory) AddService(s apihub.ServiceSpec) error {
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
 
-	if _, ok := m.services[s.Handle]; ok {
-		return errors.New("handle already in use")
+	if _, ok := m.services[s.Host]; ok {
+		return errors.New("host already in use")
 	}
 
-	m.services[s.Handle] = s
+	m.services[s.Host] = s
 	return nil
 }
 
@@ -35,19 +35,19 @@ func (m *Memory) UpdateService(s apihub.ServiceSpec) error {
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
 
-	if _, ok := m.services[s.Handle]; !ok {
+	if _, ok := m.services[s.Host]; !ok {
 		return errors.New("service not found")
 	}
 
-	m.services[s.Handle] = s
+	m.services[s.Host] = s
 	return nil
 }
 
-func (m *Memory) FindServiceByHandle(handle string) (apihub.ServiceSpec, error) {
+func (m *Memory) FindServiceByHost(host string) (apihub.ServiceSpec, error) {
 	m.mtx.RLock()
 	defer m.mtx.RUnlock()
 
-	if service, ok := m.services[handle]; !ok {
+	if service, ok := m.services[host]; !ok {
 		return apihub.ServiceSpec{}, errors.New("service not found")
 	} else {
 		return service, nil
@@ -66,14 +66,14 @@ func (m *Memory) Services() ([]apihub.ServiceSpec, error) {
 	return services, nil
 }
 
-func (m *Memory) RemoveService(handle string) error {
+func (m *Memory) RemoveService(host string) error {
 	m.mtx.Lock()
 	defer m.mtx.Unlock()
 
-	if _, ok := m.services[handle]; !ok {
+	if _, ok := m.services[host]; !ok {
 		return errors.New("service not found")
 	}
 
-	delete(m.services, handle)
+	delete(m.services, host)
 	return nil
 }

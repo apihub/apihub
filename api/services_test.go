@@ -58,11 +58,11 @@ var _ = Describe("Services", func() {
 				AcceptableCode: http.StatusCreated,
 				Method:         http.MethodPost,
 				Path:           "/services",
-				Body:           `{"handle":"my-handle", "backends":[{"address":"http://server-a"}]}`,
+				Body:           `{"host":"my-host.apihub.dev", "backends":[{"address":"http://server-a"}]}`,
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(string(body)).To(ContainSubstring(`{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"address":"http://server-a","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}`))
+			Expect(string(body)).To(ContainSubstring(`{"host":"my-host.apihub.dev","disabled":false,"timeout":0,"backends":[{"address":"http://server-a","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}`))
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 			Expect(code).To(Equal(http.StatusCreated))
 			Expect(fakeStorage.AddServiceCallCount()).To(Equal(1))
@@ -70,7 +70,7 @@ var _ = Describe("Services", func() {
 
 		It("publishes the service", func() {
 			spec := apihub.ServiceSpec{
-				Handle:   "my-handle",
+				Host:     "my-host.apihub.dev",
 				Disabled: false,
 				Backends: []apihub.BackendInfo{
 					apihub.BackendInfo{
@@ -97,7 +97,7 @@ var _ = Describe("Services", func() {
 		Context("when the service spec is disabled", func() {
 			It("does not publish the service", func() {
 				spec := apihub.ServiceSpec{
-					Handle:   "my-handle",
+					Host:     "my-host.apihub.dev",
 					Disabled: true,
 					Backends: []apihub.BackendInfo{
 						apihub.BackendInfo{
@@ -129,7 +129,7 @@ var _ = Describe("Services", func() {
 					AcceptableCode: http.StatusBadRequest,
 					Method:         http.MethodPost,
 					Path:           "/services",
-					Body:           `{"handle":"my-handle", "backends":[{"address":"http://server-a"}]}`,
+					Body:           `{"host":"my-host.apihub.dev", "backends":[{"address":"http://server-a"}]}`,
 				})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(string(body)).To(ContainSubstring(`{"error":"bad_request","error_description":"failed to publish service: 'failed to publish service'"}`))
@@ -140,12 +140,12 @@ var _ = Describe("Services", func() {
 					AcceptableCode: http.StatusBadRequest,
 					Method:         http.MethodPost,
 					Path:           "/services",
-					Body:           `{"handle":"my-handle", "backends":[{"address":"http://server-a"}]}`,
+					Body:           `{"host":"my-host.apihub.dev", "backends":[{"address":"http://server-a"}]}`,
 				})
 				Expect(err).NotTo(HaveOccurred())
 				Expect(fakeStorage.RemoveServiceCallCount()).To(Equal(1))
-				handle := fakeStorage.RemoveServiceArgsForCall(0)
-				Expect(handle).To(Equal("my-handle"))
+				host := fakeStorage.RemoveServiceArgsForCall(0)
+				Expect(host).To(Equal("my-host.apihub.dev"))
 			})
 		})
 
@@ -166,7 +166,7 @@ var _ = Describe("Services", func() {
 			})
 
 			It("returns an error when missing required fields", func() {
-				bdy := `{"missing":"handle"}`
+				bdy := `{"missing":"host"}`
 				headers, code, body, err := httpClient.MakeRequest(requests.Args{
 					AcceptableCode: http.StatusBadRequest,
 					Method:         http.MethodPost,
@@ -175,7 +175,7 @@ var _ = Describe("Services", func() {
 				})
 				Expect(err).NotTo(HaveOccurred())
 
-				Expect(string(body)).To(ContainSubstring(`{"error":"bad_request","error_description":"Handle and Backend cannot be empty."}`))
+				Expect(string(body)).To(ContainSubstring(`{"error":"bad_request","error_description":"Host and Backend cannot be empty."}`))
 				Expect(fakeStorage.AddServiceCallCount()).To(Equal(0))
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
@@ -184,7 +184,7 @@ var _ = Describe("Services", func() {
 
 		Context("when storing a service fails", func() {
 			BeforeEach(func() {
-				fakeStorage.AddServiceReturns(errors.New("handle already in use"))
+				fakeStorage.AddServiceReturns(errors.New("host already in use"))
 			})
 
 			It("returns an error", func() {
@@ -192,13 +192,13 @@ var _ = Describe("Services", func() {
 					AcceptableCode: http.StatusBadRequest,
 					Method:         http.MethodPost,
 					Path:           "/services",
-					Body:           `{"handle":"my-handle", "backends":[{ "address":"http://server-a"}]}`,
+					Body:           `{"host":"my-host.apihub.dev", "backends":[{ "address":"http://server-a"}]}`,
 				})
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 				Expect(code).To(Equal(http.StatusBadRequest))
-				Expect(string(body)).To(ContainSubstring(`{"error":"bad_request","error_description":"failed to add service: 'handle already in use'"}`))
+				Expect(string(body)).To(ContainSubstring(`{"error":"bad_request","error_description":"failed to add service: 'host already in use'"}`))
 			})
 		})
 	})
@@ -207,7 +207,7 @@ var _ = Describe("Services", func() {
 		BeforeEach(func() {
 			fakeStorage.ServicesReturns([]apihub.ServiceSpec{
 				apihub.ServiceSpec{
-					Handle: "my-handle",
+					Host: "my-host.apihub.dev",
 					Backends: []apihub.BackendInfo{
 						apihub.BackendInfo{
 							Address: "http://server-a",
@@ -225,7 +225,7 @@ var _ = Describe("Services", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(string(body)).To(ContainSubstring(`{"items":[{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"address":"http://server-a","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}],"item_count":1}`))
+			Expect(string(body)).To(ContainSubstring(`{"items":[{"host":"my-host.apihub.dev","disabled":false,"timeout":0,"backends":[{"address":"http://server-a","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}],"item_count":1}`))
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 			Expect(code).To(Equal(http.StatusOK))
 			Expect(fakeStorage.ServicesCallCount()).To(Equal(1))
@@ -253,14 +253,14 @@ var _ = Describe("Services", func() {
 
 	Describe("removeService", func() {
 		BeforeEach(func() {
-			fakeStorage.FindServiceByHandleReturns(apihub.ServiceSpec{Handle: "my-handle"}, nil)
+			fakeStorage.FindServiceByHostReturns(apihub.ServiceSpec{Host: "my-host.apihub.dev"}, nil)
 		})
 
-		It("removes a service by handle", func() {
+		It("removes a service by host", func() {
 			headers, code, body, err := httpClient.MakeRequest(requests.Args{
 				AcceptableCode: http.StatusNoContent,
 				Method:         http.MethodDelete,
-				Path:           "/services/my-handle",
+				Path:           "/services/my-host.apihub.dev",
 			})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -274,14 +274,14 @@ var _ = Describe("Services", func() {
 			_, _, _, err := httpClient.MakeRequest(requests.Args{
 				AcceptableCode: http.StatusNoContent,
 				Method:         http.MethodDelete,
-				Path:           "/services/my-handle",
+				Path:           "/services/my-host.apihub.dev",
 			})
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(fakeServicePublisher.UnpublishCallCount()).To(Equal(1))
-			_, prefix, handle := fakeServicePublisher.UnpublishArgsForCall(0)
+			_, prefix, host := fakeServicePublisher.UnpublishArgsForCall(0)
 			Expect(prefix).To(Equal(apihub.SERVICES_PREFIX))
-			Expect(handle).To(Equal("my-handle"))
+			Expect(host).To(Equal("my-host.apihub.dev"))
 		})
 
 		Context("when removing a service fails", func() {
@@ -293,7 +293,7 @@ var _ = Describe("Services", func() {
 				headers, code, body, err := httpClient.MakeRequest(requests.Args{
 					AcceptableCode: http.StatusBadRequest,
 					Method:         http.MethodDelete,
-					Path:           "/services/my-bad-handle",
+					Path:           "/services/my-bad-host",
 				})
 				Expect(err).NotTo(HaveOccurred())
 
@@ -306,8 +306,8 @@ var _ = Describe("Services", func() {
 
 	Describe("findService", func() {
 		BeforeEach(func() {
-			fakeStorage.FindServiceByHandleReturns(apihub.ServiceSpec{
-				Handle: "my-handle",
+			fakeStorage.FindServiceByHostReturns(apihub.ServiceSpec{
+				Host: "my-host.apihub.dev",
 				Backends: []apihub.BackendInfo{
 					apihub.BackendInfo{
 						Address: "http://server-a",
@@ -320,26 +320,26 @@ var _ = Describe("Services", func() {
 			headers, code, body, err := httpClient.MakeRequest(requests.Args{
 				AcceptableCode: http.StatusOK,
 				Method:         http.MethodGet,
-				Path:           "/services/my-handle",
+				Path:           "/services/my-host.apihub.dev",
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(string(body)).To(ContainSubstring(`{"handle":"my-handle","disabled":false,"timeout":0,"backends":[{"address":"http://server-a","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}`))
+			Expect(string(body)).To(ContainSubstring(`{"host":"my-host.apihub.dev","disabled":false,"timeout":0,"backends":[{"address":"http://server-a","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}`))
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 			Expect(code).To(Equal(http.StatusOK))
-			Expect(fakeStorage.FindServiceByHandleCallCount()).To(Equal(1))
+			Expect(fakeStorage.FindServiceByHostCallCount()).To(Equal(1))
 		})
 
 		Context("when finding a service fails", func() {
 			BeforeEach(func() {
-				fakeStorage.FindServiceByHandleReturns(apihub.ServiceSpec{}, errors.New("failed to find service."))
+				fakeStorage.FindServiceByHostReturns(apihub.ServiceSpec{}, errors.New("failed to find service."))
 			})
 
 			It("returns an error", func() {
 				headers, code, body, err := httpClient.MakeRequest(requests.Args{
 					AcceptableCode: http.StatusBadRequest,
 					Method:         http.MethodGet,
-					Path:           "/services/invalid-handle",
+					Path:           "/services/invalid-host",
 				})
 				Expect(err).NotTo(HaveOccurred())
 
@@ -352,8 +352,8 @@ var _ = Describe("Services", func() {
 
 	Describe("updateService", func() {
 		BeforeEach(func() {
-			fakeStorage.FindServiceByHandleReturns(apihub.ServiceSpec{
-				Handle:   "my-handle",
+			fakeStorage.FindServiceByHostReturns(apihub.ServiceSpec{
+				Host:     "my-host.apihub.dev",
 				Disabled: true,
 				Backends: []apihub.BackendInfo{
 					apihub.BackendInfo{
@@ -367,20 +367,20 @@ var _ = Describe("Services", func() {
 			headers, code, body, err := httpClient.MakeRequest(requests.Args{
 				AcceptableCode: http.StatusOK,
 				Method:         http.MethodPatch,
-				Path:           "/services/my-handle",
-				Body:           `{"handle":"my-handle", "backends":[{"address":"http://another-server-b"}]}`,
+				Path:           "/services/my-host.apihub.dev",
+				Body:           `{"host":"my-host.apihub.dev", "backends":[{"address":"http://another-server-b"}]}`,
 			})
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(string(body)).To(ContainSubstring(`{"handle":"my-handle","disabled":true,"timeout":0,"backends":[{"address":"http://another-server-b","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}`))
+			Expect(string(body)).To(ContainSubstring(`{"host":"my-host.apihub.dev","disabled":true,"timeout":0,"backends":[{"address":"http://another-server-b","disabled":false,"heart_beat_address":"","heart_beat_timeout":0}]}`))
 			Expect(headers["Content-Type"]).To(ContainElement("application/json"))
 			Expect(code).To(Equal(http.StatusOK))
-			Expect(fakeStorage.FindServiceByHandleCallCount()).To(Equal(1))
+			Expect(fakeStorage.FindServiceByHostCallCount()).To(Equal(1))
 			Expect(fakeStorage.UpdateServiceCallCount()).To(Equal(1))
 			Expect(fakeServicePublisher.UnpublishCallCount()).To(Equal(1))
 			_, prefix, s := fakeServicePublisher.UnpublishArgsForCall(0)
 			Expect(prefix).To(Equal(apihub.SERVICES_PREFIX))
-			Expect(s).To(Equal("my-handle"))
+			Expect(s).To(Equal("my-host.apihub.dev"))
 		})
 
 		Context("when changing the service to be enabled", func() {
@@ -388,7 +388,7 @@ var _ = Describe("Services", func() {
 
 			BeforeEach(func() {
 				spec = apihub.ServiceSpec{
-					Handle:   "my-handle",
+					Host:     "my-host.apihub.dev",
 					Disabled: false,
 					Backends: []apihub.BackendInfo{
 						apihub.BackendInfo{
@@ -397,15 +397,15 @@ var _ = Describe("Services", func() {
 					},
 				}
 
-				fakeStorage.FindServiceByHandleReturns(spec, nil)
+				fakeStorage.FindServiceByHostReturns(spec, nil)
 			})
 
 			It("publishes the service", func() {
 				_, _, _, err := httpClient.MakeRequest(requests.Args{
 					AcceptableCode: http.StatusOK,
 					Method:         http.MethodPatch,
-					Path:           "/services/my-handle",
-					Body:           `{"handle":"my-handle", "backends":[{"address":"http://another-server-b"}]}`,
+					Path:           "/services/my-host.apihub.dev",
+					Body:           `{"host":"my-host.apihub.dev", "backends":[{"address":"http://another-server-b"}]}`,
 				})
 				Expect(err).NotTo(HaveOccurred())
 
@@ -418,14 +418,14 @@ var _ = Describe("Services", func() {
 
 		Context("when finding a service fails", func() {
 			BeforeEach(func() {
-				fakeStorage.FindServiceByHandleReturns(apihub.ServiceSpec{}, errors.New("failed to find service."))
+				fakeStorage.FindServiceByHostReturns(apihub.ServiceSpec{}, errors.New("failed to find service."))
 			})
 
 			It("returns an error", func() {
 				headers, code, body, err := httpClient.MakeRequest(requests.Args{
 					AcceptableCode: http.StatusBadRequest,
 					Method:         http.MethodPatch,
-					Path:           "/services/my-handle",
+					Path:           "/services/my-host.apihub.dev",
 					Body:           "{}",
 				})
 				Expect(err).NotTo(HaveOccurred())
@@ -441,7 +441,7 @@ var _ = Describe("Services", func() {
 				headers, code, body, err := httpClient.MakeRequest(requests.Args{
 					AcceptableCode: http.StatusBadRequest,
 					Method:         http.MethodPatch,
-					Path:           "/services/my-handle",
+					Path:           "/services/my-host.apihub.dev",
 					Body:           "not-a-json",
 				})
 				Expect(err).NotTo(HaveOccurred())
@@ -462,7 +462,7 @@ var _ = Describe("Services", func() {
 				headers, code, body, err := httpClient.MakeRequest(requests.Args{
 					AcceptableCode: http.StatusBadRequest,
 					Method:         http.MethodPatch,
-					Path:           "/services/my-handle",
+					Path:           "/services/my-host.apihub.dev",
 					Body:           "{}",
 				})
 				Expect(err).NotTo(HaveOccurred())

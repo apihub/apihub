@@ -100,7 +100,7 @@ var _ = Describe("Connection", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodPost, api.Routes[api.AddService].Path),
-						ghttp.RespondWith(201, `{"handle":"my-handle"}`),
+						ghttp.RespondWith(201, `{"host":"my-host"}`),
 					),
 				)
 			})
@@ -108,12 +108,12 @@ var _ = Describe("Connection", func() {
 			It("adds a new service", func() {
 				spec, err := conn.AddService(
 					apihub.ServiceSpec{
-						Handle: "my-handle",
+						Host: "my-host",
 					},
 				)
 
 				Expect(err).NotTo(HaveOccurred())
-				Expect(spec.Handle).To(Equal("my-handle"))
+				Expect(spec.Host).To(Equal("my-host"))
 			})
 		})
 
@@ -140,7 +140,7 @@ var _ = Describe("Connection", func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest(http.MethodGet, api.Routes[api.ListServices].Path),
-						ghttp.RespondWith(200, `{"items":[{"handle":"my-handle"}, {"handle":"another-handle"}],"item_count":1}`),
+						ghttp.RespondWith(200, `{"items":[{"host":"my-host"}, {"host":"another-host"}],"item_count":1}`),
 					),
 				)
 			})
@@ -151,8 +151,8 @@ var _ = Describe("Connection", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(len(specs)).To(Equal(2))
 				Expect(specs).To(ConsistOf([]apihub.ServiceSpec{
-					apihub.ServiceSpec{Handle: "my-handle"},
-					apihub.ServiceSpec{Handle: "another-handle"},
+					apihub.ServiceSpec{Host: "my-host"},
+					apihub.ServiceSpec{Host: "another-host"},
 				}))
 			})
 		})
@@ -179,14 +179,14 @@ var _ = Describe("Connection", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest(http.MethodDelete, "/services/my-handle"),
+						ghttp.VerifyRequest(http.MethodDelete, "/services/my-host"),
 						ghttp.RespondWith(204, ""),
 					),
 				)
 			})
 
 			It("removes an existing service", func() {
-				err := conn.RemoveService("my-handle")
+				err := conn.RemoveService("my-host")
 				Expect(err).NotTo(HaveOccurred())
 			})
 		})
@@ -195,14 +195,14 @@ var _ = Describe("Connection", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest(http.MethodDelete, "/services/my-handle"),
+						ghttp.VerifyRequest(http.MethodDelete, "/services/my-host"),
 						ghttp.RespondWith(400, "{}"),
 					),
 				)
 			})
 
 			It("returns an error", func() {
-				err := conn.RemoveService("my-handle")
+				err := conn.RemoveService("my-host")
 				Expect(err).To(HaveOccurred())
 			})
 		})
@@ -213,17 +213,17 @@ var _ = Describe("Connection", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest(http.MethodGet, "/services/my-handle"),
-						ghttp.RespondWith(200, `{"handle":"my-handle"}`),
+						ghttp.VerifyRequest(http.MethodGet, "/services/my-host"),
+						ghttp.RespondWith(200, `{"host":"my-host"}`),
 					),
 				)
 			})
 
 			It("finds a service", func() {
-				spec, err := conn.FindService("my-handle")
+				spec, err := conn.FindService("my-host")
 
 				Expect(err).NotTo(HaveOccurred())
-				Expect(spec.Handle).To(Equal("my-handle"))
+				Expect(spec.Host).To(Equal("my-host"))
 			})
 		})
 
@@ -231,14 +231,14 @@ var _ = Describe("Connection", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest(http.MethodGet, "/services/invalid-handle"),
+						ghttp.VerifyRequest(http.MethodGet, "/services/invalid-host"),
 						ghttp.RespondWith(400, "{}"),
 					),
 				)
 			})
 
 			It("returns an error", func() {
-				_, err := conn.FindService("invalid-handle")
+				_, err := conn.FindService("invalid-host")
 				Expect(err).To(HaveOccurred())
 			})
 		})
@@ -249,22 +249,22 @@ var _ = Describe("Connection", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest(http.MethodPatch, "/services/my-handle"),
-						ghttp.RespondWith(200, `{"handle":"my-handle","disabled":true}`),
+						ghttp.VerifyRequest(http.MethodPatch, "/services/my-host"),
+						ghttp.RespondWith(200, `{"host":"my-host","disabled":true}`),
 					),
 				)
 			})
 
 			It("updates the service", func() {
 				spec := apihub.ServiceSpec{
-					Handle:   "my-handle",
+					Host:     "my-host",
 					Disabled: true,
 				}
 
-				spec, err := conn.UpdateService("my-handle", spec)
+				spec, err := conn.UpdateService("my-host", spec)
 
 				Expect(err).NotTo(HaveOccurred())
-				Expect(spec.Handle).To(Equal("my-handle"))
+				Expect(spec.Host).To(Equal("my-host"))
 			})
 		})
 
@@ -272,14 +272,14 @@ var _ = Describe("Connection", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest(http.MethodPatch, "/services/invalid-handle"),
+						ghttp.VerifyRequest(http.MethodPatch, "/services/invalid-host"),
 						ghttp.RespondWith(400, "{}"),
 					),
 				)
 			})
 
 			It("returns an error", func() {
-				_, err := conn.UpdateService("invalid-handle", apihub.ServiceSpec{})
+				_, err := conn.UpdateService("invalid-host", apihub.ServiceSpec{})
 				Expect(err).To(HaveOccurred())
 			})
 		})

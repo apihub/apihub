@@ -9,10 +9,10 @@ import (
 )
 
 type FakeService struct {
-	HandleStub        func() string
-	handleMutex       sync.RWMutex
-	handleArgsForCall []struct{}
-	handleReturns     struct {
+	HostStub        func() string
+	hostMutex       sync.RWMutex
+	hostArgsForCall []struct{}
+	hostReturns     struct {
 		result1 string
 	}
 	StartStub        func() error
@@ -34,22 +34,6 @@ type FakeService struct {
 		result1 apihub.ServiceSpec
 		result2 error
 	}
-	AddBackendStub        func(be apihub.BackendInfo) error
-	addBackendMutex       sync.RWMutex
-	addBackendArgsForCall []struct {
-		be apihub.BackendInfo
-	}
-	addBackendReturns struct {
-		result1 error
-	}
-	RemoveBackendStub        func(be apihub.BackendInfo) error
-	removeBackendMutex       sync.RWMutex
-	removeBackendArgsForCall []struct {
-		be apihub.BackendInfo
-	}
-	removeBackendReturns struct {
-		result1 error
-	}
 	BackendsStub        func() ([]apihub.BackendInfo, error)
 	backendsMutex       sync.RWMutex
 	backendsArgsForCall []struct{}
@@ -69,27 +53,27 @@ type FakeService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeService) Handle() string {
-	fake.handleMutex.Lock()
-	fake.handleArgsForCall = append(fake.handleArgsForCall, struct{}{})
-	fake.recordInvocation("Handle", []interface{}{})
-	fake.handleMutex.Unlock()
-	if fake.HandleStub != nil {
-		return fake.HandleStub()
+func (fake *FakeService) Host() string {
+	fake.hostMutex.Lock()
+	fake.hostArgsForCall = append(fake.hostArgsForCall, struct{}{})
+	fake.recordInvocation("Host", []interface{}{})
+	fake.hostMutex.Unlock()
+	if fake.HostStub != nil {
+		return fake.HostStub()
 	} else {
-		return fake.handleReturns.result1
+		return fake.hostReturns.result1
 	}
 }
 
-func (fake *FakeService) HandleCallCount() int {
-	fake.handleMutex.RLock()
-	defer fake.handleMutex.RUnlock()
-	return len(fake.handleArgsForCall)
+func (fake *FakeService) HostCallCount() int {
+	fake.hostMutex.RLock()
+	defer fake.hostMutex.RUnlock()
+	return len(fake.hostArgsForCall)
 }
 
-func (fake *FakeService) HandleReturns(result1 string) {
-	fake.HandleStub = nil
-	fake.handleReturns = struct {
+func (fake *FakeService) HostReturns(result1 string) {
+	fake.HostStub = nil
+	fake.hostReturns = struct {
 		result1 string
 	}{result1}
 }
@@ -170,72 +154,6 @@ func (fake *FakeService) InfoReturns(result1 apihub.ServiceSpec, result2 error) 
 	}{result1, result2}
 }
 
-func (fake *FakeService) AddBackend(be apihub.BackendInfo) error {
-	fake.addBackendMutex.Lock()
-	fake.addBackendArgsForCall = append(fake.addBackendArgsForCall, struct {
-		be apihub.BackendInfo
-	}{be})
-	fake.recordInvocation("AddBackend", []interface{}{be})
-	fake.addBackendMutex.Unlock()
-	if fake.AddBackendStub != nil {
-		return fake.AddBackendStub(be)
-	} else {
-		return fake.addBackendReturns.result1
-	}
-}
-
-func (fake *FakeService) AddBackendCallCount() int {
-	fake.addBackendMutex.RLock()
-	defer fake.addBackendMutex.RUnlock()
-	return len(fake.addBackendArgsForCall)
-}
-
-func (fake *FakeService) AddBackendArgsForCall(i int) apihub.BackendInfo {
-	fake.addBackendMutex.RLock()
-	defer fake.addBackendMutex.RUnlock()
-	return fake.addBackendArgsForCall[i].be
-}
-
-func (fake *FakeService) AddBackendReturns(result1 error) {
-	fake.AddBackendStub = nil
-	fake.addBackendReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeService) RemoveBackend(be apihub.BackendInfo) error {
-	fake.removeBackendMutex.Lock()
-	fake.removeBackendArgsForCall = append(fake.removeBackendArgsForCall, struct {
-		be apihub.BackendInfo
-	}{be})
-	fake.recordInvocation("RemoveBackend", []interface{}{be})
-	fake.removeBackendMutex.Unlock()
-	if fake.RemoveBackendStub != nil {
-		return fake.RemoveBackendStub(be)
-	} else {
-		return fake.removeBackendReturns.result1
-	}
-}
-
-func (fake *FakeService) RemoveBackendCallCount() int {
-	fake.removeBackendMutex.RLock()
-	defer fake.removeBackendMutex.RUnlock()
-	return len(fake.removeBackendArgsForCall)
-}
-
-func (fake *FakeService) RemoveBackendArgsForCall(i int) apihub.BackendInfo {
-	fake.removeBackendMutex.RLock()
-	defer fake.removeBackendMutex.RUnlock()
-	return fake.removeBackendArgsForCall[i].be
-}
-
-func (fake *FakeService) RemoveBackendReturns(result1 error) {
-	fake.RemoveBackendStub = nil
-	fake.removeBackendReturns = struct {
-		result1 error
-	}{result1}
-}
-
 func (fake *FakeService) Backends() ([]apihub.BackendInfo, error) {
 	fake.backendsMutex.Lock()
 	fake.backendsArgsForCall = append(fake.backendsArgsForCall, struct{}{})
@@ -298,18 +216,14 @@ func (fake *FakeService) SetTimeoutReturns(result1 error) {
 func (fake *FakeService) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.handleMutex.RLock()
-	defer fake.handleMutex.RUnlock()
+	fake.hostMutex.RLock()
+	defer fake.hostMutex.RUnlock()
 	fake.startMutex.RLock()
 	defer fake.startMutex.RUnlock()
 	fake.stopMutex.RLock()
 	defer fake.stopMutex.RUnlock()
 	fake.infoMutex.RLock()
 	defer fake.infoMutex.RUnlock()
-	fake.addBackendMutex.RLock()
-	defer fake.addBackendMutex.RUnlock()
-	fake.removeBackendMutex.RLock()
-	defer fake.removeBackendMutex.RUnlock()
 	fake.backendsMutex.RLock()
 	defer fake.backendsMutex.RUnlock()
 	fake.setTimeoutMutex.RLock()

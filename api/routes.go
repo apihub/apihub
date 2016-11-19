@@ -19,7 +19,7 @@ var Routes = map[Route]RouterArguments{
 	Ping:          RouterArguments{Path: "/ping", Method: http.MethodGet},
 	AddService:    RouterArguments{Path: "/services", Method: http.MethodPost},
 	ListServices:  RouterArguments{Path: "/services", Method: http.MethodGet},
-	RemoveService: RouterArguments{Path: "/services/{handle}", Method: http.MethodDelete},
-	FindService:   RouterArguments{Path: "/services/{handle}", Method: http.MethodGet},
-	UpdateService: RouterArguments{Path: "/services/{handle}", Method: http.MethodPatch},
+	RemoveService: RouterArguments{Path: "/services/{host}", Method: http.MethodDelete},
+	FindService:   RouterArguments{Path: "/services/{host}", Method: http.MethodGet},
+	UpdateService: RouterArguments{Path: "/services/{host}", Method: http.MethodPatch},
 }

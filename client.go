@@ -11,14 +11,14 @@ type Client interface {
 	// AddService adds a new service.
 	//
 	// Errors:
-	// * When the handle is already taken.
+	// * When the host is already taken.
 	AddService(ServiceSpec) (Service, error)
 
 	// RemoveService removes an existing service.
 	//
 	// Errors:
-	// * When the handle is not found.
-	RemoveService(handle string) error
+	// * When the host is not found.
+	RemoveService(host string) error
 
 	// Services lists all services.
 	//
@@ -26,13 +26,13 @@ type Client interface {
 	// * None.
 	Services() ([]Service, error)
 
-	// FindService returns the service with the specified handle.
+	// FindService returns the service with the specified host.
 	//
 	// Errors:
 	// * Service not found.
-	FindService(handle string) (Service, error)
+	FindService(host string) (Service, error)
 
-	// UpdateService updates the service with the specified handle.
+	// UpdateService updates the service with the specified host.
 	//
 	// Errors:
 	// * Service not found.

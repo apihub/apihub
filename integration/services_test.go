@@ -34,7 +34,7 @@ var _ = Describe("Service", func() {
 		}))
 
 		spec = apihub.ServiceSpec{
-			Handle: fmt.Sprintf("my-service-%d", GinkgoParallelNode()),
+			Host: fmt.Sprintf("my-service-%d.apihub.dev", GinkgoParallelNode()),
 			Backends: []apihub.BackendInfo{
 				apihub.BackendInfo{
 					Address: "http://" + testServer.Listener.Addr().String(),
@@ -52,10 +52,10 @@ var _ = Describe("Service", func() {
 		Expect(client.Stop()).To(Succeed())
 	})
 
-	sendRequest := func(portGateway int, handle string) *http.Response {
+	sendRequest := func(portGateway int, host string) *http.Response {
 		req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://127.0.0.1:%d", portGateway), nil)
 		Expect(err).NotTo(HaveOccurred())
-		req.Host = fmt.Sprintf("%s.apihub.dev", handle)
+		req.Host = host
 
 		c := &http.Client{}
 		resp, err := c.Do(req)
@@ -68,19 +68,19 @@ var _ = Describe("Service", func() {
 		It("adds a new service", func() {
 			service, err := client.AddService(spec)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(service.Handle()).To(Equal(spec.Handle))
+			Expect(service.Host()).To(Equal(spec.Host))
 		})
 
 		It("proxies the request to the service endpoint", func() {
 			service, err := client.AddService(spec)
 			Expect(err).NotTo(HaveOccurred())
-			resp := sendRequest(portGateway, service.Handle())
+			resp := sendRequest(portGateway, service.Host())
 			body, err := ioutil.ReadAll(resp.Body)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(body)).To(Equal("Hello World!"))
 		})
 
-		Context("when there's another service for given handle", func() {
+		Context("when there's another service for given host", func() {
 			JustBeforeEach(func() {
 				_, err := client.AddService(spec)
 				Expect(err).NotTo(HaveOccurred())
@@ -88,7 +88,7 @@ var _ = Describe("Service", func() {
 
 			It("returns an error message with bad request", func() {
 				_, err := client.AddService(spec)
-				Expect(err).To(MatchError(ContainSubstring("handle already in use")))
+				Expect(err).To(MatchError(ContainSubstring("host already in use")))
 			})
 		})
 	})
@@ -103,7 +103,7 @@ var _ = Describe("Service", func() {
 			services, err := client.Services()
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(services)).To(Equal(1))
-			Expect(services[0].Handle()).To(Equal(spec.Handle))
+			Expect(services[0].Host()).To(Equal(spec.Host))
 		})
 	})
 
@@ -114,7 +114,7 @@ var _ = Describe("Service", func() {
 		})
 
 		It("removes a service", func() {
-			err := client.RemoveService(spec.Handle)
+			err := client.RemoveService(spec.Host)
 			Expect(err).NotTo(HaveOccurred())
 
 			services, err := client.Services()
@@ -124,24 +124,24 @@ var _ = Describe("Service", func() {
 
 		It("unpublishes the service", func() {
 			// Check if service is up and running
-			resp := sendRequest(portGateway, spec.Handle)
+			resp := sendRequest(portGateway, spec.Host)
 			Eventually(resp.StatusCode).Should(Equal(http.StatusOK))
 			body, err := ioutil.ReadAll(resp.Body)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(body)).To(Equal("Hello World!"))
 
 			// Remove service
-			err = client.RemoveService(spec.Handle)
+			err = client.RemoveService(spec.Host)
 			Expect(err).NotTo(HaveOccurred())
 
-			resp = sendRequest(portGateway, spec.Handle)
+			resp = sendRequest(portGateway, spec.Host)
 			Eventually(resp.StatusCode).Should(Equal(http.StatusNotFound))
 		})
 
 		Context("when service is not found", func() {
 			It("returns an error", func() {
-				err := client.RemoveService("invalid-handle")
-				Expect(err).To(MatchError(ContainSubstring("Handle not found.")))
+				err := client.RemoveService("invalid-host")
+				Expect(err).To(MatchError(ContainSubstring("Host not found.")))
 			})
 		})
 	})
@@ -152,15 +152,15 @@ var _ = Describe("Service", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
-		It("finds a service by handle", func() {
-			service, err := client.FindService(spec.Handle)
+		It("finds a service by host", func() {
+			service, err := client.FindService(spec.Host)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(service.Handle()).To(Equal(spec.Handle))
+			Expect(service.Host()).To(Equal(spec.Host))
 		})
 
 		Context("when service is not found", func() {
 			It("returns an error", func() {
-				_, err := client.FindService("invalid-handle")
+				_, err := client.FindService("invalid-host")
 				Expect(err).To(MatchError(ContainSubstring("Failed to find service.")))
 			})
 		})
@@ -172,7 +172,7 @@ var _ = Describe("Service", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
-		It("updates an existing service by handle", func() {
+		It("updates an existing service by host", func() {
 			spec.Backends = []apihub.BackendInfo{
 				apihub.BackendInfo{
 					Address:          "http://server-b",
@@ -181,10 +181,10 @@ var _ = Describe("Service", func() {
 				},
 			}
 
-			service, err := client.UpdateService(spec.Handle, spec)
+			service, err := client.UpdateService(spec.Host, spec)
 			Expect(err).NotTo(HaveOccurred())
 
-			service, err = client.FindService(spec.Handle)
+			service, err = client.FindService(spec.Host)
 			Expect(err).NotTo(HaveOccurred())
 			backends, err := service.Backends()
 			Expect(err).NotTo(HaveOccurred())
@@ -197,16 +197,16 @@ var _ = Describe("Service", func() {
 			})
 
 			JustBeforeEach(func() {
-				resp := sendRequest(portGateway, spec.Handle)
+				resp := sendRequest(portGateway, spec.Host)
 				Expect(resp.StatusCode).To(Equal(http.StatusNotFound))
 			})
 
 			It("proxies the request to the service endpoint", func() {
 				spec.Disabled = false
-				_, err := client.UpdateService(spec.Handle, spec)
+				_, err := client.UpdateService(spec.Host, spec)
 				Expect(err).NotTo(HaveOccurred())
 
-				resp := sendRequest(portGateway, spec.Handle)
+				resp := sendRequest(portGateway, spec.Host)
 				Expect(resp.StatusCode).To(Equal(http.StatusOK))
 				body, err := ioutil.ReadAll(resp.Body)
 				Expect(err).NotTo(HaveOccurred())
@@ -217,7 +217,7 @@ var _ = Describe("Service", func() {
 		Context("when the service is disabled", func() {
 			JustBeforeEach(func() {
 				// Check if service is up and running
-				resp := sendRequest(portGateway, spec.Handle)
+				resp := sendRequest(portGateway, spec.Host)
 				Eventually(resp.StatusCode).Should(Equal(http.StatusOK))
 				body, err := ioutil.ReadAll(resp.Body)
 				Expect(err).NotTo(HaveOccurred())
@@ -226,17 +226,17 @@ var _ = Describe("Service", func() {
 
 			It("stops proxing the request to the service endpoint", func() {
 				spec.Disabled = true
-				_, err := client.UpdateService(spec.Handle, spec)
+				_, err := client.UpdateService(spec.Host, spec)
 				Expect(err).NotTo(HaveOccurred())
 
-				resp := sendRequest(portGateway, spec.Handle)
+				resp := sendRequest(portGateway, spec.Host)
 				Eventually(resp.StatusCode).Should(Equal(http.StatusNotFound))
 			})
 		})
 
 		Context("when service is not found", func() {
 			It("returns an error", func() {
-				_, err := client.UpdateService("invalid-handle", spec)
+				_, err := client.UpdateService("invalid-host", spec)
 				Expect(err).To(MatchError(ContainSubstring("Failed to find service.")))
 			})
 		})

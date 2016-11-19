@@ -25,7 +25,7 @@ func (cli *client) AddService(spec apihub.ServiceSpec) (apihub.Service, error) {
 		return nil, err
 	}
 
-	return newService(service.Handle, cli.conn), nil
+	return newService(service.Host, cli.conn), nil
 }
 
 func (cli *client) Services() ([]apihub.Service, error) {
@@ -36,30 +36,30 @@ func (cli *client) Services() ([]apihub.Service, error) {
 
 	services := []apihub.Service{}
 	for _, spec := range specs {
-		services = append(services, newService(spec.Handle, cli.conn))
+		services = append(services, newService(spec.Host, cli.conn))
 	}
 
 	return services, nil
 }
 
-func (cli *client) RemoveService(handle string) error {
-	return cli.conn.RemoveService(handle)
+func (cli *client) RemoveService(host string) error {
+	return cli.conn.RemoveService(host)
 }
 
-func (cli *client) FindService(handle string) (apihub.Service, error) {
-	service, err := cli.conn.FindService(handle)
+func (cli *client) FindService(host string) (apihub.Service, error) {
+	service, err := cli.conn.FindService(host)
 	if err != nil {
 		return nil, err
 	}
 
-	return newService(service.Handle, cli.conn), nil
+	return newService(service.Host, cli.conn), nil
 }
 
-func (cli *client) UpdateService(handle string, spec apihub.ServiceSpec) (apihub.Service, error) {
-	service, err := cli.conn.UpdateService(handle, spec)
+func (cli *client) UpdateService(host string, spec apihub.ServiceSpec) (apihub.Service, error) {
+	service, err := cli.conn.UpdateService(host, spec)
 	if err != nil {
 		return nil, err
 	}
 
-	return newService(service.Handle, cli.conn), nil
+	return newService(service.Host, cli.conn), nil
 }

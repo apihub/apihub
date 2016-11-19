@@ -13,10 +13,10 @@ const SERVICES_PREFIX string = "services_"
 //go:generate counterfeiter . ServiceSubscriber
 
 type Service interface {
-	// Handle returns the subdomain/host used to access a service.
-	Handle() string
+	// Host returns the subdomain/host used to access a service.
+	Host() string
 
-	// Start adds a service in the service pool to handle upcoming requests.
+	// Start adds a service in the service pool to host upcoming requests.
 	Start() error
 
 	// Stop stops proxying the requests.
@@ -34,7 +34,7 @@ type Service interface {
 
 type ServicePublisher interface {
 	Publish(logger lager.Logger, prefix string, spec ServiceSpec) error
-	Unpublish(logger lager.Logger, prefix string, handle string) error
+	Unpublish(logger lager.Logger, prefix string, host string) error
 }
 
 type ServiceSubscriber interface {
@@ -43,8 +43,8 @@ type ServiceSubscriber interface {
 
 // ServiceInfo holds information about a service.
 type ServiceSpec struct {
-	// Handle specifies the subdomain/host used to access the service.
-	Handle   string        `json:"handle"`
+	// Host specifies the subdomain/host used to access the service.
+	Host   string        `json:"host"`
 	Disabled bool          `json:"disabled"`
 	Timeout  time.Duration `json:"timeout"` // in milliseconds
 	Backends []BackendInfo `json:"backends,omitempty"`

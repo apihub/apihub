@@ -8,30 +8,30 @@ import (
 )
 
 type service struct {
-	handle string
+	host string
 	conn   connection.Connection
 }
 
-func newService(handle string, conn connection.Connection) apihub.Service {
+func newService(host string, conn connection.Connection) apihub.Service {
 	return &service{
-		handle: handle,
+		host: host,
 		conn:   conn,
 	}
 }
 
-func (s *service) Handle() string {
-	return s.handle
+func (s *service) Host() string {
+	return s.host
 }
 
 func (s *service) Info() (apihub.ServiceSpec, error) {
-	return s.conn.FindService(s.Handle())
+	return s.conn.FindService(s.Host())
 }
 
 func (s *service) Start() error {
 	spec := apihub.ServiceSpec{
 		Disabled: false,
 	}
-	_, err := s.conn.UpdateService(s.Handle(), spec)
+	_, err := s.conn.UpdateService(s.Host(), spec)
 	return err
 }
 
@@ -39,7 +39,7 @@ func (s *service) Stop() error {
 	spec := apihub.ServiceSpec{
 		Disabled: true,
 	}
-	_, err := s.conn.UpdateService(s.Handle(), spec)
+	_, err := s.conn.UpdateService(s.Host(), spec)
 	return err
 }
 
@@ -47,12 +47,12 @@ func (s *service) SetTimeout(duration time.Duration) error {
 	spec := apihub.ServiceSpec{
 		Timeout: duration,
 	}
-	_, err := s.conn.UpdateService(s.Handle(), spec)
+	_, err := s.conn.UpdateService(s.Host(), spec)
 	return err
 }
 
 func (s *service) Backends() ([]apihub.BackendInfo, error) {
-	info, err := s.conn.FindService(s.Handle())
+	info, err := s.conn.FindService(s.Host())
 	if err != nil {
 		return nil, err
 	}

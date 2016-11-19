@@ -24,7 +24,7 @@ var _ = Describe("Publisher", func() {
 		logger = lagertest.NewTestLogger("publisher-test")
 
 		spec = apihub.ServiceSpec{
-			Handle: "my-handle",
+			Host: "my-host.apihub.dev",
 			Backends: []apihub.BackendInfo{
 				apihub.BackendInfo{
 					Address: "http://server-a",
@@ -39,7 +39,7 @@ var _ = Describe("Publisher", func() {
 		It("publishes a service", func() {
 			Expect(pub.Publish(logger, apihub.SERVICES_PREFIX, spec)).To(Succeed())
 
-			key := fmt.Sprintf("%s%s", apihub.SERVICES_PREFIX, spec.Handle)
+			key := fmt.Sprintf("%s%s", apihub.SERVICES_PREFIX, spec.Host)
 			kvp, _, err := consulClient.KV().Get(key, nil)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(kvp).NotTo(BeNil())
@@ -53,9 +53,9 @@ var _ = Describe("Publisher", func() {
 	Describe("Unpublish", func() {
 		It("unpublishes a service", func() {
 			Expect(pub.Publish(logger, apihub.SERVICES_PREFIX, spec)).To(Succeed())
-			Expect(pub.Unpublish(logger, apihub.SERVICES_PREFIX, spec.Handle)).To(Succeed())
+			Expect(pub.Unpublish(logger, apihub.SERVICES_PREFIX, spec.Host)).To(Succeed())
 
-			key := fmt.Sprintf("%s%s", apihub.SERVICES_PREFIX, spec.Handle)
+			key := fmt.Sprintf("%s%s", apihub.SERVICES_PREFIX, spec.Host)
 			kvp, _, err := consulClient.KV().Get(key, nil)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(kvp).To(BeNil())

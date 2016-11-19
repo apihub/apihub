@@ -29,7 +29,7 @@ type ReverseProxy interface {
 }
 
 type ReverseProxySpec struct {
-	Handle   string
+	Host   string
 	Backends []string
 	// Timeout in Milliseconds
 	Timeout time.Duration

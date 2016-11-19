@@ -29,7 +29,7 @@ var _ = Describe("Gateway", func() {
 		gw = gateway.New(fmt.Sprintf(":%d", portGateway), reverseProxyCreator)
 
 		spec = gateway.ReverseProxySpec{
-			Handle:   "my-handle",
+			Host:     "my-host.apihub.dev",
 			Backends: []string{"http://server-a"},
 		}
 	})
@@ -51,7 +51,7 @@ var _ = Describe("Gateway", func() {
 
 			Expect(gw.AddService(logger, spec)).To(Succeed())
 
-			req, err := http.NewRequest(http.MethodGet, "http://my-handle.apihub.dev", nil)
+			req, err := http.NewRequest(http.MethodGet, "http://my-host.apihub.dev", nil)
 			Expect(err).NotTo(HaveOccurred())
 
 			rw := httptest.NewRecorder()
@@ -68,7 +68,7 @@ var _ = Describe("Gateway", func() {
 			It("returns a bad gateway error", func() {
 				req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://127.0.0.1:%d", portGateway), nil)
 				Expect(err).NotTo(HaveOccurred())
-				req.Host = fmt.Sprintf("%s.apihub.dev", spec.Handle)
+				req.Host = spec.Host
 
 				rw := httptest.NewRecorder()
 				gw.ServeHTTP(rw, req)
@@ -96,7 +96,7 @@ var _ = Describe("Gateway", func() {
 			})
 
 			It("interrupts the request and returns gateway timeout", func() {
-				req, err := http.NewRequest(http.MethodGet, "http://my-handle.apihub.dev", nil)
+				req, err := http.NewRequest(http.MethodGet, "http://my-host.apihub.dev", nil)
 				Expect(err).NotTo(HaveOccurred())
 
 				rw := httptest.NewRecorder()
@@ -124,11 +124,11 @@ var _ = Describe("Gateway", func() {
 		})
 
 		It("removes a service", func() {
-			Expect(gw.RemoveService(logger, spec.Handle)).To(Succeed())
+			Expect(gw.RemoveService(logger, spec.Host)).To(Succeed())
 		})
 
 		It("stops proxying requests to the service", func() {
-			req, err := http.NewRequest(http.MethodGet, "http://my-handle.apihub.dev", nil)
+			req, err := http.NewRequest(http.MethodGet, "http://my-host.apihub.dev", nil)
 			Expect(err).NotTo(HaveOccurred())
 
 			var rw *httptest.ResponseRecorder
@@ -136,7 +136,7 @@ var _ = Describe("Gateway", func() {
 			gw.ServeHTTP(rw, req)
 			Expect(rw.Code).To(Equal(http.StatusOK))
 
-			Expect(gw.RemoveService(logger, spec.Handle)).To(Succeed())
+			Expect(gw.RemoveService(logger, spec.Host)).To(Succeed())
 
 			Eventually(func() int {
 				rw = httptest.NewRecorder()
@@ -147,7 +147,7 @@ var _ = Describe("Gateway", func() {
 
 		Context("when service is not found", func() {
 			It("returns an error", func() {
-				Expect(gw.RemoveService(logger, "invalid-handle")).To(MatchError(ContainSubstring("service not found: 'invalid-handle'")))
+				Expect(gw.RemoveService(logger, "invalid-host")).To(MatchError(ContainSubstring("service not found: 'invalid-host'")))
 			})
 		})
 	})

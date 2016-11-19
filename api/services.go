@@ -24,8 +24,8 @@ func (s *ApihubServer) addService(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if spec.Handle == "" || len(spec.Backends) == 0 {
-		s.handleError(rw, errors.New("Handle and Backend cannot be empty."))
+	if spec.Host == "" || len(spec.Backends) == 0 {
+		s.handleError(rw, errors.New("Host and Backend cannot be empty."))
 		return
 	}
 	if err := s.storage.AddService(spec); err != nil {
@@ -37,7 +37,7 @@ func (s *ApihubServer) addService(rw http.ResponseWriter, r *http.Request) {
 	if !spec.Disabled {
 		if err := s.servicePublisher.Publish(log, apihub.SERVICES_PREFIX, spec); err != nil {
 			log.Error("failed-to-publish-service", err)
-			if cleanErr := s.storage.RemoveService(spec.Handle); cleanErr != nil {
+			if cleanErr := s.storage.RemoveService(spec.Host); cleanErr != nil {
 				log.Error("failed-to-remove-service", cleanErr)
 			}
 
@@ -79,27 +79,27 @@ func (s *ApihubServer) removeService(rw http.ResponseWriter, r *http.Request) {
 	log.Debug("start")
 	defer log.Debug("end")
 
-	handle := mux.Vars(r)["handle"]
+	host := mux.Vars(r)["host"]
 
-	_, err := s.storage.FindServiceByHandle(handle)
+	_, err := s.storage.FindServiceByHost(host)
 	if err != nil {
-		log.Error("failed-to-find-service", err, lager.Data{"handle": handle})
-		s.handleError(rw, errors.New("Handle not found."))
+		log.Error("failed-to-find-service", err, lager.Data{"host": host})
+		s.handleError(rw, errors.New("Host not found."))
 		return
 	}
 
-	err = s.storage.RemoveService(handle)
+	err = s.storage.RemoveService(host)
 	if err != nil {
 		log.Error("failed-to-remove-service", err)
 		s.handleError(rw, errors.New("Failed to remove service."))
 		return
 	}
 
-	if err := s.servicePublisher.Unpublish(log, apihub.SERVICES_PREFIX, handle); err != nil {
+	if err := s.servicePublisher.Unpublish(log, apihub.SERVICES_PREFIX, host); err != nil {
 		log.Error("failed-to-unpublish-service", err)
 	}
 
-	log.Info("service-removed", lager.Data{"handle": handle})
+	log.Info("service-removed", lager.Data{"host": host})
 	s.writeResponse(rw, response{
 		StatusCode: http.StatusNoContent,
 	})
@@ -110,11 +110,11 @@ func (s *ApihubServer) findService(rw http.ResponseWriter, r *http.Request) {
 	log.Debug("start")
 	defer log.Debug("end")
 
-	handle := mux.Vars(r)["handle"]
+	host := mux.Vars(r)["host"]
 
-	service, err := s.storage.FindServiceByHandle(handle)
+	service, err := s.storage.FindServiceByHost(host)
 	if err != nil {
-		log.Error("failed-to-find-service", err, lager.Data{"handle": handle})
+		log.Error("failed-to-find-service", err, lager.Data{"host": host})
 		s.handleError(rw, errors.New("Failed to find service."))
 		return
 	}
@@ -131,11 +131,11 @@ func (s *ApihubServer) updateService(rw http.ResponseWriter, r *http.Request) {
 	log.Debug("start")
 	defer log.Debug("end")
 
-	handle := mux.Vars(r)["handle"]
+	host := mux.Vars(r)["host"]
 
-	service, err := s.storage.FindServiceByHandle(handle)
+	service, err := s.storage.FindServiceByHost(host)
 	if err != nil {
-		log.Error("failed-to-find-service", err, lager.Data{"handle": handle})
+		log.Error("failed-to-find-service", err, lager.Data{"host": host})
 		s.handleError(rw, errors.New("Failed to find service."))
 		return
 	}
@@ -146,7 +146,7 @@ func (s *ApihubServer) updateService(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	service.Handle = handle
+	service.Host = host
 	if err := s.storage.UpdateService(service); err != nil {
 		log.Error("failed-to-store-service", err)
 		s.handleError(rw, errors.New("Failed to update service."))
@@ -154,7 +154,7 @@ func (s *ApihubServer) updateService(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	if service.Disabled {
-		if err := s.servicePublisher.Unpublish(log, apihub.SERVICES_PREFIX, service.Handle); err != nil {
+		if err := s.servicePublisher.Unpublish(log, apihub.SERVICES_PREFIX, service.Host); err != nil {
 			log.Error("failed-to-unpublish-service", err)
 		}
 	} else {
