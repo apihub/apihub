@@ -33,8 +33,8 @@ func New(log lager.Logger, listenNetwork, listenAddr string, storage apihub.Stor
 	}
 
 	var handlers = map[Route]http.HandlerFunc{
-		Home:          http.HandlerFunc(homeHandler),
-		Ping:          http.HandlerFunc(pingHandler),
+		Home:          http.HandlerFunc(s.homeHandler),
+		Ping:          http.HandlerFunc(s.pingHandler),
 		AddService:    http.HandlerFunc(s.addService),
 		ListServices:  http.HandlerFunc(s.listServices),
 		RemoveService: http.HandlerFunc(s.removeService),
@@ -44,6 +44,7 @@ func New(log lager.Logger, listenNetwork, listenAddr string, storage apihub.Stor
 	for route, handler := range handlers {
 		s.router.AddHandler(RouterArguments{Path: Routes[route].Path, Method: Routes[route].Method, Handler: handler})
 	}
+	s.router.NotFoundHandler(http.HandlerFunc(s.notFoundHandler))
 
 	s.server = &http.Server{
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

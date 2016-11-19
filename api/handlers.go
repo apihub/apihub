@@ -8,13 +8,20 @@ import (
 	"github.com/apihub/apihub"
 )
 
-func homeHandler(rw http.ResponseWriter, r *http.Request) {
+func (s *ApihubServer) homeHandler(rw http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(rw, "Hello from ApiHub!")
 }
 
-func pingHandler(rw http.ResponseWriter, r *http.Request) {
+func (s *ApihubServer) pingHandler(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusOK)
 	fmt.Fprintln(rw, `{"ping":"pong"}`)
+}
+
+func (s *ApihubServer) notFoundHandler(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusNotFound)
+	fmt.Fprintln(rw, `{"error":"not_found","error_description":"The resource does not exist."}`)
 }
 
 type response struct {
