@@ -6,3 +6,4 @@ docs/_build
 apihub
 apihub-api
 apihub-gateway
+*.coverprofile
