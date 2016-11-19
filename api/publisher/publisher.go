@@ -34,6 +34,7 @@ func (p *Publisher) Publish(logger lager.Logger, prefix string, serviceSpec apih
 
 	kvp := &api.KVPair{Key: fmt.Sprintf("%s%s", apihub.SERVICES_PREFIX, serviceSpec.Handle), Value: spec}
 	_, err = p.client.KV().Put(kvp, nil)
+	log.Info("published")
 	return err
 }
 
@@ -53,13 +54,15 @@ func (p *Publisher) Unpublish(logger lager.Logger, prefix string, handle string)
 		log.Error("failed-to-marshal-service-data", err)
 		return err
 	}
-	kvp := &api.KVPair{Key: fmt.Sprintf("%s%s", apihub.SERVICES_PREFIX, spec.Handle), Value: serviceSpec}
+	key := fmt.Sprintf("%s%s", apihub.SERVICES_PREFIX, spec.Handle)
+	kvp := &api.KVPair{Key: key, Value: serviceSpec}
 	_, err = p.client.KV().Put(kvp, nil)
 	if err != nil {
 		log.Error("failed-to-unpublish-service", err)
 		return err
 	}
-	key := fmt.Sprintf("%s%s", apihub.SERVICES_PREFIX, handle)
+
 	_, err = p.client.KV().Delete(key, nil)
+	log.Info("unpublished")
 	return err
 }

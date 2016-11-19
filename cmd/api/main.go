@@ -22,8 +22,6 @@ var (
 func main() {
 	flag.Parse()
 
-	// FIXME: handle signal to stop gateway
-
 	// Configure log
 	logger := lager.NewLogger("apihub-api")
 	logger.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))

@@ -18,18 +18,6 @@ type transport struct {
 	logger lager.Logger
 }
 
-func roundTripper(logger lager.Logger, timeout time.Duration) *transport {
-	return &transport{
-		logger: logger,
-		Transport: &http.Transport{
-			//FIXME: Dial is deprecated
-			Dial:                timeoutDialer(timeout*time.Second, timeout*time.Second),
-			Proxy:               http.ProxyFromEnvironment,
-			TLSHandshakeTimeout: timeout * time.Second,
-		},
-	}
-}
-
 func (r *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	log := r.logger.Session("round-trip")
 
@@ -60,10 +48,22 @@ func (r *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return resp, nil
 }
 
+func roundTripper(logger lager.Logger, timeout time.Duration) *transport {
+	return &transport{
+		logger: logger,
+		Transport: &http.Transport{
+			//FIXME: Dial is deprecated
+			Dial:                timeoutDialer(timeout*time.Second, timeout*time.Second),
+			Proxy:               http.ProxyFromEnvironment,
+			TLSHandshakeTimeout: timeout * time.Second,
+		},
+	}
+}
+
 func director(logger lager.Logger, spec ReverseProxySpec) func(req *http.Request) {
-	log := logger.Session("creating-director")
-	log.Info("start")
-	defer log.Info("end")
+	log := logger.Session("create-director")
+	log.Debug("start")
+	defer log.Debug("end")
 
 	return func(req *http.Request) {
 		backend, err := url.Parse(spec.Backends[0])

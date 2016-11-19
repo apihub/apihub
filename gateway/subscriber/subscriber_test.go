@@ -98,5 +98,26 @@ var _ = Describe("Subscriber", func() {
 				Eventually(servicesCh).Should(BeClosed())
 			})
 		})
+
+		Context("when an error occurs", func() {
+			It("retries to connect", func() {
+				go func() {
+					err := sub.Subscribe(logger, apihub.SERVICES_PREFIX, servicesCh, stop)
+					Expect(err).NotTo(HaveOccurred())
+				}()
+
+				consulRunner.Stop()
+				Consistently(servicesCh).ShouldNot(Receive())
+
+				consulRunner.Start()
+				consulRunner.WaitUntilReady()
+
+				spec := apihub.ServiceSpec{
+					Handle: "my-retry",
+				}
+				Expect(pub.Publish(logger, apihub.SERVICES_PREFIX, spec)).To(Succeed())
+				Eventually(servicesCh).Should(Receive(Equal(spec)))
+			})
+		})
 	})
 })

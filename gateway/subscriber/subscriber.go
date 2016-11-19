@@ -25,7 +25,7 @@ func (s *Subscriber) Subscribe(logger lager.Logger, prefix string, servicesCh ch
 	defer log.Debug("end")
 
 	go func() {
-		defer logger.Info("finished")
+		defer logger.Info("done")
 
 		keys := keySet{}
 		queryOpts := &api.QueryOptions{
@@ -50,7 +50,7 @@ func (s *Subscriber) Subscribe(logger lager.Logger, prefix string, servicesCh ch
 			queryOpts.WaitIndex = queryMeta.LastIndex
 			if kvPairs != nil {
 				newKeys := newKeySet(kvPairs)
-				specs := diff(logger, keys, newKeys)
+				specs := diff(keys, newKeys)
 				for _, spec := range specs {
 					servicesCh <- spec
 				}
@@ -78,7 +78,7 @@ func newKeySet(pairs api.KVPairs) keySet {
 	return set
 }
 
-func diff(logger lager.Logger, currentSet keySet, newSet keySet) []apihub.ServiceSpec {
+func diff(currentSet keySet, newSet keySet) []apihub.ServiceSpec {
 	var (
 		specs []apihub.ServiceSpec
 		spec  apihub.ServiceSpec

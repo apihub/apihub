@@ -53,12 +53,12 @@ func (gw *Gateway) Stop() bool {
 
 func (gw *Gateway) AddService(logger lager.Logger, spec ReverseProxySpec) error {
 	log := logger.Session("add-service")
-	log.Info("start", lager.Data{"spec": spec})
-	defer log.Info("end")
+	log.Debug("start", lager.Data{"spec": spec})
+	defer log.Debug("end")
 
 	reverseProxy, err := gw.rpCreator.Create(log, spec)
 	if err != nil {
-		log.Error("failed-to-create-handler", err)
+		log.Error("failed-to-create-reverse-proxy", err)
 		return err
 	}
 
@@ -66,13 +66,14 @@ func (gw *Gateway) AddService(logger lager.Logger, spec ReverseProxySpec) error 
 	gw.Services[spec.Handle] = reverseProxy
 	gw.Unlock()
 
+	log.Info("service-added", lager.Data{"spec": spec})
 	return nil
 }
 
 func (gw *Gateway) RemoveService(logger lager.Logger, handle string) error {
 	log := logger.Session("remove-service")
-	log.Info("start", lager.Data{"handle": handle})
-	defer log.Info("end")
+	log.Debug("start", lager.Data{"handle": handle})
+	defer log.Debug("end")
 
 	if _, ok := gw.Services[handle]; !ok {
 		return fmt.Errorf("service not found: '%s'", handle)
@@ -90,9 +91,13 @@ func (gw *Gateway) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	defer gw.RUnlock()
 
 	handle := extractSubdomainFromRequest(req)
+	gw.RLock()
 	if reverseProxy, ok := gw.Services[handle]; ok {
+		gw.RUnlock()
 		reverseProxy.ServeHTTP(rw, req)
 		return
+	} else {
+		gw.RUnlock()
 	}
 
 	pageNotFound(rw)

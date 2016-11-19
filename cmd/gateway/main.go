@@ -42,10 +42,6 @@ func main() {
 		panic(fmt.Sprintf("Error connecting to Consul agent: %s", err))
 	}
 
-	// FIXME: extract this to another method
-	// FIXME: another channel to remove services
-	// FIXME: handle signal to stop gateway
-	// FIXME: add test that shutdown one consul server
 	servicesCh := make(chan apihub.ServiceSpec)
 	stopCh := make(chan struct{})
 
