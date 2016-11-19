@@ -79,29 +79,6 @@ var _ = Describe("Service", func() {
 		})
 	})
 
-	Describe("Backends", func() {
-		BeforeEach(func() {
-			fakeConnection.FindServiceReturns(spec, nil)
-		})
-
-		It("returns service's backends", func() {
-			backends, err := service.Backends()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(len(backends)).To(Equal(2))
-		})
-
-		Context("when fails to get the backend list", func() {
-			BeforeEach(func() {
-				fakeConnection.FindServiceReturns(apihub.ServiceSpec{}, errors.New("fail to get the backend list"))
-			})
-
-			It("returns an error", func() {
-				_, err := service.Backends()
-				Expect(err).To(HaveOccurred())
-			})
-		})
-	})
-
 	Describe("Start", func() {
 		It("enables the service to start receiving requests", func() {
 			Expect(service.Start()).To(Succeed())
@@ -165,6 +142,52 @@ var _ = Describe("Service", func() {
 
 			It("returns an error", func() {
 				Expect(service.SetTimeout(time.Second)).To(MatchError(ContainSubstring("failed to update")))
+			})
+		})
+	})
+
+	Describe("Backends", func() {
+		BeforeEach(func() {
+			fakeConnection.FindServiceReturns(spec, nil)
+		})
+
+		It("returns service's backends", func() {
+			backends, err := service.Backends()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(backends)).To(Equal(2))
+		})
+
+		Context("when fails to get the backend list", func() {
+			BeforeEach(func() {
+				fakeConnection.FindServiceReturns(apihub.ServiceSpec{}, errors.New("fail to get the backend list"))
+			})
+
+			It("returns an error", func() {
+				_, err := service.Backends()
+				Expect(err).To(HaveOccurred())
+			})
+		})
+	})
+
+	Describe("AddBackend", func() {
+		BeforeEach(func() {
+			fakeConnection.FindServiceReturns(spec, nil)
+		})
+
+		It("adds a new backend", func() {
+			backends, err := service.Backends()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(backends)).To(Equal(2))
+		})
+
+		Context("when fails to add a new backend", func() {
+			BeforeEach(func() {
+				fakeConnection.FindServiceReturns(apihub.ServiceSpec{}, errors.New("fail to get the backend list"))
+			})
+
+			It("returns an error", func() {
+				_, err := service.Backends()
+				Expect(err).To(HaveOccurred())
 			})
 		})
 	})

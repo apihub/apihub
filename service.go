@@ -25,12 +25,6 @@ type Service interface {
 	// Info returns information about a service.
 	Info() (ServiceSpec, error)
 
-	// Addbackend adds a new backend in the list of available be's.
-	AddBackend(be BackendInfo) error
-
-	// RemoveBackend removes an existing backend from the list of available be's.
-	RemoveBackend(be BackendInfo) error
-
 	// Backends returns all backends in the service.
 	Backends() ([]BackendInfo, error)
 
