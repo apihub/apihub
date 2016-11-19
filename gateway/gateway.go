@@ -31,7 +31,7 @@ func New(port string, rpCreator ReverseProxyCreator) *Gateway {
 		Handler:        gw,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
-		MaxHeaderBytes: 1 << 20,
+		MaxHeaderBytes: 1 << 20, // 1MB
 	})
 
 	return gw
@@ -87,9 +87,6 @@ func (gw *Gateway) RemoveService(logger lager.Logger, handle string) error {
 }
 
 func (gw *Gateway) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	gw.RLock()
-	defer gw.RUnlock()
-
 	handle := extractSubdomainFromRequest(req)
 	gw.RLock()
 	if reverseProxy, ok := gw.Services[handle]; ok {
