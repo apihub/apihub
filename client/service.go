@@ -37,7 +37,11 @@ func (s *service) Backends() ([]apihub.BackendInfo, error) {
 }
 
 func (s *service) Start() error {
-	panic("not implemented")
+	spec := apihub.ServiceSpec{
+		Disabled: false,
+	}
+	_, err := s.conn.UpdateService(s.Handle(), spec)
+	return err
 }
 
 func (s *service) Stop(kill bool) error {

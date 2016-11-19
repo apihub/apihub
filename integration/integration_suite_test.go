@@ -90,10 +90,11 @@ func runner(cmd *exec.Cmd) *gexec.Session {
 }
 
 type RunningApihub struct {
+	apihub.Client
+
 	Network        string
 	AddressAPI     string
 	AddressGateway int
-	apihub.Client
 	APISession     *gexec.Session
 	GatewaySession *gexec.Session
 }

@@ -98,4 +98,25 @@ var _ = Describe("Service", func() {
 		})
 	})
 
+	Describe("Start", func() {
+		It("enables the service to start receiving requests", func() {
+			Expect(service.Start()).To(Succeed())
+			Expect(fakeConnection.UpdateServiceCallCount()).To(Equal(1))
+			handle, serviceSpec := fakeConnection.UpdateServiceArgsForCall(0)
+			Expect(handle).To(Equal(spec.Handle))
+			Expect(spec.Disabled).To(BeTrue())
+			Expect(serviceSpec.Disabled).To(BeFalse())
+		})
+
+		Context("when fails to enable", func() {
+			BeforeEach(func() {
+				fakeConnection.UpdateServiceReturns(apihub.ServiceSpec{}, errors.New("failed to update"))
+			})
+
+			It("returns an error", func() {
+				Expect(service.Start()).To(MatchError(ContainSubstring("failed to update")))
+			})
+		})
+	})
+
 })
