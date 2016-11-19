@@ -46,7 +46,7 @@ type ServiceSpec struct {
 	// Handle specifies the subdomain/host used to access the service.
 	Handle   string        `json:"handle"`
 	Disabled bool          `json:"disabled"`
-	Timeout  time.Duration `json:"timeout"`
+	Timeout  time.Duration `json:"timeout"` // in milliseconds
 	Backends []BackendInfo `json:"backends,omitempty"`
 }
 

@@ -59,9 +59,9 @@ func main() {
 				}
 
 				proxySpec := gateway.ReverseProxySpec{
-					Handle:      spec.Handle,
-					Backends:    backends,
-					DialTimeout: time.Duration(spec.Timeout),
+					Handle:   spec.Handle,
+					Backends: backends,
+					Timeout:  time.Duration(spec.Timeout),
 				}
 				if spec.Disabled {
 					gw.RemoveService(logger, spec.Handle)

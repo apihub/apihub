@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"time"
 
 	"code.cloudfoundry.org/lager/lagertest"
 	"github.com/apihub/apihub/gateway"
@@ -13,7 +14,7 @@ import (
 
 var _ = Describe("Gateway", func() {
 	var (
-		port                string
+		portGateway         int
 		gw                  *gateway.Gateway
 		logger              *lagertest.TestLogger
 		reverseProxyCreator gateway.ReverseProxyCreator
@@ -22,10 +23,10 @@ var _ = Describe("Gateway", func() {
 
 	BeforeEach(func() {
 		logger = lagertest.NewTestLogger("gateway")
-		port = fmt.Sprintf(":909%d", GinkgoParallelNode())
+		portGateway = 9000 + GinkgoParallelNode()
 		reverseProxyCreator = gateway.NewReverseProxyCreator()
 
-		gw = gateway.New(port, reverseProxyCreator)
+		gw = gateway.New(fmt.Sprintf(":%d", portGateway), reverseProxyCreator)
 
 		spec = gateway.ReverseProxySpec{
 			Handle:   "my-handle",
@@ -33,11 +34,13 @@ var _ = Describe("Gateway", func() {
 		}
 	})
 
-	Describe("AddService", func() {
+	Describe("Adding a service", func() {
 		It("adds a service", func() {
 			Expect(gw.AddService(logger, spec)).To(Succeed())
 		})
+	})
 
+	Describe("Proxing requests through the Gateway", func() {
 		It("proxies the request to the service backend", func() {
 			backendServer := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 				rw.Write([]byte("Hello World."))
@@ -51,15 +54,61 @@ var _ = Describe("Gateway", func() {
 			req, err := http.NewRequest(http.MethodGet, "http://my-handle.apihub.dev", nil)
 			Expect(err).NotTo(HaveOccurred())
 
-			var rw *httptest.ResponseRecorder
-			rw = httptest.NewRecorder()
+			rw := httptest.NewRecorder()
 			gw.ServeHTTP(rw, req)
 
 			Expect(rw.Body.String()).To(Equal("Hello World."))
 		})
+
+		Context("when the service does not respond as expected", func() {
+			BeforeEach(func() {
+				Expect(gw.AddService(logger, spec)).To(Succeed())
+			})
+
+			It("returns a bad gateway error", func() {
+				req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://127.0.0.1:%d", portGateway), nil)
+				Expect(err).NotTo(HaveOccurred())
+				req.Host = fmt.Sprintf("%s.apihub.dev", spec.Handle)
+
+				rw := httptest.NewRecorder()
+				gw.ServeHTTP(rw, req)
+
+				Expect(rw.Code).To(Equal(http.StatusBadGateway))
+			})
+		})
+
+		Context("when the service timeout is reached", func() {
+			var backendServer *httptest.Server
+
+			BeforeEach(func() {
+				backendServer = httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+					select {
+					case <-time.After(11 * time.Millisecond):
+					}
+				}))
+				spec.Timeout = time.Millisecond * 10
+				spec.Backends = []string{fmt.Sprintf("http://%s", backendServer.Listener.Addr().String())}
+				Expect(gw.AddService(logger, spec)).To(Succeed())
+			})
+
+			AfterEach(func() {
+				backendServer.Close()
+			})
+
+			It("interrupts the request and returns gateway timeout", func() {
+				req, err := http.NewRequest(http.MethodGet, "http://my-handle.apihub.dev", nil)
+				Expect(err).NotTo(HaveOccurred())
+
+				rw := httptest.NewRecorder()
+				gw.ServeHTTP(rw, req)
+
+				Expect(rw.Code).To(Equal(http.StatusGatewayTimeout))
+				Expect(rw.Body.String()).To(ContainSubstring("i/o timeout"))
+			})
+		})
 	})
 
-	Describe("RemoveService", func() {
+	Describe("Removing a service", func() {
 		var backendServer *httptest.Server
 
 		BeforeEach(func() {

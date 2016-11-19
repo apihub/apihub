@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	DEFAULT_TIMEOUT = time.Duration(10)
+	DEFAULT_TIMEOUT = 1000 * time.Millisecond
 )
 
 var (
@@ -29,9 +29,10 @@ type ReverseProxy interface {
 }
 
 type ReverseProxySpec struct {
-	Handle      string
-	Backends    []string
-	DialTimeout time.Duration
+	Handle   string
+	Backends []string
+	// Timeout in Milliseconds
+	Timeout time.Duration
 }
 
 type reverseProxyCreator struct{}
@@ -50,8 +51,8 @@ func (rpc *reverseProxyCreator) Create(logger lager.Logger, spec ReverseProxySpe
 	}
 
 	timeout := DEFAULT_TIMEOUT
-	if spec.DialTimeout > 0 {
-		timeout = spec.DialTimeout
+	if spec.Timeout > 0 {
+		timeout = spec.Timeout
 	}
 
 	return &reverseProxy{

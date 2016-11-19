@@ -89,6 +89,7 @@ func (gw *Gateway) RemoveService(logger lager.Logger, handle string) error {
 func (gw *Gateway) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	handle := extractSubdomainFromRequest(req)
 	gw.RLock()
+
 	if reverseProxy, ok := gw.Services[handle]; ok {
 		gw.RUnlock()
 		reverseProxy.ServeHTTP(rw, req)

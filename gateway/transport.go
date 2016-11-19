@@ -1,7 +1,11 @@
 package gateway
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -31,21 +35,66 @@ func (r *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	resp, err := r.Transport.RoundTrip(req)
-	if err != nil {
-		log.Error("failed-round-trip-request", err)
-		return nil, err
+	if err == nil {
+		via, err = headerVia(resp.Header.Get("Via"), req.ProtoMajor, req.ProtoMinor)
+		if err != nil {
+			log.Error("failed-read-response-via-hader", err)
+			return nil, err
+		}
+		if via != "" {
+			resp.Header.Set("Via", via)
+		}
+		return resp, nil
 	}
 
-	via, err = headerVia(resp.Header.Get("Via"), req.ProtoMajor, req.ProtoMinor)
-	if err != nil {
-		log.Error("failed-read-response-via-hader", err)
-		return nil, err
+	log.Error("failed-round-trip-request", err)
+	respErr := response{
+		StatusCode: http.StatusBadGateway,
+		Body: responseError{
+			ErrType:     "bad_gateway",
+			Description: err.Error(),
+		},
 	}
-	if via != "" {
-		resp.Header.Set("Via", via)
+	if e, ok := err.(*net.OpError); ok {
+		if e.Timeout() {
+			respErr = response{
+				StatusCode: http.StatusGatewayTimeout,
+				Body: responseError{
+					ErrType:     "gateway_timeout",
+					Description: err.Error(),
+				},
+			}
+		}
 	}
 
-	return resp, nil
+	return r.Response(req, respErr), nil
+}
+
+type response struct {
+	StatusCode int
+	Body       interface{}
+}
+
+type responseError struct {
+	ErrType     string `json:"error"`
+	Description string `json:"error_description"`
+}
+
+func (r *transport) Response(req *http.Request, resp response) *http.Response {
+	data, _ := json.Marshal(resp.Body)
+	var closerBuffer io.ReadCloser = ioutil.NopCloser(bytes.NewBuffer(data))
+	response := &http.Response{
+		Request:       req,
+		StatusCode:    resp.StatusCode,
+		ProtoMajor:    req.ProtoMajor,
+		ProtoMinor:    req.ProtoMinor,
+		ContentLength: int64(len(data)),
+		Body:          closerBuffer,
+	}
+
+	response.Header = make(map[string][]string)
+	response.Header.Add("Content-Type", "application/json")
+	return response
 }
 
 func roundTripper(logger lager.Logger, timeout time.Duration) *transport {
@@ -53,7 +102,7 @@ func roundTripper(logger lager.Logger, timeout time.Duration) *transport {
 		logger: logger,
 		Transport: &http.Transport{
 			//FIXME: Dial is deprecated
-			Dial:                timeoutDialer(timeout*time.Second, timeout*time.Second),
+			Dial:                timeoutDialer(timeout, timeout),
 			Proxy:               http.ProxyFromEnvironment,
 			TLSHandshakeTimeout: timeout * time.Second,
 		},
