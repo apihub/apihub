@@ -2,6 +2,7 @@ package client_test
 
 import (
 	"errors"
+	"time"
 
 	"github.com/apihub/apihub"
 	"github.com/apihub/apihub/client"
@@ -143,6 +144,27 @@ var _ = Describe("Service", func() {
 
 			It("returns an error", func() {
 				Expect(service.Stop()).To(MatchError(ContainSubstring("failed to update")))
+			})
+		})
+	})
+
+	Describe("SetTimeout", func() {
+		It("updates de timeout", func() {
+			duration := time.Second * 10
+			Expect(service.SetTimeout(duration)).To(Succeed())
+			Expect(fakeConnection.UpdateServiceCallCount()).To(Equal(1))
+			handle, serviceSpec := fakeConnection.UpdateServiceArgsForCall(0)
+			Expect(handle).To(Equal(spec.Handle))
+			Expect(serviceSpec.Timeout).To(Equal(duration))
+		})
+
+		Context("when fails to disable", func() {
+			BeforeEach(func() {
+				fakeConnection.UpdateServiceReturns(apihub.ServiceSpec{}, errors.New("failed to update"))
+			})
+
+			It("returns an error", func() {
+				Expect(service.SetTimeout(time.Second)).To(MatchError(ContainSubstring("failed to update")))
 			})
 		})
 	})

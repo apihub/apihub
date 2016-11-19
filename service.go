@@ -35,7 +35,7 @@ type Service interface {
 	Backends() ([]BackendInfo, error)
 
 	// Timeout waits for the duration before returning an error to the client.
-	SetTimeout(time.Duration)
+	SetTimeout(time.Duration) error
 }
 
 type ServicePublisher interface {
@@ -52,7 +52,7 @@ type ServiceSpec struct {
 	// Handle specifies the subdomain/host used to access the service.
 	Handle   string        `json:"handle"`
 	Disabled bool          `json:"disabled"`
-	Timeout  int           `json:"timeout"`
+	Timeout  time.Duration `json:"timeout"`
 	Backends []BackendInfo `json:"backends,omitempty"`
 }
 

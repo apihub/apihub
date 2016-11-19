@@ -50,7 +50,6 @@ func (s *service) Stop() error {
 	}
 	_, err := s.conn.UpdateService(s.Handle(), spec)
 	return err
-	panic("not implemented")
 }
 
 func (s *service) AddBackend(be apihub.BackendInfo) error {
@@ -61,6 +60,10 @@ func (s *service) RemoveBackend(be apihub.BackendInfo) error {
 	panic("not implemented")
 }
 
-func (s *service) SetTimeout(time.Duration) {
-	panic("not implemented")
+func (s *service) SetTimeout(duration time.Duration) error {
+	spec := apihub.ServiceSpec{
+		Timeout: duration,
+	}
+	_, err := s.conn.UpdateService(s.Handle(), spec)
+	return err
 }

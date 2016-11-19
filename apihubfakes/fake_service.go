@@ -57,10 +57,13 @@ type FakeService struct {
 		result1 []apihub.BackendInfo
 		result2 error
 	}
-	SetTimeoutStub        func(time.Duration)
+	SetTimeoutStub        func(time.Duration) error
 	setTimeoutMutex       sync.RWMutex
 	setTimeoutArgsForCall []struct {
 		arg1 time.Duration
+	}
+	setTimeoutReturns struct {
+		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
@@ -259,7 +262,7 @@ func (fake *FakeService) BackendsReturns(result1 []apihub.BackendInfo, result2 e
 	}{result1, result2}
 }
 
-func (fake *FakeService) SetTimeout(arg1 time.Duration) {
+func (fake *FakeService) SetTimeout(arg1 time.Duration) error {
 	fake.setTimeoutMutex.Lock()
 	fake.setTimeoutArgsForCall = append(fake.setTimeoutArgsForCall, struct {
 		arg1 time.Duration
@@ -267,7 +270,9 @@ func (fake *FakeService) SetTimeout(arg1 time.Duration) {
 	fake.recordInvocation("SetTimeout", []interface{}{arg1})
 	fake.setTimeoutMutex.Unlock()
 	if fake.SetTimeoutStub != nil {
-		fake.SetTimeoutStub(arg1)
+		return fake.SetTimeoutStub(arg1)
+	} else {
+		return fake.setTimeoutReturns.result1
 	}
 }
 
@@ -281,6 +286,13 @@ func (fake *FakeService) SetTimeoutArgsForCall(i int) time.Duration {
 	fake.setTimeoutMutex.RLock()
 	defer fake.setTimeoutMutex.RUnlock()
 	return fake.setTimeoutArgsForCall[i].arg1
+}
+
+func (fake *FakeService) SetTimeoutReturns(result1 error) {
+	fake.SetTimeoutStub = nil
+	fake.setTimeoutReturns = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeService) Invocations() map[string][][]interface{} {
