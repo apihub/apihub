@@ -249,7 +249,7 @@ var _ = Describe("Connection", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest(http.MethodPut, "/services/my-handle"),
+						ghttp.VerifyRequest(http.MethodPatch, "/services/my-handle"),
 						ghttp.RespondWith(200, `{"handle":"my-handle","disabled":true}`),
 					),
 				)
@@ -272,7 +272,7 @@ var _ = Describe("Connection", func() {
 			BeforeEach(func() {
 				server.AppendHandlers(
 					ghttp.CombineHandlers(
-						ghttp.VerifyRequest(http.MethodPut, "/services/invalid-handle"),
+						ghttp.VerifyRequest(http.MethodPatch, "/services/invalid-handle"),
 						ghttp.RespondWith(400, "{}"),
 					),
 				)

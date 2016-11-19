@@ -366,7 +366,7 @@ var _ = Describe("Services", func() {
 		It("updates a service", func() {
 			headers, code, body, err := httpClient.MakeRequest(requests.Args{
 				AcceptableCode: http.StatusOK,
-				Method:         http.MethodPut,
+				Method:         http.MethodPatch,
 				Path:           "/services/my-handle",
 				Body:           `{"handle":"my-handle", "backends":[{"address":"http://another-server-b"}]}`,
 			})
@@ -403,7 +403,7 @@ var _ = Describe("Services", func() {
 			It("publishes the service", func() {
 				_, _, _, err := httpClient.MakeRequest(requests.Args{
 					AcceptableCode: http.StatusOK,
-					Method:         http.MethodPut,
+					Method:         http.MethodPatch,
 					Path:           "/services/my-handle",
 					Body:           `{"handle":"my-handle", "backends":[{"address":"http://another-server-b"}]}`,
 				})
@@ -424,7 +424,7 @@ var _ = Describe("Services", func() {
 			It("returns an error", func() {
 				headers, code, body, err := httpClient.MakeRequest(requests.Args{
 					AcceptableCode: http.StatusBadRequest,
-					Method:         http.MethodPut,
+					Method:         http.MethodPatch,
 					Path:           "/services/my-handle",
 					Body:           "{}",
 				})
@@ -440,7 +440,7 @@ var _ = Describe("Services", func() {
 			It("returns an error", func() {
 				headers, code, body, err := httpClient.MakeRequest(requests.Args{
 					AcceptableCode: http.StatusBadRequest,
-					Method:         http.MethodPut,
+					Method:         http.MethodPatch,
 					Path:           "/services/my-handle",
 					Body:           "not-a-json",
 				})
@@ -461,7 +461,7 @@ var _ = Describe("Services", func() {
 			It("returns an error", func() {
 				headers, code, body, err := httpClient.MakeRequest(requests.Args{
 					AcceptableCode: http.StatusBadRequest,
-					Method:         http.MethodPut,
+					Method:         http.MethodPatch,
 					Path:           "/services/my-handle",
 					Body:           "{}",
 				})

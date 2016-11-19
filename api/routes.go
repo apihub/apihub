@@ -21,5 +21,5 @@ var Routes = map[Route]RouterArguments{
 	ListServices:  RouterArguments{Path: "/services", Method: http.MethodGet},
 	RemoveService: RouterArguments{Path: "/services/{handle}", Method: http.MethodDelete},
 	FindService:   RouterArguments{Path: "/services/{handle}", Method: http.MethodGet},
-	UpdateService: RouterArguments{Path: "/services/{handle}", Method: http.MethodPut},
+	UpdateService: RouterArguments{Path: "/services/{handle}", Method: http.MethodPatch},
 }
