@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -101,8 +102,7 @@ func roundTripper(logger lager.Logger, timeout time.Duration) *transport {
 	return &transport{
 		logger: logger,
 		Transport: &http.Transport{
-			//FIXME: Dial is deprecated
-			Dial:                timeoutDialer(timeout, timeout),
+			DialContext:         timeoutDialer(timeout, timeout),
 			Proxy:               http.ProxyFromEnvironment,
 			TLSHandshakeTimeout: timeout * time.Second,
 		},
@@ -147,9 +147,9 @@ func headerVia(original string, protoMajor int, protoMinor int) (string, error) 
 	return strings.Trim(via, ", "), nil
 }
 
-func timeoutDialer(cTimeout time.Duration, rwTimeout time.Duration) func(net, addr string) (c net.Conn, err error) {
-	return func(netw, addr string) (net.Conn, error) {
-		conn, err := net.DialTimeout(netw, addr, cTimeout)
+func timeoutDialer(timeout time.Duration, rwTimeout time.Duration) func(ctx context.Context, network string, addr string) (net.Conn, error) {
+	return func(ctx context.Context, network string, addr string) (net.Conn, error) {
+		conn, err := net.DialTimeout(network, addr, timeout)
 		if err != nil {
 			return nil, err
 		}
