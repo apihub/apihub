@@ -75,7 +75,13 @@ var _ = Describe("Service", func() {
 		It("proxies the request to the service endpoint", func() {
 			service, err := client.AddService(spec)
 			Expect(err).NotTo(HaveOccurred())
-			resp := sendRequest(portGateway, service.Host())
+
+			var resp *http.Response
+			Eventually(func() int {
+				resp = sendRequest(portGateway, service.Host())
+				return resp.StatusCode
+			}).Should(Equal(http.StatusOK))
+
 			body, err := ioutil.ReadAll(resp.Body)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(body)).To(Equal("Hello World!"))
@@ -125,8 +131,12 @@ var _ = Describe("Service", func() {
 
 		It("unpublishes the service", func() {
 			// Check if service is up and running
-			resp := sendRequest(portGateway, spec.Host)
-			Eventually(resp.StatusCode).Should(Equal(http.StatusOK))
+			var resp *http.Response
+			Eventually(func() int {
+				resp = sendRequest(portGateway, spec.Host)
+				return resp.StatusCode
+			}).Should(Equal(http.StatusOK))
+
 			body, err := ioutil.ReadAll(resp.Body)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(string(body)).To(Equal("Hello World!"))
@@ -135,8 +145,10 @@ var _ = Describe("Service", func() {
 			err = client.RemoveService(spec.Host)
 			Expect(err).NotTo(HaveOccurred())
 
-			resp = sendRequest(portGateway, spec.Host)
-			Eventually(resp.StatusCode).Should(Equal(http.StatusNotFound))
+			Eventually(func() int {
+				resp = sendRequest(portGateway, spec.Host)
+				return resp.StatusCode
+			}).Should(Equal(http.StatusNotFound))
 		})
 
 		Context("when service is not found", func() {
@@ -207,8 +219,12 @@ var _ = Describe("Service", func() {
 				_, err := client.UpdateService(spec.Host, spec)
 				Expect(err).NotTo(HaveOccurred())
 
-				resp := sendRequest(portGateway, spec.Host)
-				Expect(resp.StatusCode).To(Equal(http.StatusOK))
+				var resp *http.Response
+				Eventually(func() int {
+					resp = sendRequest(portGateway, spec.Host)
+					return resp.StatusCode
+				}).Should(Equal(http.StatusOK))
+
 				body, err := ioutil.ReadAll(resp.Body)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(string(body)).To(Equal("Hello World!"))
@@ -218,8 +234,12 @@ var _ = Describe("Service", func() {
 		Context("when the service is disabled", func() {
 			JustBeforeEach(func() {
 				// Check if service is up and running
-				resp := sendRequest(portGateway, spec.Host)
-				Eventually(resp.StatusCode).Should(Equal(http.StatusOK))
+				var resp *http.Response
+				Eventually(func() int {
+					resp = sendRequest(portGateway, spec.Host)
+					return resp.StatusCode
+				}).Should(Equal(http.StatusOK))
+
 				body, err := ioutil.ReadAll(resp.Body)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(string(body)).To(Equal("Hello World!"))
@@ -230,8 +250,10 @@ var _ = Describe("Service", func() {
 				_, err := client.UpdateService(spec.Host, spec)
 				Expect(err).NotTo(HaveOccurred())
 
-				resp := sendRequest(portGateway, spec.Host)
-				Eventually(resp.StatusCode).Should(Equal(http.StatusNotFound))
+				Eventually(func() int {
+					resp := sendRequest(portGateway, spec.Host)
+					return resp.StatusCode
+				}).Should(Equal(http.StatusNotFound))
 			})
 		})
 
