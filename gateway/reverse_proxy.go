@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	DEFAULT_TIMEOUT = 1000 * time.Millisecond
+	DEFAULT_TIMEOUT = 10000 * time.Millisecond
 )
 
 var (
@@ -29,7 +29,7 @@ type ReverseProxy interface {
 }
 
 type ReverseProxySpec struct {
-	Host   string
+	Host     string
 	Backends []string
 	// Timeout in Milliseconds
 	Timeout time.Duration
