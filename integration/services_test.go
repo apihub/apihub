@@ -59,8 +59,8 @@ var _ = Describe("Service", func() {
 		req.Host = host
 
 		c := &http.Client{}
-		resp, err := c.Do(req)
-		Expect(err).NotTo(HaveOccurred())
+		// It is ok not to check the error because it may eventually be up n' running
+		resp, _ := c.Do(req)
 
 		return resp
 	}
@@ -210,8 +210,10 @@ var _ = Describe("Service", func() {
 			})
 
 			JustBeforeEach(func() {
-				resp := sendRequest(portGateway, spec.Host)
-				Expect(resp.StatusCode).To(Equal(http.StatusNotFound))
+				Eventually(func() int {
+					resp := sendRequest(portGateway, spec.Host)
+					return resp.StatusCode
+				}).Should(Equal(http.StatusNotFound))
 			})
 
 			It("proxies the request to the service endpoint", func() {
