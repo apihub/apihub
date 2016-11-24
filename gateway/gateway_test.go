@@ -53,13 +53,17 @@ var _ = Describe("Gateway", func() {
 		})
 
 		It("stops accepting new connections", func() {
-			_, err := http.Get(fmt.Sprintf("http://localhost%s", port))
-			Expect(err).NotTo(HaveOccurred())
+			Eventually(func() error {
+				_, err := http.Get(fmt.Sprintf("http://localhost%s", port))
+				return err
+			}).ShouldNot(HaveOccurred())
 
 			Expect(gw.Stop()).To(BeTrue())
 
-			_, err = http.Get(fmt.Sprintf("http://localhost%s", port))
-			Expect(err).To(HaveOccurred())
+			Eventually(func() error {
+				_, err := http.Get(fmt.Sprintf("http://localhost%s", port))
+				return err
+			}).Should(HaveOccurred())
 		})
 
 		It("does not stop twice", func() {
