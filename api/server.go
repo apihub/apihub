@@ -12,8 +12,8 @@ import (
 
 type ApihubServer struct {
 	net.Listener
-	logger lager.Logger
 
+	logger           lager.Logger
 	listenAddr       string
 	listenNetwork    string
 	router           *Router
@@ -23,7 +23,7 @@ type ApihubServer struct {
 }
 
 func New(log lager.Logger, listenNetwork, listenAddr string, storage apihub.Storage, servicePublisher apihub.ServicePublisher) *ApihubServer {
-	s := &ApihubServer{
+	server := &ApihubServer{
 		logger:           log,
 		listenAddr:       listenAddr,
 		listenNetwork:    listenNetwork,
@@ -33,26 +33,26 @@ func New(log lager.Logger, listenNetwork, listenAddr string, storage apihub.Stor
 	}
 
 	var handlers = map[Route]http.HandlerFunc{
-		Home:          http.HandlerFunc(s.homeHandler),
-		Ping:          http.HandlerFunc(s.pingHandler),
-		AddService:    http.HandlerFunc(s.addService),
-		ListServices:  http.HandlerFunc(s.listServices),
-		RemoveService: http.HandlerFunc(s.removeService),
-		FindService:   http.HandlerFunc(s.findService),
-		UpdateService: http.HandlerFunc(s.updateService),
+		Home:          http.HandlerFunc(server.homeHandler),
+		Ping:          http.HandlerFunc(server.pingHandler),
+		AddService:    http.HandlerFunc(server.addService),
+		ListServices:  http.HandlerFunc(server.listServices),
+		RemoveService: http.HandlerFunc(server.removeService),
+		FindService:   http.HandlerFunc(server.findService),
+		UpdateService: http.HandlerFunc(server.updateService),
 	}
 	for route, handler := range handlers {
-		s.router.AddHandler(RouterArguments{Path: Routes[route].Path, Method: Routes[route].Method, Handler: handler})
+		server.router.AddHandler(RouterArguments{Path: Routes[route].Path, Method: Routes[route].Method, Handler: handler})
 	}
-	s.router.NotFoundHandler(http.HandlerFunc(s.notFoundHandler))
+	server.router.NotFoundHandler(http.HandlerFunc(server.notFoundHandler))
 
-	s.server = &http.Server{
+	server.server = &http.Server{
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			s.router.r.ServeHTTP(w, r)
+			server.router.r.ServeHTTP(w, r)
 		}),
 	}
 
-	return s
+	return server
 }
 
 func (a *ApihubServer) Start(keep bool) error {
