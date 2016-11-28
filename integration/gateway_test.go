@@ -83,7 +83,7 @@ var _ = Describe("Gateway", func() {
 			BeforeEach(func() {
 				backendServer = httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 					select {
-					case <-time.After(11 * time.Millisecond):
+					case <-time.After(15 * time.Millisecond):
 					}
 				}))
 				spec.Timeout = time.Millisecond * 10
