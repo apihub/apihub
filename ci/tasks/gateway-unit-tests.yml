@@ -8,9 +8,8 @@ image_resource:
     tag: latest
 
 inputs:
-  - name: apihub-ci-repo
   - name: apihub-repo
     path: src/github.com/apihub/apihub
 
 run:
-  path: apihub-ci-repo/pipeline/tasks/gateway-unit-tests.sh
+  path: apihub-ci-repo/ci/tasks/gateway-unit-tests.sh

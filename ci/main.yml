@@ -33,7 +33,7 @@ jobs:
           - get: apihub-repo
             trigger: true
         - task: api-unit-tests
-          file: apihub-repo/pipeline/tasks/api-unit-tests.yml
+          file: apihub-repo/ci/tasks/api-unit-tests.yml
         on_failure:
           put: slack-alert
           params:
@@ -48,7 +48,7 @@ jobs:
           - get: apihub-repo
             trigger: true
         - task: gateway-unit-tests
-          file: apihub-repo/pipeline/tasks/gateway-unit-tests.yml
+          file: apihub-repo/ci/tasks/gateway-unit-tests.yml
         on_failure:
           put: slack-alert
           params:
@@ -64,7 +64,7 @@ jobs:
             trigger: true
         - task: docker-tests
           privileged: true
-          file: apihub-repo/pipeline/tasks/docker-tests.yml
+          file: apihub-repo/ci/tasks/docker-tests.yml
         on_failure:
           put: slack-alert
           params:
@@ -83,7 +83,7 @@ jobs:
             - gateway-unit-tests
             - docker-tests
         - task: integration-tests
-          file: apihub-repo/pipeline/tasks/integration-tests.yml
+          file: apihub-repo/ci/tasks/integration-tests.yml
         on_failure:
           put: slack-alert
           params:
