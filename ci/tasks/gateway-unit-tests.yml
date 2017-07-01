@@ -1,0 +1,16 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: albertoleal/apihub-ci
+    tag: latest
+
+inputs:
+  - name: apihub-ci-repo
+  - name: apihub-repo
+    path: src/github.com/apihub/apihub
+
+run:
+  path: apihub-ci-repo/pipeline/tasks/gateway-unit-tests.sh

@@ -1,0 +1,93 @@
+groups:
+  - name: main
+    jobs:
+      - api-unit-tests
+      - gateway-unit-tests
+      - integration-tests
+      - docker-tests
+
+resource_types:
+  - name: slack-notification-docker
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+
+resources:
+  - name: apihub-repo
+    type: git
+    source:
+      uri: git@github.com:apihub/apihub.git
+      branch: master
+      private_key: {{github-private-key}}
+
+  - name: slack-alert
+    type: slack-notification-docker
+    source:
+      url: {{slack-alert-webhook}}
+
+jobs:
+  - name: api-unit-tests
+    plan:
+      - do:
+        - aggregate:
+          - get: apihub-repo
+            trigger: true
+        - task: api-unit-tests
+          file: apihub-repo/pipeline/tasks/api-unit-tests.yml
+        on_failure:
+          put: slack-alert
+          params:
+            username: apihub-bot
+            channel: "#ci-builds"
+            text: "api unit tests failed: https://ci.apimanager.org/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME"
+
+  - name: gateway-unit-tests
+    plan:
+      - do:
+        - aggregate:
+          - get: apihub-repo
+            trigger: true
+        - task: gateway-unit-tests
+          file: apihub-repo/pipeline/tasks/gateway-unit-tests.yml
+        on_failure:
+          put: slack-alert
+          params:
+            username: apihub-bot
+            channel: "#ci-builds"
+            text: "gateway unit tests failed: https://ci.apimanager.org/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME"
+
+  - name: docker-tests
+    plan:
+      - do:
+        - aggregate:
+          - get: apihub-repo
+            trigger: true
+        - task: docker-tests
+          privileged: true
+          file: apihub-repo/pipeline/tasks/docker-tests.yml
+        on_failure:
+          put: slack-alert
+          params:
+            username: apihub-bot
+            channel: "#ci-builds"
+            text: "We've failed to run all suite tests in docker: https://ci.apimanager.org/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME"
+
+  - name: integration-tests
+    plan:
+      - do:
+        - aggregate:
+          - get: apihub-repo
+            trigger: true
+            passed:
+            - api-unit-tests
+            - gateway-unit-tests
+            - docker-tests
+        - task: integration-tests
+          file: apihub-repo/pipeline/tasks/integration-tests.yml
+        on_failure:
+          put: slack-alert
+          params:
+            username: apihub-bot
+            channel: "#ci-builds"
+            text: "integration tests failed: https://ci.apimanager.org/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME"
+

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -e
+
+tmp_dir="$(mktemp -d)"
+# trap 'rm -rf "${tmp_dir}"' EXIT
+
+secrets_path="${tmp_dir}/secrets.yml"
+
+echo "---" > $secrets_path
+{
+lpass show "apihub/apihub-ci-secrets" --notes
+} >> $secrets_path
+
+fly -t apihub sp -p apihub -c ./ci/main.yml -l $secrets_path
+fly -t apihub expose-pipeline --pipeline apihub
+
+

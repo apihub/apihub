@@ -7,3 +7,5 @@ apihub
 apihub-api
 apihub-gateway
 *.coverprofile
+ci/setup/keys/*
+ci/setup/database/*

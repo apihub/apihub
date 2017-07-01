@@ -1,0 +1,3 @@
+github-private-key: ssh-key
+slack-alert-webhook: https://hooks.slack.com/.../...{
+
