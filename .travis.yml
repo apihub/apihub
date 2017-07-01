@@ -11,9 +11,6 @@ env:
 
 install:
   - export PATH="$HOME/gopath/bin:$PATH"
-  - go get github.com/Masterminds/glide
-  - go get -t -d ./...
-  - glide up
 
 script:
   - cd $HOME/gopath/src/github.com/apihub/apihub
