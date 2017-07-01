@@ -11,9 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"code.cloudfoundry.org/cfhttp"
 	"code.cloudfoundry.org/consuladapter"
-	"github.com/hashicorp/consul/api"
 	"github.com/tedsuo/ifrit"
 	"github.com/tedsuo/ifrit/ginkgomon"
 
@@ -24,31 +22,49 @@ import (
 )
 
 type ClusterRunner struct {
-	startingPort    int
-	numNodes        int
-	consulProcesses []ifrit.Process
-	running         bool
-	dataDir         string
-	configDir       string
-	scheme          string
-	sessionTTL      time.Duration
+	startingPort      int
+	numNodes          int
+	consulProcesses   []ifrit.Process
+	running           bool
+	dataDir           string
+	configDir         string
+	scheme            string
+	verifyConnections bool
+	caCert            string
+	clientCert        string
+	clientKey         string
+	sessionTTL        time.Duration
 
 	mutex *sync.RWMutex
+}
+
+type ClusterRunnerConfig struct {
+	StartingPort int
+	NumNodes     int
+	Scheme       string
+	CACert       string
+	ClientCert   string
+	ClientKey    string
 }
 
 const defaultDataDirPrefix = "consul_data"
 const defaultConfigDirPrefix = "consul_config"
 
-func NewClusterRunner(startingPort int, numNodes int, scheme string) *ClusterRunner {
-	Expect(startingPort).To(BeNumerically(">", 0))
-	Expect(startingPort).To(BeNumerically("<", 1<<16))
-	Expect(numNodes).To(BeNumerically(">", 0))
+func NewClusterRunner(c ClusterRunnerConfig) *ClusterRunner {
+	Expect(c.StartingPort).To(BeNumerically(">", 0))
+	Expect(c.StartingPort).To(BeNumerically("<", 1<<16))
+	Expect(c.NumNodes).To(BeNumerically(">", 0))
 
+	verifyConnections := (c.Scheme == "https")
 	return &ClusterRunner{
-		startingPort: startingPort,
-		numNodes:     numNodes,
-		scheme:       scheme,
-		sessionTTL:   5 * time.Second,
+		startingPort:      c.StartingPort,
+		numNodes:          c.NumNodes,
+		sessionTTL:        5 * time.Second,
+		scheme:            c.Scheme,
+		verifyConnections: verifyConnections,
+		caCert:            c.CACert,
+		clientCert:        c.ClientCert,
+		clientKey:         c.ClientKey,
 
 		mutex: &sync.RWMutex{},
 	}
@@ -66,6 +82,7 @@ func (cr *ClusterRunner) ConsulVersion() string {
 	Expect(session.Out).To(gbytes.Say("Consul "))
 	lines := strings.Split(string(session.Out.Contents()), "\n")
 	versionLine := lines[0]
+	//Consul in 'dev' mode does not contain the prefix 'v', only 'Consul 0.7.1-dev'
 	return strings.TrimPrefix(strings.TrimPrefix(versionLine, "Consul "), "v")
 }
 
@@ -105,6 +122,10 @@ func (cr *ClusterRunner) Start() {
 			i,
 			cr.numNodes,
 			cr.sessionTTL,
+			cr.verifyConnections,
+			cr.caCert,
+			cr.clientCert,
+			cr.clientKey,
 		)
 
 		process := ginkgomon.Invoke(ginkgomon.New(ginkgomon.Config{
@@ -129,14 +150,18 @@ func (cr *ClusterRunner) Start() {
 }
 
 func (cr *ClusterRunner) NewClient() consuladapter.Client {
-	client, err := api.NewClient(&api.Config{
-		Address:    cr.Address(),
-		Scheme:     cr.scheme,
-		HttpClient: cfhttp.NewStreamingClient(),
-	})
-	Expect(err).NotTo(HaveOccurred())
+	var consulClient consuladapter.Client
+	var err error
 
-	return consuladapter.NewConsulClient(client)
+	if cr.scheme == "https" {
+		consulClient, err = consuladapter.NewTLSClientFromUrl(cr.URL(), cr.caCert, cr.clientCert, cr.clientKey)
+		Expect(err).NotTo(HaveOccurred())
+	} else {
+		consulClient, err = consuladapter.NewClientFromUrl(cr.URL())
+		Expect(err).NotTo(HaveOccurred())
+	}
+
+	return consulClient
 }
 
 func (cr *ClusterRunner) WaitUntilReady() {
@@ -173,17 +198,26 @@ func (cr *ClusterRunner) Stop() {
 	cr.running = false
 }
 
+func (cr *ClusterRunner) portOffset() int {
+	if cr.scheme == "https" {
+		return PortOffsetHTTPS
+	} else {
+		return PortOffsetHTTP
+	}
+}
+
 func (cr *ClusterRunner) ConsulCluster() string {
 	urls := make([]string, cr.numNodes)
+
 	for i := 0; i < cr.numNodes; i++ {
-		urls[i] = fmt.Sprintf("%s://127.0.0.1:%d", cr.scheme, cr.startingPort+i*PortOffsetLength+PortOffsetHTTP)
+		urls[i] = fmt.Sprintf("%s://127.0.0.1:%d", cr.scheme, cr.startingPort+i*PortOffsetLength+cr.portOffset())
 	}
 
 	return strings.Join(urls, ",")
 }
 
 func (cr *ClusterRunner) Address() string {
-	return fmt.Sprintf("127.0.0.1:%d", cr.startingPort+PortOffsetHTTP)
+	return fmt.Sprintf("127.0.0.1:%d", cr.startingPort+cr.portOffset())
 }
 
 func (cr *ClusterRunner) URL() string {

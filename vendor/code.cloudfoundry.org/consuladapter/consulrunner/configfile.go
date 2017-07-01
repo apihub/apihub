@@ -16,6 +16,7 @@ const defaultProtocolVersion = 2
 const (
 	portOffsetDNS = iota
 	PortOffsetHTTP
+	PortOffsetHTTPS
 	portOffsetClientRPC
 	portOffsetSerfLAN
 	portOffsetSerfWAN
@@ -40,6 +41,11 @@ type configFile struct {
 	DisableRemoteExec  bool           `json:"disable_remote_exec"`
 	DisableUpdateCheck bool           `json:"disable_update_check"`
 	SessionTTL         string         `json:"session_ttl_min"`
+	VerifyIncoming     bool           `json:"verify_incoming"`
+	VerifyOutgoing     bool           `json:"verify_outgoing"`
+	CAFile             string         `json:"ca_file"`
+	CertFile           string         `json:"cert_file"`
+	KeyFile            string         `json:"key_file"`
 }
 
 func newConfigFile(
@@ -50,11 +56,16 @@ func newConfigFile(
 	index int,
 	numNodes int,
 	sessionTTL time.Duration,
+	verifyConnections bool,
+	caFile string,
+	certFile string,
+	keyFile string,
 ) configFile {
 	startingPort := clusterStartingPort + PortOffsetLength*index
 	ports := map[string]int{
 		"dns":      startingPort + portOffsetDNS,
 		"http":     startingPort + PortOffsetHTTP,
+		"https":    startingPort + PortOffsetHTTPS,
 		"rpc":      startingPort + portOffsetClientRPC,
 		"serf_lan": startingPort + portOffsetSerfLAN,
 		"serf_wan": startingPort + portOffsetSerfWAN,
@@ -81,6 +92,11 @@ func newConfigFile(
 		DisableRemoteExec:  true,
 		DisableUpdateCheck: true,
 		SessionTTL:         sessionTTL.String(),
+		VerifyIncoming:     verifyConnections,
+		VerifyOutgoing:     verifyConnections,
+		CAFile:             caFile,
+		CertFile:           certFile,
+		KeyFile:            keyFile,
 	}
 
 	if includePerformanceConfig {
@@ -99,12 +115,19 @@ func writeConfigFile(
 	index int,
 	numNodes int,
 	sessionTTL time.Duration,
+	verifyConnections bool,
+	caFile string,
+	certFile string,
+	keyFile string,
 ) string {
 	filePath := path.Join(configDir, fmt.Sprintf("%s.json", nodeName))
 	file, err := os.Create(filePath)
 	Expect(err).NotTo(HaveOccurred())
 
-	config := newConfigFile(includePerformanceConfig, dataDir, nodeName, clusterStartingPort, index, numNodes, sessionTTL)
+	config := newConfigFile(
+		includePerformanceConfig, dataDir, nodeName, clusterStartingPort,
+		index, numNodes, sessionTTL, verifyConnections, caFile, certFile, keyFile,
+	)
 	configJSON, err := json.Marshal(config)
 	Expect(err).NotTo(HaveOccurred())
 

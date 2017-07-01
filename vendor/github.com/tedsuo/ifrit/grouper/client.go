@@ -10,8 +10,8 @@ import (
 DynamicClient provides a client with group controls and event notifications.
 A client can use the insert channel to add members to the group. When the group
 becomes full, the insert channel blocks until a running process exits the group.
-Once there are no more members have been added, the client can close the dynamic
-group, preventing new members to be added.
+Once there are no more members to be added, the client can close the dynamic
+group, preventing new members from being added.
 */
 type DynamicClient interface {
 
@@ -25,7 +25,7 @@ type DynamicClient interface {
 
 	/*
 	   ExitListener provides a new buffered channel of exit events, which are emited
-	   every time an inserted process is ready. To help prevent race conditions, every
+	   every time an inserted process exits. To help prevent race conditions, every
 	   new channel is populated with previously emited events, up to it's buffer size.
 	*/
 	ExitListener() <-chan ExitEvent

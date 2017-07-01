@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"runtime"
 	"strings"
 
 	"github.com/nu7hatch/gouuid"
@@ -21,6 +22,12 @@ var _ = Describe("Unix transport", func() {
 		socket string
 		client http.Client
 	)
+
+	BeforeEach(func() {
+		if runtime.GOOS == "windows" {
+			Skip("Skipping Unix transport tests on Windows")
+		}
+	})
 
 	Context("with server listening", func() {
 

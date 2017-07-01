@@ -60,13 +60,15 @@ func (s *httpServer) Run(signals <-chan os.Signal, ready chan<- struct{}) error 
 	s.inactiveConnections = make(map[net.Conn]struct{})
 	s.stoppingChan = make(chan struct{})
 
+	connCountCh := make(chan int)
+
 	server := http.Server{
 		Handler:   s.handler,
 		TLSConfig: s.tlsConfig,
 		ConnState: func(conn net.Conn, state http.ConnState) {
 			switch state {
 			case http.StateNew:
-				s.connectionWaitGroup.Add(1)
+				connCountCh <- 1
 				s.addInactiveConnection(conn)
 
 			case http.StateIdle:
@@ -77,7 +79,7 @@ func (s *httpServer) Run(signals <-chan os.Signal, ready chan<- struct{}) error 
 
 			case http.StateHijacked, http.StateClosed:
 				s.removeInactiveConnection(conn)
-				s.connectionWaitGroup.Done()
+				connCountCh <- -1
 			}
 		},
 	}
@@ -94,10 +96,14 @@ func (s *httpServer) Run(signals <-chan os.Signal, ready chan<- struct{}) error 
 
 	close(ready)
 
+	connCount := 0
 	for {
 		select {
 		case err = <-serverErrChan:
 			return err
+
+		case delta := <-connCountCh:
+			connCount += delta
 
 		case <-signals:
 			close(s.stoppingChan)
@@ -110,7 +116,11 @@ func (s *httpServer) Run(signals <-chan os.Signal, ready chan<- struct{}) error 
 			}
 			s.inactiveConnectionsMu.Unlock()
 
-			s.connectionWaitGroup.Wait()
+			for connCount != 0 {
+				delta := <-connCountCh
+				connCount += delta
+			}
+
 			return nil
 		}
 	}

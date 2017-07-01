@@ -16,9 +16,11 @@ var (
 
 var _ = BeforeSuite(func() {
 	consulRunner = consulrunner.NewClusterRunner(
-		9101+GinkgoParallelNode()*consulrunner.PortOffsetLength,
-		1,
-		"http",
+		consulrunner.ClusterRunnerConfig{
+			StartingPort: 9101 + GinkgoParallelNode()*consulrunner.PortOffsetLength,
+			NumNodes:     1,
+			Scheme:       "http",
+		},
 	)
 
 	consulRunner.Start()

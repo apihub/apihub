@@ -1,6 +1,7 @@
 package requests
 
 import (
+	"crypto/tls"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -14,8 +15,14 @@ type HTTPClient struct {
 
 func NewHTTPClient(host string) HTTPClient {
 	return HTTPClient{
-		Host:   host,
-		client: &http.Client{},
+		Host: host,
+		client: &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
+			},
+		},
 	}
 }
 
@@ -25,6 +32,8 @@ type Args struct {
 	Path           string
 	Method         string
 	Headers        http.Header
+	Username       string
+	Password       string
 }
 
 func (c *HTTPClient) MakeRequest(args Args) (http.Header, int, []byte, error) {
@@ -46,7 +55,13 @@ func (c *HTTPClient) MakeRequest(args Args) (http.Header, int, []byte, error) {
 		return header, 0, []byte{}, NewRequestError(err)
 	}
 
-	req.Header = args.Headers
+	if args.Headers != nil {
+		req.Header = args.Headers
+	}
+	if args.Username != "" && args.Password != "" {
+		req.SetBasicAuth(args.Username, args.Password)
+	}
+
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return header, 0, []byte{}, NewRequestError(err)

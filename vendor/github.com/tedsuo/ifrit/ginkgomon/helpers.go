@@ -15,7 +15,7 @@ func Invoke(runner ifrit.Runner) ifrit.Process {
 	select {
 	case <-process.Ready():
 	case err := <-process.Wait():
-		ginkgo.Fail(fmt.Sprintf("process failed to start: %s", err))
+		ginkgo.Fail(fmt.Sprintf("process failed to start: %s", err), 1)
 	}
 
 	return process
@@ -24,13 +24,13 @@ func Invoke(runner ifrit.Runner) ifrit.Process {
 func Interrupt(process ifrit.Process, intervals ...interface{}) {
 	if process != nil {
 		process.Signal(os.Interrupt)
-		Eventually(process.Wait(), intervals...).Should(Receive(), "interrupted ginkgomon process failed to exit in time")
+		EventuallyWithOffset(1, process.Wait(), intervals...).Should(Receive(), "interrupted ginkgomon process failed to exit in time")
 	}
 }
 
 func Kill(process ifrit.Process, intervals ...interface{}) {
 	if process != nil {
 		process.Signal(os.Kill)
-		Eventually(process.Wait(), intervals...).Should(Receive(), "killed ginkgomon process failed to exit in time")
+		EventuallyWithOffset(1, process.Wait(), intervals...).Should(Receive(), "killed ginkgomon process failed to exit in time")
 	}
 }

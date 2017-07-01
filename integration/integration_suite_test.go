@@ -22,9 +22,11 @@ var _ = BeforeSuite(func() {
 	ApihubAPIBin, ApihubGatewayBin = test_helpers.BuildArtifacts()
 
 	consulRunner = consulrunner.NewClusterRunner(
-		9201+GinkgoParallelNode()*consulrunner.PortOffsetLength,
-		1,
-		"http",
+		consulrunner.ClusterRunnerConfig{
+			StartingPort: 9201 + GinkgoParallelNode()*consulrunner.PortOffsetLength,
+			NumNodes:     1,
+			Scheme:       "http",
+		},
 	)
 	consulRunner.Start()
 	consulRunner.WaitUntilReady()

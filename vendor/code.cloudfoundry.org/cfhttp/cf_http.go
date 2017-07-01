@@ -14,6 +14,11 @@ import (
 	"code.cloudfoundry.org/cfhttp/unix_transport"
 )
 
+var SUPPORTED_CIPHER_SUITES = []uint16{
+	tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+	tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+}
+
 var config Config
 
 type Config struct {
@@ -60,6 +65,21 @@ func newClient(dialTimeout, keepAliveTimeout, timeout time.Duration) *http.Clien
 }
 
 func NewTLSConfig(certFile, keyFile, caCertFile string) (*tls.Config, error) {
+	caCertPool := x509.NewCertPool()
+	if caCertFile != "" {
+		certBytes, err := ioutil.ReadFile(caCertFile)
+		if err != nil {
+			return nil, fmt.Errorf("failed read ca cert file: %s", err.Error())
+		}
+
+		if ok := caCertPool.AppendCertsFromPEM(certBytes); !ok {
+			return nil, errors.New("Unable to load caCert")
+		}
+	}
+	return NewTLSConfigWithCertPool(certFile, keyFile, caCertPool)
+}
+
+func NewTLSConfigWithCertPool(certFile, keyFile string, caCertPool *x509.CertPool) (*tls.Config, error) {
 	tlsCert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load keypair: %s", err.Error())
@@ -69,21 +89,16 @@ func NewTLSConfig(certFile, keyFile, caCertFile string) (*tls.Config, error) {
 		Certificates:       []tls.Certificate{tlsCert},
 		InsecureSkipVerify: false,
 		ClientAuth:         tls.RequireAndVerifyClientCert,
+		CipherSuites:       SUPPORTED_CIPHER_SUITES,
+		MinVersion:         tls.VersionTLS12,
 	}
 
-	if caCertFile != "" {
-		certBytes, err := ioutil.ReadFile(caCertFile)
-		if err != nil {
-			return nil, fmt.Errorf("failed read ca cert file: %s", err.Error())
-		}
-
-		caCertPool := x509.NewCertPool()
-		if ok := caCertPool.AppendCertsFromPEM(certBytes); !ok {
-			return nil, errors.New("Unable to load caCert")
-		}
-		tlsConfig.RootCAs = caCertPool
-		tlsConfig.ClientCAs = caCertPool
+	if caCertPool == nil {
+		return nil, fmt.Errorf("CaCertPool is nil")
 	}
+
+	tlsConfig.RootCAs = caCertPool
+	tlsConfig.ClientCAs = caCertPool
 
 	return tlsConfig, nil
 }
