@@ -1,17 +1,18 @@
 package: github.com/apihub/apihub
 import:
-- package: github.com/gorilla/mux
 - package: code.cloudfoundry.org/lager
-- package: github.com/golang/protobuf
-- package: github.com/albertoleal/requests
-- package: github.com/urfave/negroni
+- package: github.com/braintree/manners
+- package: github.com/gorilla/mux
 - package: github.com/hashicorp/consul
-  version: v0.7.1
-- package: github.com/tedsuo/ifrit
-- package: code.cloudfoundry.org/consuladapter
-- package: github.com/onsi/ginkgo
   subpackages:
-  - ginkgo
+  - api
+- package: github.com/onsi/ginkgo
 - package: github.com/onsi/gomega
-- package: code.cloudfoundry.org/cfhttp
-- package: gopkg.in/yaml.v2
+  subpackages:
+  - gbytes
+  - gexec
+testImport:
+- package: code.cloudfoundry.org/consuladapter
+  subpackages:
+  - consulrunner
+- package: github.com/albertoleal/requests

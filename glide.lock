@@ -1,21 +1,11 @@
-hash: 5d79ac3f4970e6570bacd8e7af3e45b7d0a0666d342ea583f01343f026b6ecc3
-updated: 2017-07-01T18:52:47.863193293+01:00
+hash: 717a461e7b758312f8bccc8c4b20f672d4a1777bc7618f3401cb603c9aa97ca2
+updated: 2017-07-02T11:02:54.760582228+01:00
 imports:
-- name: code.cloudfoundry.org/cfhttp
-  version: 012f40c12b36dd67274e611f4f44ed932ae155d5
-  subpackages:
-  - unix_transport
-- name: code.cloudfoundry.org/consuladapter
-  version: 906f60cd7793a849016081925497d4cbfed3c05c
-  subpackages:
-  - consulrunner
 - name: code.cloudfoundry.org/lager
   version: dfcbcba2dd4a5228c43b0292d219d5c010daed3a
   subpackages:
   - lagerctx
   - lagertest
-- name: github.com/albertoleal/requests
-  version: 783b85c90f52f11d910d54ba2813a5a24d1d812e
 - name: github.com/braintree/manners
   version: 82a8879fc5fd0381fa8b2d8033b19bf255252088
 - name: github.com/golang/protobuf
@@ -40,7 +30,6 @@ imports:
   version: 1e72798a2620664d2ab32ffd4473c102fcd4894d
   subpackages:
   - config
-  - ginkgo
   - internal/codelocation
   - internal/containernode
   - internal/failer
@@ -74,12 +63,6 @@ imports:
   - matchers/support/goraph/node
   - matchers/support/goraph/util
   - types
-- name: github.com/tedsuo/ifrit
-  version: 274eec5487d264f39f8412f125e5b80410e3d3c4
-  subpackages:
-  - ginkgomon
-- name: github.com/urfave/negroni
-  version: 460c5567329bbad8917f126d2b386787f48e343b
 - name: golang.org/x/net
   version: 1f9224279e98554b6a6432d4dd998a739f8b2b7c
   subpackages:
@@ -87,7 +70,7 @@ imports:
   - html/atom
   - html/charset
 - name: golang.org/x/sys
-  version: 4ed4d404df456f81e878683a0363ed3013a59003
+  version: d18155cb60f6162f5e706d7f26e4e50a3d4da857
   subpackages:
   - unix
 - name: golang.org/x/text
@@ -110,4 +93,18 @@ imports:
   - transform
 - name: gopkg.in/yaml.v2
   version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
-testImports: []
+testImports:
+- name: code.cloudfoundry.org/cfhttp
+  version: 012f40c12b36dd67274e611f4f44ed932ae155d5
+  subpackages:
+  - unix_transport
+- name: code.cloudfoundry.org/consuladapter
+  version: 906f60cd7793a849016081925497d4cbfed3c05c
+  subpackages:
+  - consulrunner
+- name: github.com/albertoleal/requests
+  version: 783b85c90f52f11d910d54ba2813a5a24d1d812e
+- name: github.com/tedsuo/ifrit
+  version: 274eec5487d264f39f8412f125e5b80410e3d3c4
+  subpackages:
+  - ginkgomon
