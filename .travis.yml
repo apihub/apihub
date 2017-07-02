@@ -11,9 +11,11 @@ env:
 
 install:
   - export PATH="$HOME/gopath/bin:$PATH"
+  - go get github.com/Masterminds/glide
 
 script:
   - cd $HOME/gopath/src/github.com/apihub/apihub
+  - glide install -v
   - make test
 
 notifications:

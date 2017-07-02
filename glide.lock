@@ -1,5 +1,5 @@
 hash: 717a461e7b758312f8bccc8c4b20f672d4a1777bc7618f3401cb603c9aa97ca2
-updated: 2017-07-02T11:02:54.760582228+01:00
+updated: 2017-07-02T14:20:43.120442592+01:00
 imports:
 - name: code.cloudfoundry.org/lager
   version: dfcbcba2dd4a5228c43b0292d219d5c010daed3a
